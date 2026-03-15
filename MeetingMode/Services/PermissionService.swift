@@ -2,35 +2,30 @@ import Combine
 import Foundation
 
 enum PermissionStatus: String {
-    case scaffold = "Scaffold"
-    case pendingUserGrant = "Pending"
-    case granted = "Granted"
+    case notChecked = "Not checked"
 
     var detail: String {
-        switch self {
-        case .scaffold:
-            return "Not implemented yet in this technical base."
-        case .pendingUserGrant:
-            return "Will require explicit user consent when wired."
-        case .granted:
-            return "Available."
-        }
+        "Meeting Mode does not inspect or request this permission yet."
     }
 }
 
 @MainActor
 final class PermissionService: ObservableObject {
-    @Published private(set) var accessibilityStatus: PermissionStatus = .scaffold
-    @Published private(set) var automationStatus: PermissionStatus = .scaffold
-    @Published private(set) var screenRecordingStatus: PermissionStatus = .scaffold
+    @Published private(set) var accessibilityStatus: PermissionStatus = .notChecked
+    @Published private(set) var automationStatus: PermissionStatus = .notChecked
+    @Published private(set) var screenRecordingStatus: PermissionStatus = .notChecked
+
+    init() {
+        refreshStatuses()
+    }
 
     var shortSummary: String {
-        "Permissions remain stubbed until automation is implemented."
+        "No macOS permissions are checked or requested yet."
     }
 
     func refreshStatuses() {
-        accessibilityStatus = .scaffold
-        automationStatus = .scaffold
-        screenRecordingStatus = .scaffold
+        accessibilityStatus = .notChecked
+        automationStatus = .notChecked
+        screenRecordingStatus = .notChecked
     }
 }

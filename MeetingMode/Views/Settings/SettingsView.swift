@@ -7,7 +7,7 @@ struct SettingsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 GroupBox("Project Status") {
-                    Text("Technical scaffold only. Launch, overlay, restore, permissions, and persistence remain intentionally minimal.")
+                    Text("Technical scaffold only. Launch, clean screen, restore, permissions, and persistence remain intentionally minimal.")
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
@@ -16,17 +16,17 @@ struct SettingsView: View {
                         permissionRow(
                             title: "Accessibility",
                             status: permissionService.accessibilityStatus,
-                            note: "Needed later to drive app visibility and focused restore flows."
+                            note: "Not checked in the current scaffold. This only matters once app hiding or restore becomes real."
                         )
                         permissionRow(
                             title: "Automation",
                             status: permissionService.automationStatus,
-                            note: "Reserved for future app launch and control logic."
+                            note: "Not checked in the current scaffold. This only matters once real app control is added."
                         )
                         permissionRow(
                             title: "Screen Recording",
                             status: permissionService.screenRecordingStatus,
-                            note: "May be required later if overlay or capture-related behavior needs it."
+                            note: "Not checked in the current scaffold. The current app does not require it."
                         )
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -44,9 +44,6 @@ struct SettingsView: View {
             .padding(20)
         }
         .frame(minWidth: 480, minHeight: 340)
-        .onAppear {
-            permissionService.refreshStatuses()
-        }
     }
 
     private func permissionRow(title: String, status: PermissionStatus, note: String) -> some View {

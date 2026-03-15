@@ -38,6 +38,8 @@ struct MeetingModeApp: App {
                 permissionService: permissionService
             )
         }
+        // Keep the window style for now: the content is a compact SwiftUI panel,
+        // not a pure menu item list.
         .menuBarExtraStyle(.window)
 
         Settings {
