@@ -3,8 +3,10 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var appLanguageService: AppLanguageService
+    @ObservedObject var launchAtLoginService: LaunchAtLoginService
     @ObservedObject var permissionService: PermissionService
     @ObservedObject var hotkeyService: HotkeyService
+    let showTutorial: () -> Void
 
     @State private var recordingAction: HotkeyAction?
     @State private var hotkeyErrorMessage: String?
@@ -30,6 +32,23 @@ struct SettingsView: View {
                         }
                         .labelsHidden()
                         .pickerStyle(.segmented)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                GroupBox(t("settings.group.startup", "Startup")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(t("settings.launch_at_login.description", "Use the native macOS login item setting for Meeting Mode."))
+                            .foregroundStyle(.secondary)
+
+                        Toggle(
+                            t("settings.launch_at_login.title", "Launch at login"),
+                            isOn: launchAtLoginBinding
+                        )
+
+                        Text(launchAtLoginService.status.detail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -84,10 +103,26 @@ struct SettingsView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+
+                GroupBox(t("settings.group.help", "Help")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(t("settings.help.description", "Reopen the quick tutorial at any time if you need a short reminder of the main flow and limits."))
+                            .foregroundStyle(.secondary)
+
+                        Button(t("settings.help.show_tutorial", "Show Tutorial")) {
+                            showTutorial()
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             .padding(20)
         }
-        .frame(minWidth: 520, minHeight: 420)
+        .frame(minWidth: 520, minHeight: 560)
+        .onAppear {
+            launchAtLoginService.refreshStatus()
+        }
         .onChange(of: recordingAction) { _, newValue in
             if newValue == nil {
                 hotkeyService.resumeRegistrations()
@@ -232,6 +267,13 @@ struct SettingsView: View {
         )
     }
 
+    private var launchAtLoginBinding: Binding<Bool> {
+        Binding(
+            get: { launchAtLoginService.status.isEnabled },
+            set: { launchAtLoginService.setEnabled($0) }
+        )
+    }
+
     private func t(_ key: String, _ defaultValue: String, _ arguments: CVarArg...) -> String {
         appLanguageService.localized(key, defaultValue: defaultValue, arguments)
     }
@@ -240,7 +282,9 @@ struct SettingsView: View {
 #Preview {
     SettingsView(
         appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "SettingsViewPreviewLanguage")),
+        launchAtLoginService: LaunchAtLoginService(),
         permissionService: PermissionService(),
-        hotkeyService: HotkeyService(defaults: UserDefaults(suiteName: "SettingsViewPreview"))
+        hotkeyService: HotkeyService(defaults: UserDefaults(suiteName: "SettingsViewPreview")),
+        showTutorial: {}
     )
 }

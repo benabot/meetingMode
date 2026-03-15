@@ -4,10 +4,18 @@
 "app.language.french" = "Français";
 
 "settings.window.title" = "Réglages";
+"settings.group.startup" = "Démarrage";
 "settings.group.project_status" = "État du projet";
 "settings.group.shortcuts" = "Raccourcis";
 "settings.group.permissions" = "Autorisations";
 "settings.group.scope_guardrails" = "Garde-fous";
+"settings.group.help" = "Aide";
+"settings.launch_at_login.title" = "Lancer au démarrage";
+"settings.launch_at_login.description" = "Utilise le réglage natif des éléments d’ouverture de session pour Meeting Mode.";
+"settings.launch_at_login.status.enabled" = "Meeting Mode se lance automatiquement quand vous ouvrez votre session sur ce Mac.";
+"settings.launch_at_login.status.disabled" = "Meeting Mode ne se lance pas automatiquement quand vous ouvrez votre session sur ce Mac.";
+"settings.launch_at_login.status.requires_approval" = "macOS demande encore une validation dans Réglages Système > Général > Ouverture.";
+"settings.launch_at_login.status.unavailable" = "Ce build n’a pas pu s’enregistrer comme élément d’ouverture de session sur ce Mac.";
 "settings.project_status.description" = "Socle technique uniquement. Lancement, clean screen, restore, autorisations et persistance restent volontairement minimaux.";
 "settings.shortcuts.description" = "Configurez un raccourci pour Démarrer la session et un autre pour Restaurer la session. Les raccourcis restent locaux à ce Mac et actifs tant que Meeting Mode est lancé.";
 "settings.shortcuts.recording_hint" = "L’enregistrement exige au moins une touche modificatrice. Appuyez sur Échap pour annuler.";
@@ -26,6 +34,8 @@
 "settings.scope.one_session" = "Une seule session active à la fois.";
 "settings.scope.local_persistence" = "Pas de couche de persistance au-delà des fichiers locaux et des préférences.";
 "settings.scope.no_advanced_automation" = "Pas d’automatisation d’app au-delà du périmètre MVP actuel.";
+"settings.help.description" = "Rouvrez le tutoriel rapide à tout moment si vous avez besoin d’un rappel court du flux principal et des limites.";
+"settings.help.show_tutorial" = "Voir le tutoriel";
 
 "permissions.status.not_checked" = "Non vérifié";
 "permissions.status.not_checked.detail" = "Meeting Mode n’inspecte ni ne demande encore cette autorisation.";
@@ -126,6 +136,38 @@
 
 "overlay.title" = "Fond clean screen actif";
 "overlay.detail" = "Utilisez l’icône Meeting Mode dans la barre de menu pour restaurer votre session.";
+
+"tutorial.window.title" = "Tutoriel";
+"tutorial.title" = "Tutoriel rapide";
+"tutorial.progress" = "%d sur %d";
+"tutorial.skip" = "Passer";
+"tutorial.back" = "Retour";
+"tutorial.next" = "Suivant";
+"tutorial.done" = "Terminer";
+"tutorial.page1.title" = "Ce que fait Meeting Mode";
+"tutorial.page1.body" = "Meeting Mode prépare ce Mac pour une réunion, une démo ou un partage d’écran depuis la barre de menu.";
+"tutorial.page1.bullet1" = "Lancer un preset en un clic.";
+"tutorial.page1.bullet2" = "Garder une préparation petite et prévisible.";
+"tutorial.page2.title" = "Ce qu’est un preset";
+"tutorial.page2.body" = "Un preset décrit ce qui doit être prêt avant de commencer à partager.";
+"tutorial.page2.bullet1" = "Des apps à ouvrir.";
+"tutorial.page2.bullet2" = "Des liens et des fichiers locaux à ouvrir.";
+"tutorial.page2.bullet3" = "Des éléments de checklist et un clean screen optionnel.";
+"tutorial.page3.title" = "Ce que fait Démarrer la session";
+"tutorial.page3.body" = "Démarrer la session applique le preset avec les règles MVP actuelles.";
+"tutorial.page3.bullet1" = "Ouvre les apps, liens et fichiers du preset.";
+"tutorial.page3.bullet2" = "Peut masquer les apps visibles hors preset en best effort.";
+"tutorial.page3.bullet3" = "Peut afficher un fond clean screen.";
+"tutorial.page4.title" = "Ce que fait Restaurer la session";
+"tutorial.page4.body" = "Restaurer la session ne cible que les changements que Meeting Mode a réellement appliqués.";
+"tutorial.page4.bullet1" = "Masque le clean screen.";
+"tutorial.page4.bullet2" = "Tente de réafficher les apps que Meeting Mode a lui-même masquées.";
+"tutorial.page4.bullet3" = "Reste en best effort uniquement.";
+"tutorial.page5.title" = "Limites importantes";
+"tutorial.page5.body" = "Ce MVP garde volontairement un périmètre étroit.";
+"tutorial.page5.bullet1" = "Pas de restore parfait des fenêtres, onglets ou Spaces.";
+"tutorial.page5.bullet2" = "Pas de gestion avancée des fenêtres en v1.";
+"tutorial.page5.bullet3" = "Certains comportements dépendent encore de ce que macOS autorise.";
 
 "session.phase.inactive" = "Inactive";
 "session.phase.active" = "Active";

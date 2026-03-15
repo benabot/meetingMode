@@ -12,7 +12,9 @@ Date: 2026-03-15
 - The current target is not App Sandbox-enabled, so local launch and restore behavior can work predictably during MVP development.
 - `Settings...` now opens a dedicated settings window from the menu bar panel.
 - `Settings...` now includes configurable shortcuts for `Start Session` and `Restore Session`.
+- `Settings...` now includes a native `Launch at login` toggle backed by macOS login items.
 - The app now supports a coherent FR / EN UI with an explicit language choice in `Settings`.
+- A lightweight tutorial window now exists for first-run guidance and quick re-entry later from `Settings`.
 - Models and services compile and stay intentionally small.
 - Presets are now loaded from a simple local JSON source under Application Support.
 - The app seeds one local `Quick Test` preset when no preset data exists yet.
@@ -22,7 +24,9 @@ Date: 2026-03-15
 - The preset editor now opens in a dedicated fixed-width window instead of a sheet attached to the menu bar popover, so it stays fully visible near the right edge of the screen.
 - The currently selected preset is persisted across relaunches with a small local preference.
 - Start and Restore shortcuts are now persisted locally and restored on relaunch.
+- Launch at login state is now read from the real macOS login item registration instead of a separate local preference.
 - The chosen app language is now persisted locally and restored on relaunch.
+- Tutorial first-run state is now persisted locally so the tutorial auto-opens only once.
 - `Preset` now stores apps, URLs, local files, checklist items, and clean screen intent.
 - Selected apps are now stored as app references with bundle identifier and bundle path, with fallback to display name for older data.
 - The session UI now exposes explicit `Inactive`, `Active`, and `Restored` states.
@@ -51,6 +55,7 @@ Date: 2026-03-15
 - The restore path still escalates from polite quit to force quit for apps launched by the session, but this remains best effort rather than a guaranteed system rollback.
 - Start and Restore shortcuts now trigger the same session actions as the popover buttons.
 - The visible app UI is now localized across the menu bar popover, preset editor, settings, overlay, and session / restore messaging.
+- A small tutorial explains what Meeting Mode does, what a preset contains, what `Start Session` does, what `Restore Session` does, and the main product limits.
 - The popover is now intentionally shorter and split into `Preset`, `Plan` or `Session`, and `Actions`.
 - Outside a session, the summary reflects preset intent. During a session, the summary reflects only actions actually applied and tracked.
 - The visibility rule stays intentionally narrow: only regular apps are considered, Meeting Mode itself is excluded, and only apps actually hidden with success are tracked for restore.
@@ -60,10 +65,14 @@ Date: 2026-03-15
 ## Visible Behavior Confirmed
 
 - `xcodebuild -scheme MeetingMode -destination 'platform=macOS' build` succeeds.
+- The app bundle now carries a custom Meeting Mode icon through `AppIcon`, so Finder and normal app launching use app-specific icon metadata.
+- Because `MeetingMode` still runs as a background-only menu bar app, that bundle icon is used for Finder and app launch surfaces, but the app is still not meant to stay in the Dock after launch.
 - The app launches without a main window.
 - The menu bar item remains visible at launch.
 - Clicking the menu bar item opens a compact graphical panel reliably.
 - Clicking `Settings...` closes the panel and opens a dedicated settings window.
+- On first launch, the tutorial opens automatically once in a small dedicated window.
+- After that first-launch tutorial closes, the main menu bar panel opens automatically so the user lands directly in the primary UI.
 - The menu bar content handles both the seeded preset path and an explicit empty state.
 - Production no longer ships with built-in demo presets, but it seeds one functional local `Quick Test` preset when storage is empty.
 - Legacy local `Quick Test` data that still points to `TextEdit` is migrated automatically to `Calculator` so the seed stays deterministic and avoids document dialogs.
@@ -75,8 +84,10 @@ Date: 2026-03-15
 - Deleting a preset now goes through a simple confirmation and keeps selection coherent.
 - The selected preset is restored after relaunch when it still exists.
 - Start and Restore shortcuts can be set, changed, or cleared from Settings.
+- The `Launch at login` checkbox reflects the real macOS login item state and can register or unregister the app without adding a helper app.
 - The language can be switched explicitly between French and English in Settings.
 - The language change applies coherently to the popover, settings window, preset editor, and session text without mixing major app strings.
+- The tutorial can be skipped, completed, or reopened later from `Settings` without resetting the first-launch behavior.
 - If the local JSON file is invalid, the app falls back to an empty preset state instead of silently reseeding demo data.
 - If the local JSON file is present but empty (`[]`), the app keeps the empty state.
 - The preset summary shows counts for apps, URLs, files, checklist items, and clean screen.
@@ -104,6 +115,8 @@ Date: 2026-03-15
 - Apps that were already running before the session are not included in the restore quit scope.
 - Permission messaging states only what is true today: nothing is checked or requested yet.
 - A few native macOS strings still remain system-managed, such as standard `NSOpenPanel` chrome outside the app-provided title and prompt.
+- The login-item flow can still require approval from macOS, and that approval wording remains system-managed by the OS.
+- The tutorial remains intentionally lightweight: a few pages, plain navigation, no blocking wizard, and no marketing copy.
 
 ## Still Intentionally Stubbed
 
@@ -118,4 +131,3 @@ Date: 2026-03-15
 - Cloud sync
 - AI features
 - Deep Slack / Zoom / Teams / Calendar integrations
-- Onboarding flow

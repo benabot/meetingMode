@@ -16,6 +16,8 @@
 - One active session modelled at a time.
 - App launches as a background-only menu bar app, with no main window.
 - App Sandbox is currently disabled for the MVP target so launch and restore flows can operate on other local apps during development.
+- The app now carries a real bundle app icon through the standard `AppIcon` asset catalog, so Finder and normal app launching use app-specific metadata instead of the default placeholder icon.
+- The app icon does not change the menu bar nature of the product: `MeetingMode` still stays out of the Dock once launched because the target remains background-only.
 
 ### MVP Sequencing
 
@@ -51,6 +53,14 @@
 - If no preset is selectable, the Start shortcut fails cleanly through the same session messaging path.
 - If no session is active, the Restore shortcut does nothing destructive and leaves the app in a safe state.
 
+### Launch At Login Strategy
+
+- Launch at login uses the native macOS `SMAppService.mainApp` path rather than a custom helper app or an extra dependency.
+- The only visible control is one checkbox in `Settings`.
+- The checkbox reflects the real macOS registration state, not a separate local boolean.
+- If macOS still requires user approval for the login item, Meeting Mode says so explicitly instead of pretending the setting is already fully active.
+- This keeps the MVP implementation small, reversible, and aligned with the menu bar app shape.
+
 ### Localization Strategy
 
 - Localization uses standard Apple `Localizable.strings` files, kept in the app bundle under `en.lproj` and `fr.lproj`.
@@ -60,6 +70,16 @@
 - Visible app strings are resolved through one small `AppLanguageService` plus bundle-based lookup, so SwiftUI views, AppKit window titles, and runtime session messaging all follow the same language choice.
 - Runtime session and restore messaging no longer depend on parsing English text fragments in the UI.
 - A few native macOS control strings still remain system-managed by the OS; this is acceptable as long as Meeting Mode-owned strings stay coherent.
+
+### Tutorial Strategy
+
+- Onboarding is intentionally lightweight: a short tutorial window, not a marketing flow or a blocking wizard.
+- The tutorial covers only the core MVP flow and limits: what the app does, what a preset is, what `Start Session` does, what `Restore Session` does, and what v1 does not promise.
+- The tutorial auto-opens only once on first launch.
+- That first-launch behavior is persisted locally with one simple preference key.
+- Reopening the tutorial from `Settings` does not reset the first-launch state.
+- The tutorial lives in its own small window so it stays coherent with the menu bar app and does not overload the popover.
+- Navigation stays explicit and simple: `Next`, `Back`, `Skip`, `Done`.
 
 ### Session Behavior
 

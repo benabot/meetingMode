@@ -4,10 +4,18 @@
 "app.language.french" = "Français";
 
 "settings.window.title" = "Settings";
+"settings.group.startup" = "Startup";
 "settings.group.project_status" = "Project Status";
 "settings.group.shortcuts" = "Shortcuts";
 "settings.group.permissions" = "Permissions";
 "settings.group.scope_guardrails" = "Scope Guardrails";
+"settings.group.help" = "Help";
+"settings.launch_at_login.title" = "Launch at login";
+"settings.launch_at_login.description" = "Use the native macOS login item setting for Meeting Mode.";
+"settings.launch_at_login.status.enabled" = "Meeting Mode launches automatically when you sign in on this Mac.";
+"settings.launch_at_login.status.disabled" = "Meeting Mode does not launch automatically when you sign in on this Mac.";
+"settings.launch_at_login.status.requires_approval" = "macOS still needs approval in System Settings > General > Login Items.";
+"settings.launch_at_login.status.unavailable" = "This build could not register itself as a login item on this Mac.";
 "settings.project_status.description" = "Technical scaffold only. Launch, clean screen, restore, permissions, and persistence remain intentionally minimal.";
 "settings.shortcuts.description" = "Configure one shortcut for Start Session and one for Restore Session. Shortcuts stay local to this Mac and remain active while Meeting Mode is running.";
 "settings.shortcuts.recording_hint" = "Recording requires at least one modifier key. Press Escape to cancel.";
@@ -26,6 +34,8 @@
 "settings.scope.one_session" = "One active session at a time.";
 "settings.scope.local_persistence" = "No persistence layer beyond local files and preferences.";
 "settings.scope.no_advanced_automation" = "No app automation beyond the current MVP scope.";
+"settings.help.description" = "Reopen the quick tutorial at any time if you need a short reminder of the main flow and limits.";
+"settings.help.show_tutorial" = "Show Tutorial";
 
 "permissions.status.not_checked" = "Not checked";
 "permissions.status.not_checked.detail" = "Meeting Mode does not inspect or request this permission yet.";
@@ -126,6 +136,38 @@
 
 "overlay.title" = "Clean screen background enabled";
 "overlay.detail" = "Use the Meeting Mode menu bar item to restore your session.";
+
+"tutorial.window.title" = "Tutorial";
+"tutorial.title" = "Quick Tutorial";
+"tutorial.progress" = "%d of %d";
+"tutorial.skip" = "Skip";
+"tutorial.back" = "Back";
+"tutorial.next" = "Next";
+"tutorial.done" = "Done";
+"tutorial.page1.title" = "What Meeting Mode does";
+"tutorial.page1.body" = "Meeting Mode prepares this Mac for a meeting, a demo, or a screen share from the menu bar.";
+"tutorial.page1.bullet1" = "Run a preset in one click.";
+"tutorial.page1.bullet2" = "Keep the setup small and predictable.";
+"tutorial.page2.title" = "What a preset is";
+"tutorial.page2.body" = "A preset describes what should be ready before you start sharing.";
+"tutorial.page2.bullet1" = "Apps to open.";
+"tutorial.page2.bullet2" = "Links and local files to open.";
+"tutorial.page2.bullet3" = "Checklist items and an optional clean screen.";
+"tutorial.page3.title" = "What Start Session does";
+"tutorial.page3.body" = "Start Session applies the preset with the current MVP rules.";
+"tutorial.page3.bullet1" = "Opens the preset apps, links, and files.";
+"tutorial.page3.bullet2" = "May hide visible apps outside the preset in best effort.";
+"tutorial.page3.bullet3" = "Can show a clean screen background.";
+"tutorial.page4.title" = "What Restore Session does";
+"tutorial.page4.body" = "Restore Session only targets the changes that Meeting Mode actually made.";
+"tutorial.page4.bullet1" = "Hides the clean screen.";
+"tutorial.page4.bullet2" = "Tries to re-show apps that Meeting Mode itself hid.";
+"tutorial.page4.bullet3" = "Stays best effort only.";
+"tutorial.page5.title" = "Important limits";
+"tutorial.page5.body" = "This MVP keeps the scope intentionally narrow.";
+"tutorial.page5.bullet1" = "No perfect restore of windows, tabs, or Spaces.";
+"tutorial.page5.bullet2" = "No advanced window management in v1.";
+"tutorial.page5.bullet3" = "Some behavior still depends on what macOS allows.";
 
 "session.phase.inactive" = "Inactive";
 "session.phase.active" = "Active";
