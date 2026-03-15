@@ -28,6 +28,7 @@
 - `MenuBarExtra(.window)` was dropped because its auxiliary scene was failing at runtime on click.
 - `MenuBarExtra(.menu)` was not kept because it removed the compact graphical panel needed for the MVP flow.
 - The current menu bar implementation uses `NSStatusItem` plus `NSPopover` to keep the compact graphical UI with predictable click behavior.
+- The popover content width is kept smaller than the declared popover width so the panel does not overflow the right edge of the screen.
 - The popover is intentionally compact and split into three short zones: `Preset`, `Plan` or `Session`, and `Actions`.
 - Secondary copy was reduced on purpose so the session state is readable at a glance.
 - `Settings...` closes the popover first, then opens a dedicated settings window, because relying on the default SwiftUI settings action was not reliable enough in a background-only menu bar app.
@@ -48,12 +49,27 @@
 - The active UI switches from preset intent to snapshot tracking so restore scope stays explicit.
 - Outside a session, the menu summarizes what the selected preset intends to do. During a session, it summarizes only the actions actually applied and tracked.
 
+### Visibility Strategy
+
+- Visibility management is handled by a small dedicated `AppVisibilityService`.
+- Only `regular` macOS apps are candidates for hiding.
+- `MeetingMode` itself is always excluded from hiding.
+- Apps that belong to the active preset stay visible.
+- Everything else is only hidden in best effort.
+- If an app cannot be hidden, Meeting Mode keeps going and reports the limit in session messaging instead of pretending the hide succeeded.
+- Real-machine probing on Safari and Notes showed that hide requests can complete only after control returns to the main event loop, so hidden apps are confirmed after a short deferred phase instead of being snapshotted immediately in the same blocking call.
+- Restore only targets apps that were actually confirmed hidden after that deferred phase.
+- Real-machine probing also showed that unhide / activate requests can succeed only after the restore call yields back to the event loop, so restore visibility is confirmed asynchronously instead of being judged too early in the same blocking call.
+- If a tracked app remains hidden after that deferred restore confirmation, Meeting Mode tries a simple targeted `openApplication` fallback on that same bundle. This is still not advanced window restoration.
+- This deferred confirmation strategy is now also validated in the real menu bar flow with `Safari` and `Notes`, not only in an isolated probe.
+
 ### Session Snapshot
 
-- `SessionSnapshot` stores only minimal restore-oriented data: preset identity, started time, launched apps, tracked URLs, tracked files, and clean screen state.
+- `SessionSnapshot` stores only minimal restore-oriented data: preset identity, started time, launched apps, actually hidden apps, tracked URLs, tracked files, and clean screen state.
 - The snapshot is meant to capture only changes triggered by Meeting Mode, not system state outside the app.
 - URLs and local files are recorded in the snapshot only when their opening actually succeeds.
 - The snapshot also keeps the bundle identifiers of apps that were not already running before the session, so restore can ask only those apps to quit.
+- The snapshot also keeps only the exact app instances that were actually hidden with success, keyed by process identifier with bundle identifier fallback for older data.
 - The snapshot is not a promise of perfect restore; it is only a best-effort ledger of Meeting Mode actions.
 
 ### Opening Strategy
@@ -82,6 +98,8 @@
 
 - `PresetStore` now reads presets from a simple local JSON file in Application Support.
 - If local preset storage is missing, the app seeds one functional `Quick Test` preset for end-to-end testing.
+- `Quick Test` now uses `Calculator` instead of `TextEdit` so the default test flow stays visually deterministic and does not open a document chooser.
+- Legacy local `Quick Test` data that still points to `TextEdit` is migrated automatically when it still matches the original seed shape.
 - If local preset storage exists but cannot be decoded, the app falls back to an empty list rather than silently reseeding.
 - If local preset storage exists and contains `[]`, the app keeps the empty state.
 - The runtime seed remains intentionally minimal: one default preset only, with additional presets created by the user.
@@ -93,12 +111,20 @@
 
 - Restore is intentionally narrow and strictly limited to changes Meeting Mode triggered during the current session.
 - Restore hides the clean screen overlay when the session had shown it.
+- Restore re-shows only the apps that Meeting Mode actually hid during the current session.
+- Restore targets those hidden apps by exact tracked process first, then falls back to bundle identifier matching only for older snapshots.
+- Restore now sends unhide / activate requests first, then confirms the actual visible state after a short delay, because the runtime visibility change is not reliably observable inside the same synchronous call on this machine.
+- If a tracked app still remains hidden after that delayed confirmation, restore retries through a targeted `openApplication` call on that app bundle only.
+- Restore closes apps launched by the session before re-showing hidden apps, so the launched app does not immediately retake focus after the restore.
+- Restore does not attempt to reconstruct pre-session window minimization or Space placement. It only tries to make tracked hidden apps visible again.
 - Restore first sends a polite quit to apps launched by Meeting Mode during the session, then falls back to force quit if they remain open.
 - Apps that were already running before the session are never included in the quit list.
 - A polite quit request is not treated as proof that an app really closed. The UI now distinguishes between a confirmed close and an app that may still be open.
 - The stronger fallback exists only for apps launched by the current session, not for apps that were already open before it.
 - URLs and local files are opened in a simple way, but v1 restore does not attempt to close them.
 - Restore still remains limited in scope and is not a promise of full system rollback.
+- The post-restore UI keeps the last restore result visible, and while app visibility is still being confirmed it explicitly says `checking hidden apps` rather than presenting a clean success too early.
+- Runtime validation is now split clearly in the docs: app visibility restore is validated on the current machine, while polite quit for document-based apps remains a separate best-effort topic.
 
 ### Preset Editing
 

@@ -52,21 +52,25 @@ What is already implemented in the current build:
 - menu bar app with a compact popover UI
 - local presets with create, edit, delete, and selected preset persistence
 - app launch from preset data
+- best-effort hiding of regular visible apps that are outside the active preset
 - link and local file opening
 - clean screen overlay
 - active session state
 - restore UI flow
+- best-effort re-show of only the apps that Meeting Mode actually hid during the current session
 - best-effort quit for apps launched by Meeting Mode during the session
+- the current runtime flow has been revalidated with `Safari` and `Notes` as hidden apps, then shown again by `Restore Session`
 
 What is not implemented yet:
 
-- hiding visible apps that are outside the active preset
-- tracking which apps were actually hidden by Meeting Mode
-- re-showing only those hidden apps during restore
 - restore of opened links and opened files
 - advanced window management
 
-This distinction matters: the app already supports launch, open, overlay, and basic restore, but app hiding outside the preset is still a documented next step, not a shipped behavior.
+Important caveat:
+
+- app hiding is limited to regular apps and stays best effort
+- the real end-to-end behavior still depends on what macOS lets Meeting Mode hide or re-show on the current machine, even though the current Safari / Notes path now works on the validation machine
+- restore scope remains intentionally narrow and explicit
 
 ## MVP Scope
 
@@ -114,11 +118,11 @@ Out of scope for the MVP:
 
 ## Development Direction
 
-The next product step is not a new big surface area. It is to make the existing session flow more complete and still understandable:
+The next product step is not a new big surface area. It is to make the current session flow more reliable and more explicit:
 
-1. hide non-preset visible apps in best effort
-2. track exactly which apps Meeting Mode hid
-3. re-show only those apps on restore
-4. keep the restore scope narrow and explicit
+1. revalidate the visibility rule against real macOS behavior
+2. keep clearer feedback when some apps stay visible
+3. preserve the narrow restore scope
+4. avoid drifting into window-management behavior
 
 If macOS behavior is ambiguous, the app should degrade conservatively instead of pretending the restore is perfect.

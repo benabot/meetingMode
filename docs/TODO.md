@@ -21,10 +21,10 @@
 - [x] Vérifier que create/edit de preset survivent proprement au redémarrage
 - [x] Gérer proprement les données locales absentes ou invalides
 - [x] Ajouter une suppression minimale de preset avec confirmation simple
-- [ ] Implémenter le masquage best effort des apps visibles qui ne font pas partie du preset actif
-- [ ] Définir précisément la règle de visibilité pendant la session : apps du preset visibles, apps hors preset masquées, limites macOS explicites
-- [ ] Étendre `SessionSnapshot` pour suivre uniquement les apps effectivement masquées par Meeting Mode
-- [ ] Étendre `RestoreService` pour ne réafficher que les apps effectivement masquées par Meeting Mode
+- [x] Implémenter le masquage best effort des apps visibles qui ne font pas partie du preset actif
+- [x] Définir précisément la règle de visibilité pendant la session : apps du preset visibles, apps hors preset masquées, limites macOS explicites
+- [x] Étendre `SessionSnapshot` pour suivre uniquement les apps effectivement masquées par Meeting Mode
+- [x] Étendre `RestoreService` pour ne réafficher que les apps effectivement masquées par Meeting Mode
 - [x] Garder une seule session active à la fois, de manière explicite dans l'UI et les services
 - [x] Définir un snapshot minimal de session pour préparer un restore best effort
 - [x] Ouvrir apps, URLs et fichiers avec les APIs macOS les plus simples et fiables
@@ -63,9 +63,9 @@
 - [x] Le preset sélectionné survit à une relance
 - [x] La création, l'édition et la suppression minimale de preset survivent à une relance
 - [x] Les données locales absentes ou invalides retombent sur un état sûr
-- [ ] Le démarrage d'une session masque en best effort les apps hors preset sans rendre le restore ambigu
-- [ ] Le snapshot de session distingue les apps lancées par Meeting Mode des apps seulement masquées par Meeting Mode
-- [ ] `Restore Session` ne réaffiche que les apps effectivement masquées par la session courante
+- [x] Revalider dans le flux UI réel que le démarrage d'une session masque bien les apps hors preset sans rendre le restore ambigu
+- [x] Le snapshot de session distingue les apps lancées par Meeting Mode des apps seulement masquées par Meeting Mode
+- [x] `Restore Session` ne réaffiche que les apps effectivement masquées par la session courante
 - [ ] La fermeture automatique d'une app document-based lancée par Meeting Mode est suffisamment fiable pour être considérée comme validée
 - [x] Les permissions restent en stub, sans faux comportement système
 - [x] Les docs décrivent fidèlement ce qui est implémenté et ce qui reste en stub

@@ -13,13 +13,16 @@ struct MeetingModeApp: App {
         let presetStore = PresetStore()
         let overlayService = OverlayService()
         let appLauncherService = AppLauncherService()
+        let appVisibilityService = AppVisibilityService()
         let restoreService = RestoreService(
             overlayService: overlayService,
-            appLauncherService: appLauncherService
+            appLauncherService: appLauncherService,
+            appVisibilityService: appVisibilityService
         )
         let permissionService = PermissionService()
         let sessionRunner = SessionRunner(
             appLauncherService: appLauncherService,
+            appVisibilityService: appVisibilityService,
             overlayService: overlayService,
             restoreService: restoreService
         )
@@ -129,6 +132,9 @@ private final class StatusBarController: NSObject {
                 permissionService: permissionService,
                 openSettings: { [weak self] in
                     self?.showSettings()
+                },
+                restoreSession: { [weak self] in
+                    self?.restoreSession()
                 }
             )
         )
@@ -159,6 +165,14 @@ private final class StatusBarController: NSObject {
         NSApp.activate(ignoringOtherApps: true)
         settingsWindowController.showWindow(nil)
         settingsWindowController.window?.makeKeyAndOrderFront(nil)
+    }
+
+    private func restoreSession() {
+        popover.performClose(nil)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.sessionRunner.restoreCurrentSession()
+        }
     }
 }
 

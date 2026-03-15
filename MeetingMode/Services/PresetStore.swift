@@ -31,14 +31,18 @@ final class PresetStore: ObservableObject {
             initialPresets = []
         }
 
-        self.presets = initialPresets
+        let migrationResult = Self.migratePresetsIfNeeded(initialPresets)
+
+        self.presets = migrationResult.presets
         self.selectedPresetID = Self.loadSelectedPresetID(
             from: selectionDefaults,
             key: selectionDefaultsKey
-        ) ?? initialPresets.first?.id
+        ) ?? migrationResult.presets.first?.id
         normalizeSelection()
 
         if case .missing = loadResult {
+            persistPresets()
+        } else if migrationResult.didMigrate {
             persistPresets()
         } else {
             persistSelection()
@@ -154,20 +158,82 @@ final class PresetStore: ObservableObject {
                 name: "Quick Test",
                 iconSystemName: "bolt.circle.fill",
                 appsToLaunch: [
-                    PresetApp(
-                        displayName: "TextEdit",
-                        bundleIdentifier: "com.apple.TextEdit",
-                        bundlePath: "/System/Applications/TextEdit.app"
-                    ),
+                    quickTestApplication(),
                 ],
                 urlsToOpen: [],
                 filesToOpen: [],
-                checklistItems: [
-                    ChecklistItem(title: "Confirm the menu bar icon turns red"),
-                    ChecklistItem(title: "Use Restore Session to hide clean screen and quit TextEdit"),
-                ],
+                checklistItems: quickTestChecklistItems(),
                 showsOverlay: true
             ),
+        ]
+    }
+
+    private static func migratePresetsIfNeeded(_ presets: [Preset]) -> (presets: [Preset], didMigrate: Bool) {
+        var didMigrate = false
+
+        let migratedPresets = presets.map { preset in
+            guard let migratedPreset = migratedQuickTestPresetIfNeeded(preset) else {
+                return preset
+            }
+
+            didMigrate = true
+            return migratedPreset
+        }
+
+        return (migratedPresets, didMigrate)
+    }
+
+    private static func migratedQuickTestPresetIfNeeded(_ preset: Preset) -> Preset? {
+        guard isLegacyQuickTestSeed(preset) else {
+            return nil
+        }
+
+        var migratedPreset = preset
+        migratedPreset.appsToLaunch = [quickTestApplication()]
+        migratedPreset.checklistItems = quickTestChecklistItems()
+        return migratedPreset
+    }
+
+    private static func isLegacyQuickTestSeed(_ preset: Preset) -> Bool {
+        guard preset.name == "Quick Test",
+              preset.iconSystemName == "bolt.circle.fill",
+              preset.showsOverlay,
+              preset.urlsToOpen.isEmpty,
+              preset.filesToOpen.isEmpty,
+              preset.appsToLaunch.count == 1 else {
+            return false
+        }
+
+        let application = preset.appsToLaunch[0]
+        let matchesLegacyTextEdit = application.normalizedBundleIdentifier == "com.apple.TextEdit"
+            || application.normalizedBundlePath == "/System/Applications/TextEdit.app"
+            || application.normalizedDisplayName.lowercased() == "textedit"
+
+        guard matchesLegacyTextEdit else {
+            return false
+        }
+
+        let checklistTitles = preset.checklistItems.map(\.title)
+        let expectedLegacyChecklist = [
+            "Confirm the menu bar icon turns red",
+            "Use Restore Session to hide clean screen and quit TextEdit",
+        ]
+
+        return checklistTitles.isEmpty || checklistTitles == expectedLegacyChecklist
+    }
+
+    private static func quickTestApplication() -> PresetApp {
+        PresetApp(
+            displayName: "Calculator",
+            bundleIdentifier: "com.apple.calculator",
+            bundlePath: "/System/Applications/Calculator.app"
+        )
+    }
+
+    private static func quickTestChecklistItems() -> [ChecklistItem] {
+        [
+            ChecklistItem(title: "Confirm the menu bar icon turns red"),
+            ChecklistItem(title: "Use Restore Session to hide clean screen and quit Calculator"),
         ]
     }
 

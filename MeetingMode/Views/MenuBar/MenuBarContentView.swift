@@ -6,6 +6,7 @@ struct MenuBarContentView: View {
     @ObservedObject var sessionRunner: SessionRunner
     @ObservedObject var permissionService: PermissionService
     let openSettings: () -> Void
+    let restoreSession: () -> Void
 
     @State private var isPresentingPresetEditor = false
     @State private var presetEditorMode: PresetEditorView.Mode = .create
@@ -50,7 +51,7 @@ struct MenuBarContentView: View {
                     }
                 }
 
-                section(title: sessionRunner.isSessionActive ? "Session" : "Plan") {
+                section(title: sessionSectionTitle) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(summaryTitle)
                             .font(.subheadline.weight(.semibold))
@@ -81,7 +82,7 @@ struct MenuBarContentView: View {
                         Spacer()
 
                         Button("Restore Session") {
-                            sessionRunner.restoreCurrentSession()
+                            restoreSession()
                         }
                         .disabled(!sessionRunner.canRestoreSession)
                     }
@@ -115,7 +116,7 @@ struct MenuBarContentView: View {
             .controlSize(.small)
         }
         .padding(14)
-        .frame(width: 320)
+        .frame(width: 292)
         .sheet(isPresented: $isPresentingPresetEditor) {
             PresetEditorView(
                 mode: presetEditorMode,
@@ -257,12 +258,25 @@ struct MenuBarContentView: View {
         if let snapshot = sessionRunner.activeSnapshot {
             let items = [
                 countLabel(snapshot.launchedApplications.count, singular: "app opened", plural: "apps opened"),
+                countLabel(snapshot.hiddenApplicationCount, singular: "app hidden", plural: "apps hidden"),
                 countLabel(snapshot.openedURLs.count, singular: "link opened", plural: "links opened"),
                 countLabel(snapshot.openedFiles.count, singular: "file opened", plural: "files opened"),
                 snapshot.overlayWasShown ? "clean screen visible" : nil,
             ]
 
             return joinedSummary(items) ?? "No tracked action"
+        }
+
+        if sessionRunner.sessionPhase == .restored {
+            if sessionRunner.lastActionDescription.contains("checking hidden apps") {
+                return "Checking hidden apps"
+            }
+
+            if sessionRunner.lastActionDescription.contains("may still be hidden") {
+                return "Restore finished with limits"
+            }
+
+            return "Best effort restore finished"
         }
 
         guard let preset = presetStore.selectedPreset else {
@@ -279,13 +293,29 @@ struct MenuBarContentView: View {
         return joinedSummary(items) ?? "No runnable action yet"
     }
 
+    private var sessionSectionTitle: String {
+        switch sessionRunner.sessionPhase {
+        case .active:
+            return "Session"
+        case .restored:
+            return "Restore"
+        case .inactive:
+            return "Plan"
+        }
+    }
+
     private var detailLine: String? {
         if let snapshot = sessionRunner.activeSnapshot {
             if snapshot.restorableApplicationCount > 0 {
-                return "Restore tracks \(countLabel(snapshot.restorableApplicationCount, singular: "app", plural: "apps") ?? "0 apps")"
+                return "Restore tracks \(countLabel(snapshot.restorableApplicationCount, singular: "changed app", plural: "changed apps") ?? "0 changed apps")"
             }
 
             return actionDetail(from: sessionRunner.lastActionDescription)
+        }
+
+        if sessionRunner.sessionPhase == .restored,
+           let restoredDetail = actionDetail(from: sessionRunner.lastActionDescription) {
+            return restoredDetail
         }
 
         guard let preset = presetStore.selectedPreset else {
@@ -293,7 +323,9 @@ struct MenuBarContentView: View {
         }
 
         if preset.checklistItems.isEmpty {
-            return preset.hasStartableActions ? nil : "Add an app, link, file, or clean screen to enable Start Session."
+            return preset.hasStartableActions
+                ? "Other visible apps may be hidden best effort."
+                : "Add an app, link, file, or clean screen to enable Start Session."
         }
 
         let checklistLabel = countLabel(
@@ -303,7 +335,7 @@ struct MenuBarContentView: View {
         ) ?? "0 checklist items"
 
         if preset.hasStartableActions {
-            return checklistLabel
+            return "\(checklistLabel) - other visible apps may be hidden best effort."
         }
 
         return "\(checklistLabel) - add at least one runnable action."
@@ -315,6 +347,8 @@ struct MenuBarContentView: View {
             return nil
         default:
             return description
+                .replacingOccurrences(of: "Session active - ", with: "")
+                .replacingOccurrences(of: "Session restored - ", with: "")
         }
     }
 
@@ -371,9 +405,11 @@ private struct StatusBadge: View {
 private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
     let overlayService = OverlayService()
     let appLauncherService = AppLauncherService()
+    let appVisibilityService = AppVisibilityService()
     let restoreService = RestoreService(
         overlayService: overlayService,
-        appLauncherService: appLauncherService
+        appLauncherService: appLauncherService,
+        appVisibilityService: appVisibilityService
     )
     let presets = presets ?? [
         Preset(
@@ -420,10 +456,12 @@ private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
         ),
         sessionRunner: SessionRunner(
             appLauncherService: appLauncherService,
+            appVisibilityService: appVisibilityService,
             overlayService: overlayService,
             restoreService: restoreService
         ),
         permissionService: PermissionService(),
-        openSettings: {}
+        openSettings: {},
+        restoreSession: {}
     )
 }
