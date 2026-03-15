@@ -11,24 +11,66 @@
 ### App Shape
 
 - macOS only.
-- SwiftUI only for the current scaffold.
-- `MenuBarExtra` plus `Settings` scene.
+- SwiftUI first, with small AppKit bridges only where macOS behavior requires them.
+- `NSStatusItem` plus `NSPopover`, and a `Settings` scene.
 - One active session modelled at a time.
 - App launches as a background-only menu bar app, with no main window.
+- App Sandbox is currently disabled for the MVP target so launch and restore flows can operate on other local apps during development.
+
+### MVP Sequencing
+
+- The first testable MVP flow includes preset selection, a visible `Start Session`, a simple clean screen, and a simple restore.
+- Clean screen and restore are part of the current MVP execution path, not deferred polish, because the menu bar UI already exposes `Start Session` and `Restore Session`.
+- Later work starts only after that flow exists end-to-end: more precise permission messaging, stronger persistence, and UI polish.
 
 ### Menu Bar Behavior
 
-- Kept `.menuBarExtraStyle(.window)` for now because the current content behaves like a compact panel, not a plain menu list.
+- `MenuBarExtra(.window)` was dropped because its auxiliary scene was failing at runtime on click.
+- `MenuBarExtra(.menu)` was not kept because it removed the compact graphical panel needed for the MVP flow.
+- The current menu bar implementation uses `NSStatusItem` plus `NSPopover` to keep the compact graphical UI with predictable click behavior.
+- The popover is intentionally compact and split into three short zones: `Preset`, `Plan` or `Session`, and `Actions`.
+- Secondary copy was reduced on purpose so the session state is readable at a glance.
+- `Settings...` closes the popover first, then opens a dedicated settings window, because relying on the default SwiftUI settings action was not reliable enough in a background-only menu bar app.
 - Added an explicit empty state instead of showing an empty picker.
 - Removed built-in demo presets from production startup.
 - `Start Session` is only shown when a preset is selectable.
 - `Restore Session` remains visible but disabled while no session is active.
+- Preset editing stays lightweight and is presented from the graphical menu bar flow rather than a separate heavy preferences-style surface.
 
 ### Session Behavior
 
-- Session flow stays intentionally small: `inactive -> active -> inactive`.
+- Session flow stays intentionally small: `inactive -> active -> restored`.
 - `SessionRunner` keeps only one active snapshot at a time.
 - Restore remains best effort only and does not promise a full system restore.
+- The menu bar now exposes explicit `Inactive`, `Active`, and `Restored` states.
+- Preset selection and editing are locked while a session is active to avoid ambiguous state changes.
+- A second start request is ignored while another session is already active.
+- The active UI switches from preset intent to snapshot tracking so restore scope stays explicit.
+- Outside a session, the menu summarizes what the selected preset intends to do. During a session, it summarizes only the actions actually applied and tracked.
+
+### Session Snapshot
+
+- `SessionSnapshot` stores only minimal restore-oriented data: preset identity, started time, launched apps, tracked URLs, tracked files, and clean screen state.
+- The snapshot is meant to capture only changes triggered by Meeting Mode, not system state outside the app.
+- URLs and local files are recorded in the snapshot only when their opening actually succeeds.
+- The snapshot also keeps the bundle identifiers of apps that were not already running before the session, so restore can ask only those apps to quit.
+- The snapshot is not a promise of perfect restore; it is only a best-effort ledger of Meeting Mode actions.
+
+### Opening Strategy
+
+- Opening stays on native macOS APIs only: `NSWorkspace` for apps, URLs, and local files.
+- App lookup stays simple on purpose: Meeting Mode resolves app names in standard application directories instead of adding a more complex discovery layer.
+- Invalid app names, malformed URLs, and missing file paths do not block the session; they only increase a failure count shown in the session state.
+- Opening URLs and files does not imply that Meeting Mode can later close or fully restore them.
+
+### Overlay Strategy
+
+- Clean screen uses one borderless `NSWindow` only, created from `OverlayService`.
+- The overlay is constrained to the main screen `visibleFrame` so the menu bar remains accessible for restore.
+- The overlay stays visually simple: one SwiftUI view, no multi-screen support, no complex animation, no advanced window choreography.
+- The overlay is explicitly shown without activating the menu bar app, so `Start Session` produces a visible effect without intentionally changing the active app.
+- Explicit `NSApplication.activate` calls were removed from the overlay path to avoid unwanted app activation side effects during session start.
+- If the overlay cannot be created, the session still starts and reports `clean screen unavailable` instead of failing hard.
 
 ### Permissions Messaging
 
@@ -39,8 +81,44 @@
 ### Local Data Source
 
 - `PresetStore` now reads presets from a simple local JSON file in Application Support.
-- Missing or unreadable preset data falls back to an empty list rather than shipping demo data.
+- If local preset storage is missing, the app seeds one functional `Quick Test` preset for end-to-end testing.
+- If local preset storage exists but cannot be decoded, the app falls back to an empty list rather than silently reseeding.
+- If local preset storage exists and contains `[]`, the app keeps the empty state.
+- The runtime seed remains intentionally minimal: one default preset only, with additional presets created by the user.
+- The selected preset is stored separately in a tiny local preference so relaunches restore the user's last valid selection.
+- If the previously selected preset no longer exists, selection falls back to the first available preset or to `nil`.
 - Preview data stays local to SwiftUI previews and is not used by the app at runtime.
+
+### Restore Strategy
+
+- Restore is intentionally narrow and strictly limited to changes Meeting Mode triggered during the current session.
+- Restore hides the clean screen overlay when the session had shown it.
+- Restore first sends a polite quit to apps launched by Meeting Mode during the session, then falls back to force quit if they remain open.
+- Apps that were already running before the session are never included in the quit list.
+- A polite quit request is not treated as proof that an app really closed. The UI now distinguishes between a confirmed close and an app that may still be open.
+- The stronger fallback exists only for apps launched by the current session, not for apps that were already open before it.
+- URLs and local files are opened in a simple way, but v1 restore does not attempt to close them.
+- Restore still remains limited in scope and is not a promise of full system rollback.
+
+### Preset Editing
+
+- Preset creation and editing live in a lightweight SwiftUI sheet from the menu bar content.
+- The editor is intentionally split into `Basics`, `What starts`, and `Checklist` so identity, start actions, and preparation steps are not mixed together.
+- The validation rule is surfaced at the top of the sheet: a preset needs at least one app, link, file, or clean screen to be startable.
+- Apps are no longer entered as free text. The sheet now uses `Add App…` with `NSOpenPanel`, then displays the selected apps as a removable list.
+- Editing stays text-based only where it is still the smallest reasonable UI: links, local file paths, and checklist items.
+- A preset must contain at least one startable action to be saved: app, URL, file, or clean screen.
+- Checklist-only presets are deliberately blocked for now because checklist execution is not implemented yet.
+- Saving rewrites the local JSON file atomically, without adding a heavier persistence layer.
+- Preset deletion is intentionally minimal: one confirmation from the popover, then immediate removal with selection fallback.
+- App hiding and richer checklist editing stay out of this pass.
+
+### Preset Schema
+
+- `Preset` keeps raw `String` arrays for links and local file paths at this stage.
+- Apps are stored as small references with display name, bundle identifier, and bundle path so launch is more reliable than name-only matching.
+- The schema remains backward-compatible with previously saved presets that stored apps as raw strings.
+- Validation of URLs and local file paths is deferred to the future opening step, not the editor.
 
 ### Architecture
 
@@ -53,4 +131,4 @@
 - Real permission acquisition.
 - App sandbox and distribution tradeoffs once automation is implemented.
 - Local persistence format.
-- Whether `MenuBarExtra` should move from `.window` to `.menu` if the UI becomes a simple action list later.
+- Whether a pure SwiftUI menu bar implementation is worth revisiting later if the runtime behavior becomes reliable enough.

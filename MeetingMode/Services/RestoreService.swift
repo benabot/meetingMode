@@ -1,5 +1,11 @@
 import Foundation
 
+struct RestoreExecutionResult {
+    var hidOverlay = false
+    var closedApplicationsCount = 0
+    var stillRunningApplicationsCount = 0
+}
+
 @MainActor
 final class RestoreService {
     private let overlayService: OverlayService
@@ -10,11 +16,16 @@ final class RestoreService {
         self.appLauncherService = appLauncherService
     }
 
-    func restore(from snapshot: SessionSnapshot) {
+    func restore(from snapshot: SessionSnapshot) -> RestoreExecutionResult {
+        var result = RestoreExecutionResult()
+
         if snapshot.overlayWasShown {
-            overlayService.hideOverlay()
+            result.hidOverlay = overlayService.hideOverlay()
         }
 
-        appLauncherService.restoreApplications(from: snapshot)
+        let applicationRestoreResult = appLauncherService.restoreApplications(from: snapshot)
+        result.closedApplicationsCount = applicationRestoreResult.closedApplicationsCount
+        result.stillRunningApplicationsCount = applicationRestoreResult.stillRunningApplicationsCount
+        return result
     }
 }

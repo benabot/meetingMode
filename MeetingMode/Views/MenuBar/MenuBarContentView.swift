@@ -5,66 +5,105 @@ struct MenuBarContentView: View {
     @ObservedObject var presetStore: PresetStore
     @ObservedObject var sessionRunner: SessionRunner
     @ObservedObject var permissionService: PermissionService
+    let openSettings: () -> Void
+
+    @State private var isPresentingPresetEditor = false
+    @State private var presetEditorMode: PresetEditorView.Mode = .create
+    @State private var presetToEdit: Preset?
+    @State private var presetEditorPresentationID = UUID()
+    @State private var presetPendingDeletion: Preset?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Meeting Mode")
-                    .font(.headline)
-
-                Text(statusText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+        VStack(alignment: .leading, spacing: 14) {
+            header
 
             if presetStore.hasPresets {
-                Picker("Preset", selection: $presetStore.selectedPresetID) {
-                    ForEach(presetStore.presets) { preset in
-                        Text(preset.name).tag(Optional(preset.id))
+                section(title: "Preset") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Picker("Preset", selection: selectedPresetBinding) {
+                            ForEach(presetStore.presets) { preset in
+                                Text(preset.name).tag(Optional(preset.id))
+                            }
+                        }
+                        .labelsHidden()
+                        .disabled(sessionRunner.isSessionActive)
+
+                        HStack {
+                            Button("New") {
+                                presentPresetEditor(mode: .create)
+                            }
+                            .disabled(sessionRunner.isSessionActive)
+
+                            if let preset = presetStore.selectedPreset {
+                                Button("Edit") {
+                                    presentPresetEditor(mode: .edit, preset: preset)
+                                }
+                                .disabled(sessionRunner.isSessionActive)
+
+                                Button("Delete", role: .destructive) {
+                                    presetPendingDeletion = preset
+                                }
+                                .disabled(sessionRunner.isSessionActive)
+                            }
+                        }
+                        .controlSize(.small)
                     }
                 }
-                .labelsHidden()
-            }
 
-            if let preset = presetStore.selectedPreset {
-                VStack(alignment: .leading, spacing: 6) {
-                    Label("\(preset.appsToLaunch.count) apps planned", systemImage: "app.connected.to.app.below.fill")
-                    Label("\(preset.checklistItems.count) checklist items", systemImage: "checklist")
-                    Label(
-                        preset.showsOverlay ? "Clean screen enabled" : "Clean screen off",
-                        systemImage: preset.showsOverlay ? "rectangle.on.rectangle" : "rectangle.slash"
-                    )
+                section(title: sessionRunner.isSessionActive ? "Session" : "Plan") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(summaryTitle)
+                            .font(.subheadline.weight(.semibold))
+
+                        Text(summaryLine)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        if let detailLine {
+                            Text(detailLine)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
 
-                Divider()
+                section(title: "Actions") {
+                    HStack {
+                        if !sessionRunner.isSessionActive,
+                           let preset = presetStore.selectedPreset {
+                            Button("Start Session") {
+                                sessionRunner.start(with: preset)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!preset.hasStartableActions)
+                        }
 
-                Button("Start Session") {
-                    sessionRunner.start(with: preset)
+                        Spacer()
+
+                        Button("Restore Session") {
+                            sessionRunner.restoreCurrentSession()
+                        }
+                        .disabled(!sessionRunner.canRestoreSession)
+                    }
                 }
-                .disabled(sessionRunner.isSessionActive)
             } else {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("No presets yet")
-                        .font(.subheadline)
+                section(title: "Preset") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("No presets yet")
+                            .font(.subheadline.weight(.semibold))
 
-                    Text("A preset list will appear here once local editing is added.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        Button("New Preset") {
+                            presentPresetEditor(mode: .create)
+                        }
+                    }
                 }
             }
-
-            Button("Restore Session") {
-                sessionRunner.restoreCurrentSession()
-            }
-            .disabled(!sessionRunner.isSessionActive)
 
             Divider()
 
             HStack {
-                SettingsLink {
-                    Text("Settings…")
+                Button("Settings…") {
+                    openSettings()
                 }
 
                 Spacer()
@@ -73,25 +112,250 @@ struct MenuBarContentView: View {
                     NSApplication.shared.terminate(nil)
                 }
             }
-
-            Text(permissionService.shortSummary)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+            .controlSize(.small)
         }
         .padding(14)
-        .frame(width: 300)
+        .frame(width: 320)
+        .sheet(isPresented: $isPresentingPresetEditor) {
+            PresetEditorView(
+                mode: presetEditorMode,
+                preset: presetToEdit
+            ) { preset in
+                switch presetEditorMode {
+                case .create:
+                    presetStore.addPreset(preset)
+                case .edit:
+                    presetStore.updatePreset(preset)
+                }
+            }
+            .id(presetEditorPresentationID)
+        }
+        .alert(
+            "Delete preset?",
+            isPresented: isPresentingDeleteAlert,
+            presenting: presetPendingDeletion
+        ) { preset in
+            Button("Delete", role: .destructive) {
+                presetStore.deletePreset(preset)
+                presetPendingDeletion = nil
+            }
+
+            Button("Cancel", role: .cancel) {
+                presetPendingDeletion = nil
+            }
+        } message: { preset in
+            Text("“\(preset.name)” will be removed from local storage.")
+        }
     }
 
-    private var statusText: String {
+    private var header: some View {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Meeting Mode")
+                    .font(.headline)
+
+                Text(headerSubtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            StatusBadge(
+                title: statusTitle,
+                tint: statusTint
+            )
+        }
+    }
+
+    private func section<Content: View>(
+        title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased())
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            content()
+        }
+    }
+
+    private var selectedPresetBinding: Binding<Preset.ID?> {
+        Binding(
+            get: { presetStore.selectedPresetID },
+            set: { presetStore.selectPreset($0) }
+        )
+    }
+
+    private var isPresentingDeleteAlert: Binding<Bool> {
+        Binding(
+            get: { presetPendingDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    presetPendingDeletion = nil
+                }
+            }
+        )
+    }
+
+    private var headerSubtitle: String {
         if let snapshot = sessionRunner.activeSnapshot {
-            return "Active preset: \(snapshot.presetName)"
+            return snapshot.presetName
         }
 
+        if let preset = presetStore.selectedPreset {
+            return preset.name
+        }
+
+        return "No preset selected"
+    }
+
+    private var statusTitle: String {
         if !presetStore.hasPresets {
-            return "No presets available"
+            return "Empty"
         }
 
-        return sessionRunner.lastActionDescription
+        switch sessionRunner.sessionPhase {
+        case .inactive:
+            return "Ready"
+        case .active:
+            return "Active"
+        case .restored:
+            return "Restored"
+        }
+    }
+
+    private var statusTint: Color {
+        if !presetStore.hasPresets {
+            return .secondary
+        }
+
+        switch sessionRunner.sessionPhase {
+        case .inactive:
+            return .secondary
+        case .active:
+            return .red
+        case .restored:
+            return .green
+        }
+    }
+
+    private var summaryTitle: String {
+        if let snapshot = sessionRunner.activeSnapshot {
+            return snapshot.presetName
+        }
+
+        if let preset = presetStore.selectedPreset {
+            return preset.name
+        }
+
+        return "No preset selected"
+    }
+
+    private var summaryLine: String {
+        if let snapshot = sessionRunner.activeSnapshot {
+            let items = [
+                countLabel(snapshot.launchedApplications.count, singular: "app opened", plural: "apps opened"),
+                countLabel(snapshot.openedURLs.count, singular: "link opened", plural: "links opened"),
+                countLabel(snapshot.openedFiles.count, singular: "file opened", plural: "files opened"),
+                snapshot.overlayWasShown ? "clean screen visible" : nil,
+            ]
+
+            return joinedSummary(items) ?? "No tracked action"
+        }
+
+        guard let preset = presetStore.selectedPreset else {
+            return "Create a preset to prepare your next session."
+        }
+
+        let items = [
+            countLabel(preset.appsToLaunch.count, singular: "app planned", plural: "apps planned"),
+            countLabel(preset.urlsToOpen.count, singular: "link planned", plural: "links planned"),
+            countLabel(preset.filesToOpen.count, singular: "file planned", plural: "files planned"),
+            preset.showsOverlay ? "clean screen on" : nil,
+        ]
+
+        return joinedSummary(items) ?? "No runnable action yet"
+    }
+
+    private var detailLine: String? {
+        if let snapshot = sessionRunner.activeSnapshot {
+            if snapshot.restorableApplicationCount > 0 {
+                return "Restore tracks \(countLabel(snapshot.restorableApplicationCount, singular: "app", plural: "apps") ?? "0 apps")"
+            }
+
+            return actionDetail(from: sessionRunner.lastActionDescription)
+        }
+
+        guard let preset = presetStore.selectedPreset else {
+            return nil
+        }
+
+        if preset.checklistItems.isEmpty {
+            return preset.hasStartableActions ? nil : "Add an app, link, file, or clean screen to enable Start Session."
+        }
+
+        let checklistLabel = countLabel(
+            preset.checklistItems.count,
+            singular: "checklist item",
+            plural: "checklist items"
+        ) ?? "0 checklist items"
+
+        if preset.hasStartableActions {
+            return checklistLabel
+        }
+
+        return "\(checklistLabel) - add at least one runnable action."
+    }
+
+    private func actionDetail(from description: String) -> String? {
+        switch description {
+        case "Session inactive", "Session active", "Session restored":
+            return nil
+        default:
+            return description
+        }
+    }
+
+    private func countLabel(_ count: Int, singular: String, plural: String) -> String? {
+        guard count > 0 else {
+            return nil
+        }
+
+        let label = count == 1 ? singular : plural
+        return "\(count) \(label)"
+    }
+
+    private func joinedSummary(_ items: [String?]) -> String? {
+        let values = items.compactMap { $0 }
+        guard !values.isEmpty else {
+            return nil
+        }
+
+        return values.joined(separator: " · ")
+    }
+
+    private func presentPresetEditor(mode: PresetEditorView.Mode, preset: Preset? = nil) {
+        presetEditorMode = mode
+        presetToEdit = preset
+        presetEditorPresentationID = UUID()
+        isPresentingPresetEditor = true
+    }
+}
+
+private struct StatusBadge: View {
+    let title: String
+    let tint: Color
+
+    var body: some View {
+        Text(title)
+            .font(.caption2.weight(.semibold))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .foregroundStyle(tint)
+            .background(tint.opacity(0.12))
+            .clipShape(Capsule())
     }
 }
 
@@ -113,10 +377,15 @@ private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
     )
     let presets = presets ?? [
         Preset(
-            id: UUID(uuidString: "0E9D6B47-9348-4E28-A2A7-225C5F611001") ?? UUID(),
             name: "Client Call",
             iconSystemName: "person.2.fill",
-            appsToLaunch: ["Calendar", "Notes", "Safari"],
+            appsToLaunch: [
+                PresetApp(displayName: "Calendar", bundleIdentifier: "com.apple.iCal", bundlePath: "/System/Applications/Calendar.app"),
+                PresetApp(displayName: "Notes", bundleIdentifier: "com.apple.Notes", bundlePath: "/System/Applications/Notes.app"),
+                PresetApp(displayName: "Safari", bundleIdentifier: "com.apple.Safari", bundlePath: "/Applications/Safari.app"),
+            ],
+            urlsToOpen: ["https://meet.example.com/client-call"],
+            filesToOpen: ["/Users/benoitabot/Documents/Client Brief.pdf"],
             checklistItems: [
                 ChecklistItem(title: "Open call brief"),
                 ChecklistItem(title: "Check microphone"),
@@ -125,10 +394,15 @@ private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
             showsOverlay: true
         ),
         Preset(
-            id: UUID(uuidString: "0E9D6B47-9348-4E28-A2A7-225C5F611002") ?? UUID(),
             name: "Product Demo",
             iconSystemName: "play.rectangle.fill",
-            appsToLaunch: ["Xcode", "Safari", "Keynote"],
+            appsToLaunch: [
+                PresetApp(displayName: "Xcode", bundleIdentifier: "com.apple.dt.Xcode", bundlePath: "/Applications/Xcode.app"),
+                PresetApp(displayName: "Safari", bundleIdentifier: "com.apple.Safari", bundlePath: "/Applications/Safari.app"),
+                PresetApp(displayName: "Keynote", bundleIdentifier: "com.apple.iWork.Keynote", bundlePath: "/Applications/Keynote.app"),
+            ],
+            urlsToOpen: ["https://staging.example.com/demo"],
+            filesToOpen: ["/Users/benoitabot/Documents/Demo Notes.md"],
             checklistItems: [
                 ChecklistItem(title: "Build latest demo"),
                 ChecklistItem(title: "Prepare fallback browser tab"),
@@ -138,12 +412,18 @@ private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
     ]
 
     return MenuBarContentView(
-        presetStore: PresetStore(presets: presets),
+        presetStore: PresetStore(
+            presets: presets,
+            storageURL: FileManager.default.temporaryDirectory
+                .appendingPathComponent("meetingmode-preview-presets.json"),
+            selectionDefaults: nil
+        ),
         sessionRunner: SessionRunner(
             appLauncherService: appLauncherService,
             overlayService: overlayService,
             restoreService: restoreService
         ),
-        permissionService: PermissionService()
+        permissionService: PermissionService(),
+        openSettings: {}
     )
 }
