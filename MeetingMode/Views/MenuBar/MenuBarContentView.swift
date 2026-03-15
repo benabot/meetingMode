@@ -6,13 +6,11 @@ struct MenuBarContentView: View {
     @ObservedObject var sessionRunner: SessionRunner
     @ObservedObject var permissionService: PermissionService
     let startSession: () -> Void
+    let openPresetCreator: () -> Void
+    let openPresetEditor: (Preset) -> Void
     let openSettings: () -> Void
     let restoreSession: () -> Void
 
-    @State private var isPresentingPresetEditor = false
-    @State private var presetEditorMode: PresetEditorView.Mode = .create
-    @State private var presetToEdit: Preset?
-    @State private var presetEditorPresentationID = UUID()
     @State private var presetPendingDeletion: Preset?
 
     var body: some View {
@@ -32,13 +30,13 @@ struct MenuBarContentView: View {
 
                         HStack {
                             Button("New") {
-                                presentPresetEditor(mode: .create)
+                                openPresetCreator()
                             }
                             .disabled(sessionRunner.isSessionActive)
 
                             if let preset = presetStore.selectedPreset {
                                 Button("Edit") {
-                                    presentPresetEditor(mode: .edit, preset: preset)
+                                    openPresetEditor(preset)
                                 }
                                 .disabled(sessionRunner.isSessionActive)
 
@@ -95,7 +93,7 @@ struct MenuBarContentView: View {
                             .font(.subheadline.weight(.semibold))
 
                         Button("New Preset") {
-                            presentPresetEditor(mode: .create)
+                            openPresetCreator()
                         }
                     }
                 }
@@ -118,20 +116,6 @@ struct MenuBarContentView: View {
         }
         .padding(14)
         .frame(width: 292)
-        .sheet(isPresented: $isPresentingPresetEditor) {
-            PresetEditorView(
-                mode: presetEditorMode,
-                preset: presetToEdit
-            ) { preset in
-                switch presetEditorMode {
-                case .create:
-                    presetStore.addPreset(preset)
-                case .edit:
-                    presetStore.updatePreset(preset)
-                }
-            }
-            .id(presetEditorPresentationID)
-        }
         .alert(
             "Delete preset?",
             isPresented: isPresentingDeleteAlert,
@@ -371,12 +355,6 @@ struct MenuBarContentView: View {
         return values.joined(separator: " · ")
     }
 
-    private func presentPresetEditor(mode: PresetEditorView.Mode, preset: Preset? = nil) {
-        presetEditorMode = mode
-        presetToEdit = preset
-        presetEditorPresentationID = UUID()
-        isPresentingPresetEditor = true
-    }
 }
 
 private struct StatusBadge: View {
@@ -463,6 +441,8 @@ private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
         ),
         permissionService: PermissionService(),
         startSession: {},
+        openPresetCreator: {},
+        openPresetEditor: { _ in },
         openSettings: {},
         restoreSession: {}
     )

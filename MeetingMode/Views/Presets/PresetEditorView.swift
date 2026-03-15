@@ -3,6 +3,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct PresetEditorView: View {
+    private static let contentWidth: CGFloat = 500
+
     enum Mode {
         case create
         case edit
@@ -26,14 +28,20 @@ struct PresetEditorView: View {
         }
     }
 
-    @Environment(\.dismiss) private var dismiss
     @State private var draft: PresetEditorDraft
 
     let mode: Mode
+    let onCancel: () -> Void
     let onSave: (Preset) -> Void
 
-    init(mode: Mode, preset: Preset? = nil, onSave: @escaping (Preset) -> Void) {
+    init(
+        mode: Mode,
+        preset: Preset? = nil,
+        onCancel: @escaping () -> Void = {},
+        onSave: @escaping (Preset) -> Void
+    ) {
         self.mode = mode
+        self.onCancel = onCancel
         self.onSave = onSave
         _draft = State(initialValue: PresetEditorDraft(preset: preset))
     }
@@ -91,12 +99,13 @@ struct PresetEditorView: View {
                     }
                 }
                 .padding(.bottom, 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             footer
         }
         .padding(20)
-        .frame(width: 520)
+        .frame(width: Self.contentWidth, alignment: .leading)
         .frame(minHeight: 620)
     }
 
@@ -120,7 +129,7 @@ struct PresetEditorView: View {
             HStack {
                 fieldLabel("Open apps")
 
-                Spacer()
+                Spacer(minLength: 12)
 
                 Button("Add App…") {
                     presentAppPicker()
@@ -142,6 +151,9 @@ struct PresetEditorView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(app.normalizedDisplayName.isEmpty ? "Selected App" : app.normalizedDisplayName)
                                     .font(.subheadline.weight(.medium))
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
 
                                 if let secondaryLabel = app.secondaryLabel {
                                     Text(secondaryLabel)
@@ -151,8 +163,9 @@ struct PresetEditorView: View {
                                         .truncationMode(.middle)
                                 }
                             }
+                            .layoutPriority(1)
 
-                            Spacer()
+                            Spacer(minLength: 8)
 
                             Button {
                                 draft.removeApp(app)
@@ -161,13 +174,16 @@ struct PresetEditorView: View {
                                     .foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
+                            .frame(width: 18, alignment: .center)
                         }
                         .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .background(sectionBackground)
                     }
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var footer: some View {
@@ -181,12 +197,12 @@ struct PresetEditorView: View {
             Spacer()
 
             Button("Cancel") {
-                dismiss()
+                onCancel()
             }
 
             Button(mode.saveButtonTitle) {
                 onSave(draft.makePreset())
-                dismiss()
+                onCancel()
             }
             .keyboardShortcut(.defaultAction)
             .disabled(!draft.canSave)
@@ -225,6 +241,7 @@ struct PresetEditorView: View {
                 usesMonospacedText: usesMonospacedText
             )
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func fieldLabel(_ title: String) -> some View {
@@ -411,7 +428,7 @@ private struct PlaceholderTextEditor: View {
                 .font(editorFont)
                 .scrollContentBackground(.hidden)
                 .padding(4)
-                .frame(minHeight: height)
+                .frame(maxWidth: .infinity, minHeight: height, alignment: .topLeading)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color(NSColor.textBackgroundColor))
@@ -426,6 +443,7 @@ private struct PlaceholderTextEditor: View {
                     .allowsHitTesting(false)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var editorFont: Font {

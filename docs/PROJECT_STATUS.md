@@ -18,6 +18,7 @@ Date: 2026-03-15
 - Multiple presets are supported by the local store and the lightweight editor, but the runtime seed stays intentionally limited to one default preset.
 - A minimal preset editor is available directly from the menu bar content.
 - The preset editor is now split into `Basics`, `What starts`, and `Checklist` so the intent stays readable.
+- The preset editor now opens in a dedicated fixed-width window instead of a sheet attached to the menu bar popover, so it stays fully visible near the right edge of the screen.
 - The currently selected preset is persisted across relaunches with a small local preference.
 - Start and Restore shortcuts are now persisted locally and restored on relaunch.
 - `Preset` now stores apps, URLs, local files, checklist items, and clean screen intent.
@@ -66,6 +67,7 @@ Date: 2026-03-15
 - Only one preset is seeded by default. Additional presets are created manually from `New Preset`.
 - `New Preset` opens a lightweight editor and persists to the local JSON source.
 - `Edit Preset` updates the currently selected preset with the same lightweight editor.
+- `New Preset` and `Edit Preset` now open a fixed-width editor window with vertical scrolling only, so `Open apps`, `Add App…`, and row actions stay inside the visible layout.
 - `Open apps` now uses `Add App…` and an `NSOpenPanel` rooted on `/Applications`, instead of free text entry by app name.
 - Deleting a preset now goes through a simple confirmation and keeps selection coherent.
 - The selected preset is restored after relaunch when it still exists.

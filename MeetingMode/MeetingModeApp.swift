@@ -91,6 +91,7 @@ private final class StatusBarController: NSObject {
         permissionService: permissionService,
         hotkeyService: hotkeyService
     )
+    private var presetEditorWindowController: PresetEditorWindowController?
     private var sessionPhaseCancellable: AnyCancellable?
 
     init(
@@ -147,6 +148,12 @@ private final class StatusBarController: NSObject {
                 startSession: { [weak self] in
                     self?.startSelectedSession()
                 },
+                openPresetCreator: { [weak self] in
+                    self?.presentPresetEditor(mode: .create)
+                },
+                openPresetEditor: { [weak self] preset in
+                    self?.presentPresetEditor(mode: .edit, preset: preset)
+                },
                 openSettings: { [weak self] in
                     self?.showSettings()
                 },
@@ -191,6 +198,36 @@ private final class StatusBarController: NSObject {
         NSApp.activate(ignoringOtherApps: true)
         settingsWindowController.showWindow(nil)
         settingsWindowController.window?.makeKeyAndOrderFront(nil)
+    }
+
+    private func presentPresetEditor(mode: PresetEditorView.Mode, preset: Preset? = nil) {
+        popover.performClose(nil)
+        presetEditorWindowController?.close()
+
+        let controller = PresetEditorWindowController(
+            mode: mode,
+            preset: preset,
+            onSave: { [weak self] preset in
+                guard let self else {
+                    return
+                }
+
+                switch mode {
+                case .create:
+                    self.presetStore.addPreset(preset)
+                case .edit:
+                    self.presetStore.updatePreset(preset)
+                }
+            },
+            onClose: { [weak self] in
+                self?.presetEditorWindowController = nil
+            }
+        )
+
+        presetEditorWindowController = controller
+        NSApp.activate(ignoringOtherApps: true)
+        controller.showWindow(nil)
+        controller.window?.makeKeyAndOrderFront(nil)
     }
 
     private func startSelectedSession() {
@@ -241,5 +278,59 @@ private final class SettingsWindowController: NSWindowController {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+}
+
+@MainActor
+private final class PresetEditorWindowController: NSWindowController, NSWindowDelegate {
+    private let onClose: () -> Void
+
+    init(
+        mode: PresetEditorView.Mode,
+        preset: Preset?,
+        onSave: @escaping (Preset) -> Void,
+        onClose: @escaping () -> Void
+    ) {
+        self.onClose = onClose
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 700),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+
+        let hostingController = NSHostingController(
+            rootView: PresetEditorView(
+                mode: mode,
+                preset: preset,
+                onCancel: {
+                    window.close()
+                },
+                onSave: { updatedPreset in
+                    onSave(updatedPreset)
+                }
+            )
+        )
+
+        window.title = mode.title
+        window.isReleasedWhenClosed = false
+        window.center()
+        window.contentViewController = hostingController
+        window.minSize = NSSize(width: 540, height: 640)
+        window.maxSize = NSSize(width: 540, height: 1200)
+
+        super.init(window: window)
+        shouldCascadeWindows = false
+        self.window?.delegate = self
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        onClose()
     }
 }
