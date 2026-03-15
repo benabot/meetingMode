@@ -34,8 +34,10 @@ final class OverlayService {
         window.hasShadow = false
         window.ignoresMouseEvents = true
         window.hidesOnDeactivate = false
-        window.level = .mainMenu
-        window.collectionBehavior = [.fullScreenAuxiliary, .moveToActiveSpace]
+        // Keep the clean screen as a visual background complement. Session clarity
+        // should come from app visibility, not from per-app window-level exceptions.
+        window.level = NSWindow.Level(rawValue: NSWindow.Level.normal.rawValue - 1)
+        window.collectionBehavior = [.moveToActiveSpace]
         window.animationBehavior = .none
         window.contentView = NSHostingView(rootView: CleanScreenOverlayView())
 

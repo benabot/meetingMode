@@ -261,7 +261,7 @@ struct MenuBarContentView: View {
                 countLabel(snapshot.hiddenApplicationCount, singular: "app hidden", plural: "apps hidden"),
                 countLabel(snapshot.openedURLs.count, singular: "link opened", plural: "links opened"),
                 countLabel(snapshot.openedFiles.count, singular: "file opened", plural: "files opened"),
-                snapshot.overlayWasShown ? "clean screen visible" : nil,
+                snapshot.overlayWasShown ? "clean screen background on" : nil,
             ]
 
             return joinedSummary(items) ?? "No tracked action"
@@ -287,7 +287,7 @@ struct MenuBarContentView: View {
             countLabel(preset.appsToLaunch.count, singular: "app planned", plural: "apps planned"),
             countLabel(preset.urlsToOpen.count, singular: "link planned", plural: "links planned"),
             countLabel(preset.filesToOpen.count, singular: "file planned", plural: "files planned"),
-            preset.showsOverlay ? "clean screen on" : nil,
+            preset.showsOverlay ? "clean screen background on" : nil,
         ]
 
         return joinedSummary(items) ?? "No runnable action yet"

@@ -24,7 +24,7 @@ Date: 2026-03-15
 - The active session now creates a minimal snapshot for best-effort restore, including only the exact app instances that were actually hidden by Meeting Mode during the session.
 - Apps, URLs, and local files are now opened with simple `NSWorkspace` calls.
 - A small `AppVisibilityService` now hides regular visible apps that are outside the active preset, excluding Meeting Mode itself.
-- A simple clean screen overlay window is available on the main screen.
+- A simple clean screen overlay window is available on the main screen as an independent visual background complement.
 - Restore now hides the clean screen and uses a two-step close path for apps launched by Meeting Mode: polite quit first, force quit fallback if needed.
 - Restore now re-shows only the apps that Meeting Mode itself actually hid during the current session.
 - No multi-screen overlay management is implemented yet.
@@ -36,6 +36,7 @@ Date: 2026-03-15
 - `Start Session` opens `Calculator`, shows the clean screen overlay, and switches the session to `Active`.
 - The current `Quick Test` preset contains only `Calculator` plus clean screen.
 - The start flow now also attempts to hide regular visible apps that are outside the active preset, in best effort only.
+- The visible session result is intended to come primarily from app visibility rules. The overlay stays independent and does not use per-app window-level exceptions.
 - `Restore Session` hides the overlay and restores the UI state correctly.
 - `Restore Session` now explicitly attempts to re-show only the apps that were actually hidden by Meeting Mode during the current session.
 - The visibility restore path now targets the exact tracked app instances first, then falls back only when needed for older snapshot data.
@@ -81,6 +82,7 @@ Date: 2026-03-15
 - Invalid app names, URLs, or file paths do not crash the session flow; they are counted as non-blocking open failures.
 - Only regular apps outside the preset are candidates for hiding, and only apps that were actually confirmed hidden after the start flow are tracked for restore.
 - The clean screen overlay uses one borderless window on the main screen visible frame, so the menu bar stays reachable for restore.
+- The overlay now sits below regular app windows on purpose. Preset apps stay accessible because they are not hidden, not because they pierce the overlay through fragile window-level tricks.
 - Restore hides the clean screen, explicitly re-shows only the tracked apps that Meeting Mode itself hid, and attempts a polite quit followed by force quit if needed for apps launched by the session, but it does not attempt to close URLs or files.
 - While restore visibility is still being confirmed, the popover summary now says `Checking hidden apps` instead of reporting a finished restore too early.
 - The restore path now distinguishes between an app that actually closed and an app that may still be open after the quit request.

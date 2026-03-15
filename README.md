@@ -18,12 +18,14 @@ Target behavior for `Start Session`:
 1. launch the apps configured in the preset
 2. open the preset links and local files
 3. hide, in best effort, the visible apps that are not part of the active preset
-4. show the clean screen overlay if the preset enables it
+4. show the clean screen overlay as an independent visual background if the preset enables it
 5. mark the session as active and keep a small snapshot of what Meeting Mode actually changed
 
 Important limits:
 
 - hiding non-preset apps is a best-effort product direction, not a promise of full macOS control
+- the overlay is independent from any specific app and does not rely on some apps magically staying above it
+- keeping preset apps accessible should come mainly from app visibility rules, not from window-level exceptions
 - Meeting Mode should not force-close every other app
 - Meeting Mode should not try to manage windows, tabs, Spaces, or desktop state in v1
 
@@ -54,7 +56,7 @@ What is already implemented in the current build:
 - app launch from preset data
 - best-effort hiding of regular visible apps that are outside the active preset
 - link and local file opening
-- clean screen overlay
+- clean screen overlay as an independent visual complement
 - active session state
 - restore UI flow
 - best-effort re-show of only the apps that Meeting Mode actually hid during the current session
@@ -69,6 +71,7 @@ What is not implemented yet:
 Important caveat:
 
 - app hiding is limited to regular apps and stays best effort
+- the overlay is intentionally simple and independent; it is not a per-app exception system
 - the real end-to-end behavior still depends on what macOS lets Meeting Mode hide or re-show on the current machine, even though the current Safari / Notes path now works on the validation machine
 - restore scope remains intentionally narrow and explicit
 

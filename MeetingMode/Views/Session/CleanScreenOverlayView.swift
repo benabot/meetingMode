@@ -16,7 +16,7 @@ struct CleanScreenOverlayView: View {
                 Image(systemName: "rectangle.on.rectangle")
                     .font(.system(size: 34, weight: .semibold))
 
-                Text("Clean screen enabled")
+                Text("Clean screen background enabled")
                     .font(.title3.weight(.semibold))
 
                 Text("Use the Meeting Mode menu bar item to restore your session.")

@@ -85,6 +85,9 @@
 - The overlay is constrained to the main screen `visibleFrame` so the menu bar remains accessible for restore.
 - The overlay stays visually simple: one SwiftUI view, no multi-screen support, no complex animation, no advanced window choreography.
 - The overlay is explicitly shown without activating the menu bar app, so `Start Session` produces a visible effect without intentionally changing the active app.
+- The overlay is independent from any specific app. It is not an exception system where some apps are expected to stay above it through fragile window-level behavior.
+- The visible session behavior should come mainly from app visibility rules: preset apps stay accessible because they are kept visible, and non-preset apps are hidden in best effort.
+- The overlay is intentionally kept below regular app windows so it behaves as a clean visual background, not as a global blocker that needs per-app exceptions.
 - Explicit `NSApplication.activate` calls were removed from the overlay path to avoid unwanted app activation side effects during session start.
 - If the overlay cannot be created, the session still starts and reports `clean screen unavailable` instead of failing hard.
 
