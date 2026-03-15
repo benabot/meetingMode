@@ -21,6 +21,10 @@
 - [x] Vérifier que create/edit de preset survivent proprement au redémarrage
 - [x] Gérer proprement les données locales absentes ou invalides
 - [x] Ajouter une suppression minimale de preset avec confirmation simple
+- [ ] Implémenter le masquage best effort des apps visibles qui ne font pas partie du preset actif
+- [ ] Définir précisément la règle de visibilité pendant la session : apps du preset visibles, apps hors preset masquées, limites macOS explicites
+- [ ] Étendre `SessionSnapshot` pour suivre uniquement les apps effectivement masquées par Meeting Mode
+- [ ] Étendre `RestoreService` pour ne réafficher que les apps effectivement masquées par Meeting Mode
 - [x] Garder une seule session active à la fois, de manière explicite dans l'UI et les services
 - [x] Définir un snapshot minimal de session pour préparer un restore best effort
 - [x] Ouvrir apps, URLs et fichiers avec les APIs macOS les plus simples et fiables
@@ -37,11 +41,13 @@
 ## Risques / points de vigilance
 
 - [ ] Ne pas promettre de restore parfait en v1
-- [ ] Revalider dans le flux UI réel la fermeture de `TextEdit` après restore, malgré le fallback de fermeture
+- [ ] Ne pas fermer de force toutes les apps visibles pour simuler un “grand nettoyage”
+- [ ] Accepter qu'une app document-based lancee par la session puisse rester ouverte apres une demande de quit poli
 - [ ] Ne pas implémenter de gestion avancée des fenêtres ou des onglets
 - [ ] Ne pas dépendre d'automations inter-apps fragiles sans feedback utilisateur clair
 - [ ] Ne pas bloquer les flux simples derrière des permissions non encore nécessaires
 - [ ] Ne restaurer que les actions réellement déclenchées par Meeting Mode
+- [ ] Ne pas masquer ou réafficher des apps hors du scope réellement touché par Meeting Mode
 - [ ] Garder le seed `Quick Test` minimal : un seul preset par défaut tant que l'utilisateur n'en crée pas d'autres
 - [ ] Garder le périmètre sans cloud, sans IA et sans intégrations profondes
 - [ ] Garder la documentation synchronisée avec l'état réel du code
@@ -57,6 +63,9 @@
 - [x] Le preset sélectionné survit à une relance
 - [x] La création, l'édition et la suppression minimale de preset survivent à une relance
 - [x] Les données locales absentes ou invalides retombent sur un état sûr
-- [ ] Revalider dans l'app que `Restore Session` ferme bien `TextEdit` avec le nouveau fallback de fermeture
+- [ ] Le démarrage d'une session masque en best effort les apps hors preset sans rendre le restore ambigu
+- [ ] Le snapshot de session distingue les apps lancées par Meeting Mode des apps seulement masquées par Meeting Mode
+- [ ] `Restore Session` ne réaffiche que les apps effectivement masquées par la session courante
+- [ ] La fermeture automatique d'une app document-based lancée par Meeting Mode est suffisamment fiable pour être considérée comme validée
 - [x] Les permissions restent en stub, sans faux comportement système
 - [x] Les docs décrivent fidèlement ce qui est implémenté et ce qui reste en stub
