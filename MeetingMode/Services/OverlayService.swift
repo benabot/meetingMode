@@ -3,8 +3,13 @@ import SwiftUI
 
 @MainActor
 final class OverlayService {
+    private let appLanguageService: AppLanguageService
     private(set) var isOverlayVisible = false
     private var overlayWindow: NSWindow?
+
+    init(appLanguageService: AppLanguageService) {
+        self.appLanguageService = appLanguageService
+    }
 
     func showOverlay() -> Bool {
         if isOverlayVisible {
@@ -39,7 +44,9 @@ final class OverlayService {
         window.level = NSWindow.Level(rawValue: NSWindow.Level.normal.rawValue - 1)
         window.collectionBehavior = [.moveToActiveSpace]
         window.animationBehavior = .none
-        window.contentView = NSHostingView(rootView: CleanScreenOverlayView())
+        window.contentView = NSHostingView(
+            rootView: CleanScreenOverlayView(appLanguageService: appLanguageService)
+        )
 
         window.orderFrontRegardless()
 

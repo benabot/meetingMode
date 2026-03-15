@@ -12,9 +12,15 @@ enum HotkeyAction: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .startSession:
-            return "Start Session"
+            return L10n.string(
+                "hotkeys.action.start",
+                defaultValue: "Start Session"
+            )
         case .restoreSession:
-            return "Restore Session"
+            return L10n.string(
+                "hotkeys.action.restore",
+                defaultValue: "Restore Session"
+            )
         }
     }
 
@@ -111,6 +117,13 @@ struct HotkeyShortcut: Codable, Hashable {
     }
 
     private static func keyDisplayName(for keyCode: UInt16) -> String {
+        if keyCode == UInt16(kVK_Space) {
+            return L10n.string(
+                "hotkeys.key.space",
+                defaultValue: "Space"
+            )
+        }
+
         if let specialKey = specialKeyNames[keyCode] {
             return specialKey
         }
@@ -123,7 +136,11 @@ struct HotkeyShortcut: Codable, Hashable {
             return digit
         }
 
-        return "Key \(keyCode)"
+        return L10n.string(
+            "hotkeys.key.unknown",
+            defaultValue: "Key %d",
+            arguments: [Int(keyCode)]
+        )
     }
 
     private static let letterKeyNames: [UInt16: String] = [
@@ -171,7 +188,6 @@ struct HotkeyShortcut: Codable, Hashable {
     private static let specialKeyNames: [UInt16: String] = [
         UInt16(kVK_Return): "↩",
         UInt16(kVK_Tab): "⇥",
-        UInt16(kVK_Space): "Space",
         UInt16(kVK_Delete): "⌫",
         UInt16(kVK_Escape): "⎋",
         UInt16(kVK_ForwardDelete): "⌦",
@@ -202,11 +218,20 @@ enum HotkeyConfigurationError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingModifier:
-            return "Shortcuts must include at least one modifier key."
+            return L10n.string(
+                "hotkeys.error.missing_modifier",
+                defaultValue: "Shortcuts must include at least one modifier key."
+            )
         case .duplicateShortcut:
-            return "Start Session and Restore Session cannot use the same shortcut."
+            return L10n.string(
+                "hotkeys.error.duplicate",
+                defaultValue: "Start Session and Restore Session cannot use the same shortcut."
+            )
         case .registrationFailed:
-            return "This shortcut could not be registered on this Mac."
+            return L10n.string(
+                "hotkeys.error.registration_failed",
+                defaultValue: "This shortcut could not be registered on this Mac."
+            )
         }
     }
 }

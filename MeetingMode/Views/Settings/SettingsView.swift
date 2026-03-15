@@ -2,6 +2,7 @@ import Carbon
 import SwiftUI
 
 struct SettingsView: View {
+    @ObservedObject var appLanguageService: AppLanguageService
     @ObservedObject var permissionService: PermissionService
     @ObservedObject var hotkeyService: HotkeyService
 
@@ -12,14 +13,30 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                GroupBox("Project Status") {
-                    Text("Technical scaffold only. Launch, clean screen, restore, permissions, and persistence remain intentionally minimal.")
+                GroupBox(t("settings.group.project_status", "Project Status")) {
+                    Text(t("settings.project_status.description", "Technical scaffold only. Launch, clean screen, restore, permissions, and persistence remain intentionally minimal."))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                GroupBox("Shortcuts") {
+                GroupBox(t("app.language.section", "Language")) {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Configure one shortcut for Start Session and one for Restore Session. Shortcuts stay local to this Mac and remain active while Meeting Mode is running.")
+                        Text(t("app.language.description", "Choose the app language. The change applies to Meeting Mode windows and popovers."))
+                            .foregroundStyle(.secondary)
+
+                        Picker("", selection: languageSelection) {
+                            ForEach(AppLanguage.allCases) { language in
+                                Text(language.displayName).tag(language)
+                            }
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.segmented)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                GroupBox(t("settings.group.shortcuts", "Shortcuts")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(t("settings.shortcuts.description", "Configure one shortcut for Start Session and one for Restore Session. Shortcuts stay local to this Mac and remain active while Meeting Mode is running."))
                             .foregroundStyle(.secondary)
 
                         shortcutRow(for: .startSession)
@@ -31,39 +48,39 @@ struct SettingsView: View {
                                 .foregroundStyle(.red)
                         }
 
-                        Text("Recording requires at least one modifier key. Press Escape to cancel.")
+                        Text(t("settings.shortcuts.recording_hint", "Recording requires at least one modifier key. Press Escape to cancel."))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                GroupBox("Permissions") {
+                GroupBox(t("settings.group.permissions", "Permissions")) {
                     VStack(alignment: .leading, spacing: 12) {
                         permissionRow(
-                            title: "Accessibility",
+                            title: t("settings.permissions.accessibility", "Accessibility"),
                             status: permissionService.accessibilityStatus,
-                            note: "Not checked in the current scaffold. This only matters once app hiding or restore becomes real."
+                            note: t("settings.permissions.accessibility.note", "Not checked in the current scaffold. This only matters once app hiding or restore becomes real.")
                         )
                         permissionRow(
-                            title: "Automation",
+                            title: t("settings.permissions.automation", "Automation"),
                             status: permissionService.automationStatus,
-                            note: "Not checked in the current scaffold. This only matters once real app control is added."
+                            note: t("settings.permissions.automation.note", "Not checked in the current scaffold. This only matters once real app control is added.")
                         )
                         permissionRow(
-                            title: "Screen Recording",
+                            title: t("settings.permissions.screen_recording", "Screen Recording"),
                             status: permissionService.screenRecordingStatus,
-                            note: "Not checked in the current scaffold. The current app does not require it."
+                            note: t("settings.permissions.screen_recording.note", "Not checked in the current scaffold. The current app does not require it.")
                         )
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                GroupBox("Scope Guardrails") {
+                GroupBox(t("settings.group.scope_guardrails", "Scope Guardrails")) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("One active session at a time.")
-                        Text("No persistence layer beyond local files and preferences.")
-                        Text("No app automation beyond the current MVP scope.")
+                        Text(t("settings.scope.one_session", "One active session at a time."))
+                        Text(t("settings.scope.local_persistence", "No persistence layer beyond local files and preferences."))
+                        Text(t("settings.scope.no_advanced_automation", "No app automation beyond the current MVP scope."))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -86,6 +103,9 @@ struct SettingsView: View {
             removeRecordingMonitor()
             hotkeyService.resumeRegistrations()
         }
+        .onChange(of: appLanguageService.selectedLanguage) { _, _ in
+            hotkeyErrorMessage = nil
+        }
     }
 
     private func shortcutRow(for action: HotkeyAction) -> some View {
@@ -95,7 +115,7 @@ struct SettingsView: View {
                     Text(action.title)
                         .font(.headline)
 
-                    Text(hotkeyService.shortcut(for: action)?.displayString ?? "Not set")
+                    Text(hotkeyService.shortcut(for: action)?.displayString ?? t("settings.shortcuts.not_set", "Not set"))
                         .font(.system(.body, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
@@ -107,14 +127,14 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.borderedProminent)
 
-                Button("Clear") {
+                Button(t("settings.shortcuts.clear", "Clear")) {
                     clearShortcut(for: action)
                 }
                 .disabled(hotkeyService.shortcut(for: action) == nil)
             }
 
             if recordingAction == action {
-                Text("Press the shortcut you want to use for \(action.title).")
+                Text(t("settings.shortcuts.recording_for_action", "Press the shortcut you want to use for %@.", action.title))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -123,10 +143,12 @@ struct SettingsView: View {
 
     private func recordingButtonTitle(for action: HotkeyAction) -> String {
         if recordingAction == action {
-            return "Press shortcut…"
+            return t("settings.shortcuts.recording", "Press shortcut…")
         }
 
-        return hotkeyService.shortcut(for: action) == nil ? "Set Shortcut" : "Change"
+        return hotkeyService.shortcut(for: action) == nil
+            ? t("settings.shortcuts.set", "Set Shortcut")
+            : t("settings.shortcuts.change", "Change")
     }
 
     private func toggleRecording(for action: HotkeyAction) {
@@ -189,7 +211,7 @@ struct SettingsView: View {
 
                 Spacer()
 
-                Text(status.rawValue)
+                Text(status.title)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -202,10 +224,22 @@ struct SettingsView: View {
                 .foregroundStyle(.secondary)
         }
     }
+
+    private var languageSelection: Binding<AppLanguage> {
+        Binding(
+            get: { appLanguageService.selectedLanguage },
+            set: { appLanguageService.updateLanguage($0) }
+        )
+    }
+
+    private func t(_ key: String, _ defaultValue: String, _ arguments: CVarArg...) -> String {
+        appLanguageService.localized(key, defaultValue: defaultValue, arguments)
+    }
 }
 
 #Preview {
     SettingsView(
+        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "SettingsViewPreviewLanguage")),
         permissionService: PermissionService(),
         hotkeyService: HotkeyService(defaults: UserDefaults(suiteName: "SettingsViewPreview"))
     )

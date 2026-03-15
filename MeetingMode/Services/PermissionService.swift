@@ -1,11 +1,27 @@
 import Combine
 import Foundation
 
-enum PermissionStatus: String {
-    case notChecked = "Not checked"
+enum PermissionStatus {
+    case notChecked
+
+    var title: String {
+        switch self {
+        case .notChecked:
+            return L10n.string(
+                "permissions.status.not_checked",
+                defaultValue: "Not checked"
+            )
+        }
+    }
 
     var detail: String {
-        "Meeting Mode does not inspect or request this permission yet."
+        switch self {
+        case .notChecked:
+            return L10n.string(
+                "permissions.status.not_checked.detail",
+                defaultValue: "Meeting Mode does not inspect or request this permission yet."
+            )
+        }
     }
 }
 
@@ -20,7 +36,10 @@ final class PermissionService: ObservableObject {
     }
 
     var shortSummary: String {
-        "No macOS permissions are checked or requested yet."
+        L10n.string(
+            "permissions.summary.none_checked",
+            defaultValue: "No macOS permissions are checked or requested yet."
+        )
     }
 
     func refreshStatuses() {

@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct SessionStatusView: View {
+    @ObservedObject var appLanguageService: AppLanguageService
     let phase: SessionPhase
     let activePresetName: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label(phase.rawValue, systemImage: iconSystemName)
+            Label(phaseTitle, systemImage: iconSystemName)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(tintColor)
 
@@ -23,15 +24,36 @@ struct SessionStatusView: View {
     private var detailText: String {
         switch phase {
         case .inactive:
-            return "Ready to start a preset."
+            return t("session.status.inactive.detail", "Ready to start a preset.")
         case .active:
             if let activePresetName {
-                return "Only one session can be active at a time. Current preset: \(activePresetName). Restore only tracks Meeting Mode changes."
+                return t(
+                    "session.status.active.detail_with_preset",
+                    "Only one session can be active at a time. Current preset: %@. Restore only tracks Meeting Mode changes.",
+                    activePresetName
+                )
             }
 
-            return "Only one session can be active at a time. Restore only tracks Meeting Mode changes."
+            return t(
+                "session.status.active.detail",
+                "Only one session can be active at a time. Restore only tracks Meeting Mode changes."
+            )
         case .restored:
-            return "The previous session was restored on a best-effort basis. You can start a new one."
+            return t(
+                "session.status.restored.detail",
+                "The previous session was restored on a best-effort basis. You can start a new one."
+            )
+        }
+    }
+
+    private var phaseTitle: String {
+        switch phase {
+        case .inactive:
+            return t("session.phase.inactive", "Inactive")
+        case .active:
+            return t("session.phase.active", "Active")
+        case .restored:
+            return t("session.phase.restored", "Restored")
         }
     }
 
@@ -67,22 +89,38 @@ struct SessionStatusView: View {
             return Color.green.opacity(0.1)
         }
     }
+
+    private func t(_ key: String, _ defaultValue: String, _ arguments: CVarArg...) -> String {
+        appLanguageService.localized(key, defaultValue: defaultValue, arguments: arguments)
+    }
 }
 
 #Preview("Inactive") {
-    SessionStatusView(phase: .inactive, activePresetName: nil)
+    SessionStatusView(
+        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "SessionStatusPreviewLanguage1")),
+        phase: .inactive,
+        activePresetName: nil
+    )
         .padding()
         .frame(width: 320)
 }
 
 #Preview("Active") {
-    SessionStatusView(phase: .active, activePresetName: "Client Call")
+    SessionStatusView(
+        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "SessionStatusPreviewLanguage2")),
+        phase: .active,
+        activePresetName: "Client Call"
+    )
         .padding()
         .frame(width: 320)
 }
 
 #Preview("Restored") {
-    SessionStatusView(phase: .restored, activePresetName: nil)
+    SessionStatusView(
+        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "SessionStatusPreviewLanguage3")),
+        phase: .restored,
+        activePresetName: nil
+    )
         .padding()
         .frame(width: 320)
 }

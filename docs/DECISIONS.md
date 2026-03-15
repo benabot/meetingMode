@@ -51,6 +51,16 @@
 - If no preset is selectable, the Start shortcut fails cleanly through the same session messaging path.
 - If no session is active, the Restore shortcut does nothing destructive and leaves the app in a safe state.
 
+### Localization Strategy
+
+- Localization uses standard Apple `Localizable.strings` files, kept in the app bundle under `en.lproj` and `fr.lproj`.
+- The MVP scope is exactly two app languages for now: French and English.
+- Language choice is explicit in `Settings`, not implicit or half-driven by the current system language once the user has chosen.
+- The selected language is persisted locally and restored on relaunch.
+- Visible app strings are resolved through one small `AppLanguageService` plus bundle-based lookup, so SwiftUI views, AppKit window titles, and runtime session messaging all follow the same language choice.
+- Runtime session and restore messaging no longer depend on parsing English text fragments in the UI.
+- A few native macOS control strings still remain system-managed by the OS; this is acceptable as long as Meeting Mode-owned strings stay coherent.
+
 ### Session Behavior
 
 - Session flow stays intentionally small: `inactive -> active -> restored`.

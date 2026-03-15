@@ -9,25 +9,38 @@ struct PresetEditorView: View {
         case create
         case edit
 
-        var title: String {
+        func title(using appLanguageService: AppLanguageService) -> String {
             switch self {
             case .create:
-                return "New Preset"
+                return appLanguageService.localized(
+                    "preset_editor.mode.create.title",
+                    defaultValue: "New Preset"
+                )
             case .edit:
-                return "Edit Preset"
+                return appLanguageService.localized(
+                    "preset_editor.mode.edit.title",
+                    defaultValue: "Edit Preset"
+                )
             }
         }
 
-        var saveButtonTitle: String {
+        func saveButtonTitle(using appLanguageService: AppLanguageService) -> String {
             switch self {
             case .create:
-                return "Create Preset"
+                return appLanguageService.localized(
+                    "preset_editor.mode.create.save",
+                    defaultValue: "Create Preset"
+                )
             case .edit:
-                return "Save Changes"
+                return appLanguageService.localized(
+                    "preset_editor.mode.edit.save",
+                    defaultValue: "Save Changes"
+                )
             }
         }
     }
 
+    @ObservedObject var appLanguageService: AppLanguageService
     @State private var draft: PresetEditorDraft
 
     let mode: Mode
@@ -35,11 +48,13 @@ struct PresetEditorView: View {
     let onSave: (Preset) -> Void
 
     init(
+        appLanguageService: AppLanguageService,
         mode: Mode,
         preset: Preset? = nil,
         onCancel: @escaping () -> Void = {},
         onSave: @escaping (Preset) -> Void
     ) {
+        self.appLanguageService = appLanguageService
         self.mode = mode
         self.onCancel = onCancel
         self.onSave = onSave
@@ -52,47 +67,47 @@ struct PresetEditorView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    editorSection(title: "Basics") {
+                    editorSection(title: t("preset_editor.section.basics", "Basics")) {
                         VStack(alignment: .leading, spacing: 12) {
-                            fieldLabel("Preset name")
-                            TextField("Weekly client sync", text: $draft.name)
+                            fieldLabel(t("preset_editor.field.name", "Preset name"))
+                            TextField(t("preset_editor.placeholder.name", "Weekly client sync"), text: $draft.name)
                                 .textFieldStyle(.roundedBorder)
 
-                            fieldLabel("Icon")
-                            TextField("sparkles", text: $draft.iconSystemName)
+                            fieldLabel(t("preset_editor.field.icon", "Icon"))
+                            TextField(t("preset_editor.placeholder.icon", "sparkles"), text: $draft.iconSystemName)
                                 .textFieldStyle(.roundedBorder)
                         }
                     }
 
-                    editorSection(title: "What starts") {
+                    editorSection(title: t("preset_editor.section.what_starts", "What starts")) {
                         VStack(alignment: .leading, spacing: 14) {
                             selectedAppsBlock
 
                             textEditorBlock(
-                                title: "Open links",
+                                title: t("preset_editor.field.open_links", "Open links"),
                                 text: $draft.urlsText,
-                                placeholder: "https://meet.example.com/demo\nhttps://docs.example.com/brief",
+                                placeholder: t("preset_editor.placeholder.links", "https://meet.example.com/demo\nhttps://docs.example.com/brief"),
                                 height: 88,
                                 usesMonospacedText: true
                             )
 
                             textEditorBlock(
-                                title: "Open files",
+                                title: t("preset_editor.field.open_files", "Open files"),
                                 text: $draft.filesText,
-                                placeholder: "/Users/benoitabot/Documents/brief.pdf\n/Users/benoitabot/Desktop/demo.key",
+                                placeholder: t("preset_editor.placeholder.files", "/Users/benoitabot/Documents/brief.pdf\n/Users/benoitabot/Desktop/demo.key"),
                                 height: 88,
                                 usesMonospacedText: true
                             )
 
-                            Toggle("Show clean screen", isOn: $draft.showsOverlay)
+                            Toggle(t("preset_editor.toggle.clean_screen", "Show clean screen"), isOn: $draft.showsOverlay)
                         }
                     }
 
-                    editorSection(title: "Checklist") {
+                    editorSection(title: t("preset_editor.section.checklist", "Checklist")) {
                         textEditorBlock(
-                            title: "Checklist",
+                            title: t("preset_editor.field.checklist", "Checklist"),
                             text: $draft.checklistText,
-                            placeholder: "Check microphone\nClose private tabs\nShare the right screen",
+                            placeholder: t("preset_editor.placeholder.checklist", "Check microphone\nClose private tabs\nShare the right screen"),
                             height: 110,
                             usesMonospacedText: false
                         )
@@ -111,14 +126,14 @@ struct PresetEditorView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(mode.title)
+            Text(mode.title(using: appLanguageService))
                 .font(.title3.weight(.semibold))
 
-            Text("A preset needs at least one app, link, file, or clean screen to start.")
+            Text(t("preset_editor.validation.header", "A preset needs at least one app, link, file, or clean screen to start."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            Text(draft.validationMessage)
+            Text(validationMessage)
                 .font(.caption)
                 .foregroundStyle(draft.hasStartableActions ? Color.secondary : Color.orange)
         }
@@ -127,18 +142,18 @@ struct PresetEditorView: View {
     private var selectedAppsBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                fieldLabel("Open apps")
+                fieldLabel(t("preset_editor.field.open_apps", "Open apps"))
 
                 Spacer(minLength: 12)
 
-                Button("Add App…") {
+                Button(t("preset_editor.button.add_app", "Add App…")) {
                     presentAppPicker()
                 }
                 .controlSize(.small)
             }
 
             if draft.apps.isEmpty {
-                Text("No apps selected yet.")
+                Text(t("preset_editor.apps.none", "No apps selected yet."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -149,7 +164,7 @@ struct PresetEditorView: View {
                     ForEach(draft.apps) { app in
                         HStack(alignment: .top, spacing: 10) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(app.normalizedDisplayName.isEmpty ? "Selected App" : app.normalizedDisplayName)
+                                Text(app.normalizedDisplayName.isEmpty ? t("preset_editor.apps.selected_fallback", "Selected App") : app.normalizedDisplayName)
                                     .font(.subheadline.weight(.medium))
                                     .lineLimit(1)
                                     .truncationMode(.tail)
@@ -189,18 +204,18 @@ struct PresetEditorView: View {
     private var footer: some View {
         HStack(alignment: .center) {
             if !draft.canSave {
-                Text(draft.footerMessage)
+                Text(footerMessage)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            Button("Cancel") {
+            Button(t("preset_editor.button.cancel", "Cancel")) {
                 onCancel()
             }
 
-            Button(mode.saveButtonTitle) {
+            Button(mode.saveButtonTitle(using: appLanguageService)) {
                 onSave(draft.makePreset())
                 onCancel()
             }
@@ -251,8 +266,8 @@ struct PresetEditorView: View {
 
     private func presentAppPicker() {
         let panel = NSOpenPanel()
-        panel.title = "Add Apps"
-        panel.prompt = "Add App"
+        panel.title = t("preset_editor.app_picker.title", "Add Apps")
+        panel.prompt = t("preset_editor.app_picker.prompt", "Add App")
         panel.directoryURL = URL(fileURLWithPath: "/Applications", isDirectory: true)
         panel.allowedContentTypes = [.application]
         panel.allowsMultipleSelection = true
@@ -269,14 +284,57 @@ struct PresetEditorView: View {
     private var sectionBackground: some ShapeStyle {
         Color(NSColor.controlBackgroundColor)
     }
+
+    private var validationMessage: String {
+        if draft.trimmedName.isEmpty {
+            return t(
+                "preset_editor.validation.missing_name",
+                "Add a preset name, then add at least one app, link, file, or clean screen."
+            )
+        }
+
+        if draft.hasStartableActions {
+            return t(
+                "preset_editor.validation.startable",
+                "This preset is startable."
+            )
+        }
+
+        return t(
+            "preset_editor.validation.missing_action",
+            "Add at least one app, link, file, or enable clean screen."
+        )
+    }
+
+    private var footerMessage: String {
+        if draft.trimmedName.isEmpty {
+            return t(
+                "preset_editor.validation.footer_name",
+                "Enter a preset name to continue."
+            )
+        }
+
+        return t(
+            "preset_editor.validation.footer_action",
+            "Add at least one app, link, file, or enable clean screen."
+        )
+    }
+
+    private func t(_ key: String, _ defaultValue: String, _ arguments: CVarArg...) -> String {
+        appLanguageService.localized(key, defaultValue: defaultValue, arguments: arguments)
+    }
 }
 
 #Preview("Create Preset") {
-    PresetEditorView(mode: .create) { _ in }
+    PresetEditorView(
+        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "PresetEditorPreviewLanguage")),
+        mode: .create
+    ) { _ in }
 }
 
 #Preview("Edit Preset") {
     PresetEditorView(
+        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "PresetEditorPreviewLanguage2")),
         mode: .edit,
         preset: Preset(
             name: "Client Call",
@@ -329,26 +387,6 @@ private struct PresetEditorDraft {
             || showsOverlay
     }
 
-    var validationMessage: String {
-        if trimmedName.isEmpty {
-            return "Add a preset name, then add at least one app, link, file, or clean screen."
-        }
-
-        if hasStartableActions {
-            return "This preset is startable."
-        }
-
-        return "Add at least one app, link, file, or enable clean screen."
-    }
-
-    var footerMessage: String {
-        if trimmedName.isEmpty {
-            return "Enter a preset name to continue."
-        }
-
-        return "Add at least one app, link, file, or enable clean screen."
-    }
-
     mutating func addApplications(from urls: [URL]) {
         for url in urls {
             let app = makePresetApp(from: url)
@@ -385,7 +423,7 @@ private struct PresetEditorDraft {
         )
     }
 
-    private var trimmedName: String {
+    var trimmedName: String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 

@@ -12,6 +12,7 @@ Date: 2026-03-15
 - The current target is not App Sandbox-enabled, so local launch and restore behavior can work predictably during MVP development.
 - `Settings...` now opens a dedicated settings window from the menu bar panel.
 - `Settings...` now includes configurable shortcuts for `Start Session` and `Restore Session`.
+- The app now supports a coherent FR / EN UI with an explicit language choice in `Settings`.
 - Models and services compile and stay intentionally small.
 - Presets are now loaded from a simple local JSON source under Application Support.
 - The app seeds one local `Quick Test` preset when no preset data exists yet.
@@ -21,6 +22,7 @@ Date: 2026-03-15
 - The preset editor now opens in a dedicated fixed-width window instead of a sheet attached to the menu bar popover, so it stays fully visible near the right edge of the screen.
 - The currently selected preset is persisted across relaunches with a small local preference.
 - Start and Restore shortcuts are now persisted locally and restored on relaunch.
+- The chosen app language is now persisted locally and restored on relaunch.
 - `Preset` now stores apps, URLs, local files, checklist items, and clean screen intent.
 - Selected apps are now stored as app references with bundle identifier and bundle path, with fallback to display name for older data.
 - The session UI now exposes explicit `Inactive`, `Active`, and `Restored` states.
@@ -48,6 +50,7 @@ Date: 2026-03-15
 - Restore now closes session-launched apps before attempting to make previously hidden apps visible again, so the session app does not immediately steal focus back.
 - The restore path still escalates from polite quit to force quit for apps launched by the session, but this remains best effort rather than a guaranteed system rollback.
 - Start and Restore shortcuts now trigger the same session actions as the popover buttons.
+- The visible app UI is now localized across the menu bar popover, preset editor, settings, overlay, and session / restore messaging.
 - The popover is now intentionally shorter and split into `Preset`, `Plan` or `Session`, and `Actions`.
 - Outside a session, the summary reflects preset intent. During a session, the summary reflects only actions actually applied and tracked.
 - The visibility rule stays intentionally narrow: only regular apps are considered, Meeting Mode itself is excluded, and only apps actually hidden with success are tracked for restore.
@@ -72,6 +75,8 @@ Date: 2026-03-15
 - Deleting a preset now goes through a simple confirmation and keeps selection coherent.
 - The selected preset is restored after relaunch when it still exists.
 - Start and Restore shortcuts can be set, changed, or cleared from Settings.
+- The language can be switched explicitly between French and English in Settings.
+- The language change applies coherently to the popover, settings window, preset editor, and session text without mixing major app strings.
 - If the local JSON file is invalid, the app falls back to an empty preset state instead of silently reseeding demo data.
 - If the local JSON file is present but empty (`[]`), the app keeps the empty state.
 - The preset summary shows counts for apps, URLs, files, checklist items, and clean screen.
@@ -98,6 +103,7 @@ Date: 2026-03-15
 - The real menu bar flow has now been revalidated on the machine with `Safari` and `Notes`: they hide during the session and become visible again after `Restore Session`.
 - Apps that were already running before the session are not included in the restore quit scope.
 - Permission messaging states only what is true today: nothing is checked or requested yet.
+- A few native macOS strings still remain system-managed, such as standard `NSOpenPanel` chrome outside the app-provided title and prompt.
 
 ## Still Intentionally Stubbed
 

@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 
 struct MenuBarContentView: View {
+    @ObservedObject var appLanguageService: AppLanguageService
     @ObservedObject var presetStore: PresetStore
     @ObservedObject var sessionRunner: SessionRunner
     @ObservedObject var permissionService: PermissionService
@@ -18,9 +19,9 @@ struct MenuBarContentView: View {
             header
 
             if presetStore.hasPresets {
-                section(title: "Preset") {
+                section(title: t("menubar.section.preset", "Preset")) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Picker("Preset", selection: selectedPresetBinding) {
+                        Picker(t("menubar.section.preset", "Preset"), selection: selectedPresetBinding) {
                             ForEach(presetStore.presets) { preset in
                                 Text(preset.name).tag(Optional(preset.id))
                             }
@@ -29,18 +30,18 @@ struct MenuBarContentView: View {
                         .disabled(sessionRunner.isSessionActive)
 
                         HStack {
-                            Button("New") {
+                            Button(t("menubar.button.new", "New")) {
                                 openPresetCreator()
                             }
                             .disabled(sessionRunner.isSessionActive)
 
                             if let preset = presetStore.selectedPreset {
-                                Button("Edit") {
+                                Button(t("menubar.button.edit", "Edit")) {
                                     openPresetEditor(preset)
                                 }
                                 .disabled(sessionRunner.isSessionActive)
 
-                                Button("Delete", role: .destructive) {
+                                Button(t("menubar.button.delete", "Delete"), role: .destructive) {
                                     presetPendingDeletion = preset
                                 }
                                 .disabled(sessionRunner.isSessionActive)
@@ -67,11 +68,11 @@ struct MenuBarContentView: View {
                     }
                 }
 
-                section(title: "Actions") {
+                section(title: t("menubar.section.actions", "Actions")) {
                     HStack {
                         if !sessionRunner.isSessionActive,
                            let preset = presetStore.selectedPreset {
-                            Button("Start Session") {
+                            Button(t("menubar.button.start", "Start Session")) {
                                 startSession()
                             }
                             .buttonStyle(.borderedProminent)
@@ -80,19 +81,19 @@ struct MenuBarContentView: View {
 
                         Spacer()
 
-                        Button("Restore Session") {
+                        Button(t("menubar.button.restore", "Restore Session")) {
                             restoreSession()
                         }
                         .disabled(!sessionRunner.canRestoreSession)
                     }
                 }
             } else {
-                section(title: "Preset") {
+                section(title: t("menubar.section.preset", "Preset")) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("No presets yet")
+                        Text(t("menubar.empty.no_presets", "No presets yet"))
                             .font(.subheadline.weight(.semibold))
 
-                        Button("New Preset") {
+                        Button(t("menubar.button.new_preset", "New Preset")) {
                             openPresetCreator()
                         }
                     }
@@ -102,13 +103,13 @@ struct MenuBarContentView: View {
             Divider()
 
             HStack {
-                Button("Settings…") {
+                Button(t("menubar.button.settings", "Settings…")) {
                     openSettings()
                 }
 
                 Spacer()
 
-                Button("Quit") {
+                Button(t("menubar.button.quit", "Quit")) {
                     NSApplication.shared.terminate(nil)
                 }
             }
@@ -117,20 +118,26 @@ struct MenuBarContentView: View {
         .padding(14)
         .frame(width: 292)
         .alert(
-            "Delete preset?",
+            t("menubar.alert.delete_title", "Delete preset?"),
             isPresented: isPresentingDeleteAlert,
             presenting: presetPendingDeletion
         ) { preset in
-            Button("Delete", role: .destructive) {
+            Button(t("menubar.button.delete", "Delete"), role: .destructive) {
                 presetStore.deletePreset(preset)
                 presetPendingDeletion = nil
             }
 
-            Button("Cancel", role: .cancel) {
+            Button(t("preset_editor.button.cancel", "Cancel"), role: .cancel) {
                 presetPendingDeletion = nil
             }
         } message: { preset in
-            Text("“\(preset.name)” will be removed from local storage.")
+            Text(
+                t(
+                    "menubar.alert.delete_message",
+                    "\"%@\" will be removed from local storage.",
+                    preset.name
+                )
+            )
         }
     }
 
@@ -194,21 +201,21 @@ struct MenuBarContentView: View {
             return preset.name
         }
 
-        return "No preset selected"
+        return t("menubar.empty.no_preset_selected", "No preset selected")
     }
 
     private var statusTitle: String {
         if !presetStore.hasPresets {
-            return "Empty"
+            return t("menubar.status.empty", "Empty")
         }
 
         switch sessionRunner.sessionPhase {
         case .inactive:
-            return "Ready"
+            return t("menubar.status.ready", "Ready")
         case .active:
-            return "Active"
+            return t("menubar.status.active", "Active")
         case .restored:
-            return "Restored"
+            return t("menubar.status.restored", "Restored")
         }
     }
 
@@ -236,70 +243,78 @@ struct MenuBarContentView: View {
             return preset.name
         }
 
-        return "No preset selected"
+        return t("menubar.empty.no_preset_selected", "No preset selected")
     }
 
     private var summaryLine: String {
         if let snapshot = sessionRunner.activeSnapshot {
             let items = [
-                countLabel(snapshot.launchedApplications.count, singular: "app opened", plural: "apps opened"),
-                countLabel(snapshot.hiddenApplicationCount, singular: "app hidden", plural: "apps hidden"),
-                countLabel(snapshot.openedURLs.count, singular: "link opened", plural: "links opened"),
-                countLabel(snapshot.openedFiles.count, singular: "file opened", plural: "files opened"),
-                snapshot.overlayWasShown ? "clean screen background on" : nil,
+                countLabel(snapshot.launchedApplications.count, oneKey: "menubar.count.app_opened.one", otherKey: "menubar.count.app_opened.other", defaultOne: "app opened", defaultOther: "apps opened"),
+                countLabel(snapshot.hiddenApplicationCount, oneKey: "menubar.count.app_hidden.one", otherKey: "menubar.count.app_hidden.other", defaultOne: "app hidden", defaultOther: "apps hidden"),
+                countLabel(snapshot.openedURLs.count, oneKey: "menubar.count.link_opened.one", otherKey: "menubar.count.link_opened.other", defaultOne: "link opened", defaultOther: "links opened"),
+                countLabel(snapshot.openedFiles.count, oneKey: "menubar.count.file_opened.one", otherKey: "menubar.count.file_opened.other", defaultOne: "file opened", defaultOther: "files opened"),
+                snapshot.overlayWasShown ? t("menubar.clean_screen_on", "clean screen background on") : nil,
             ]
 
-            return joinedSummary(items) ?? "No tracked action"
+            return joinedSummary(items) ?? t("menubar.summary.no_tracked_action", "No tracked action")
         }
 
         if sessionRunner.sessionPhase == .restored {
-            if sessionRunner.lastActionDescription.contains("checking hidden apps") {
-                return "Checking hidden apps"
+            if sessionRunner.isCheckingHiddenApps {
+                return t("menubar.summary.checking_hidden_apps", "Checking hidden apps")
             }
 
-            if sessionRunner.lastActionDescription.contains("may still be hidden") {
-                return "Restore finished with limits"
+            if sessionRunner.restoreHasVisibilityLimit {
+                return t("menubar.summary.restore_limited", "Restore finished with limits")
             }
 
-            return "Best effort restore finished"
+            return t("menubar.summary.restore_finished", "Best effort restore finished")
         }
 
         guard let preset = presetStore.selectedPreset else {
-            return "Create a preset to prepare your next session."
+            return t("menubar.summary.create_preset", "Create a preset to prepare your next session.")
         }
 
         let items = [
-            countLabel(preset.appsToLaunch.count, singular: "app planned", plural: "apps planned"),
-            countLabel(preset.urlsToOpen.count, singular: "link planned", plural: "links planned"),
-            countLabel(preset.filesToOpen.count, singular: "file planned", plural: "files planned"),
-            preset.showsOverlay ? "clean screen background on" : nil,
+            countLabel(preset.appsToLaunch.count, oneKey: "menubar.count.app_planned.one", otherKey: "menubar.count.app_planned.other", defaultOne: "app planned", defaultOther: "apps planned"),
+            countLabel(preset.urlsToOpen.count, oneKey: "menubar.count.link_planned.one", otherKey: "menubar.count.link_planned.other", defaultOne: "link planned", defaultOther: "links planned"),
+            countLabel(preset.filesToOpen.count, oneKey: "menubar.count.file_planned.one", otherKey: "menubar.count.file_planned.other", defaultOne: "file planned", defaultOther: "files planned"),
+            preset.showsOverlay ? t("menubar.clean_screen_on", "clean screen background on") : nil,
         ]
 
-        return joinedSummary(items) ?? "No runnable action yet"
+        return joinedSummary(items) ?? t("menubar.summary.no_runnable_action", "No runnable action yet")
     }
 
     private var sessionSectionTitle: String {
         switch sessionRunner.sessionPhase {
         case .active:
-            return "Session"
+            return t("menubar.section.session", "Session")
         case .restored:
-            return "Restore"
+            return t("menubar.section.restore", "Restore")
         case .inactive:
-            return "Plan"
+            return t("menubar.section.plan", "Plan")
         }
     }
 
     private var detailLine: String? {
         if let snapshot = sessionRunner.activeSnapshot {
             if snapshot.restorableApplicationCount > 0 {
-                return "Restore tracks \(countLabel(snapshot.restorableApplicationCount, singular: "changed app", plural: "changed apps") ?? "0 changed apps")"
+                let trackedCount = countLabel(
+                    snapshot.restorableApplicationCount,
+                    oneKey: "menubar.count.changed_app.one",
+                    otherKey: "menubar.count.changed_app.other",
+                    defaultOne: "changed app",
+                    defaultOther: "changed apps"
+                ) ?? t("menubar.count.format", "%d %@", 0, t("menubar.count.changed_app.other", "changed apps"))
+
+                return t("menubar.detail.restore_tracks", "Restore tracks %@", trackedCount)
             }
 
-            return actionDetail(from: sessionRunner.lastActionDescription)
+            return sessionRunner.lastActionDetail
         }
 
         if sessionRunner.sessionPhase == .restored,
-           let restoredDetail = actionDetail(from: sessionRunner.lastActionDescription) {
+           let restoredDetail = sessionRunner.lastActionDetail {
             return restoredDetail
         }
 
@@ -309,41 +324,41 @@ struct MenuBarContentView: View {
 
         if preset.checklistItems.isEmpty {
             return preset.hasStartableActions
-                ? "Other visible apps may be hidden best effort."
-                : "Add an app, link, file, or clean screen to enable Start Session."
+                ? t("menubar.detail.other_apps_may_hide", "Other visible apps may be hidden best effort.")
+                : t("menubar.detail.enable_start", "Add an app, link, file, or clean screen to enable Start Session.")
         }
 
         let checklistLabel = countLabel(
             preset.checklistItems.count,
-            singular: "checklist item",
-            plural: "checklist items"
-        ) ?? "0 checklist items"
+            oneKey: "menubar.count.checklist_item.one",
+            otherKey: "menubar.count.checklist_item.other",
+            defaultOne: "checklist item",
+            defaultOther: "checklist items"
+        ) ?? t("menubar.count.format", "%d %@", 0, t("menubar.count.checklist_item.other", "checklist items"))
 
         if preset.hasStartableActions {
-            return "\(checklistLabel) - other visible apps may be hidden best effort."
+            return t("menubar.detail.checklist_with_hide", "%@ - other visible apps may be hidden best effort.", checklistLabel)
         }
 
-        return "\(checklistLabel) - add at least one runnable action."
+        return t("menubar.detail.checklist_needs_action", "%@ - add at least one runnable action.", checklistLabel)
     }
 
-    private func actionDetail(from description: String) -> String? {
-        switch description {
-        case "Session inactive", "Session active", "Session restored":
-            return nil
-        default:
-            return description
-                .replacingOccurrences(of: "Session active - ", with: "")
-                .replacingOccurrences(of: "Session restored - ", with: "")
-        }
-    }
-
-    private func countLabel(_ count: Int, singular: String, plural: String) -> String? {
+    private func countLabel(
+        _ count: Int,
+        oneKey: String,
+        otherKey: String,
+        defaultOne: String,
+        defaultOther: String
+    ) -> String? {
         guard count > 0 else {
             return nil
         }
 
-        let label = count == 1 ? singular : plural
-        return "\(count) \(label)"
+        let label = t(
+            count == 1 ? oneKey : otherKey,
+            count == 1 ? defaultOne : defaultOther
+        )
+        return t("menubar.count.format", "%d %@", count, label)
     }
 
     private func joinedSummary(_ items: [String?]) -> String? {
@@ -353,6 +368,10 @@ struct MenuBarContentView: View {
         }
 
         return values.joined(separator: " · ")
+    }
+
+    private func t(_ key: String, _ defaultValue: String, _ arguments: CVarArg...) -> String {
+        appLanguageService.localized(key, defaultValue: defaultValue, arguments: arguments)
     }
 
 }
@@ -382,7 +401,8 @@ private struct StatusBadge: View {
 
 @MainActor
 private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
-    let overlayService = OverlayService()
+    let appLanguageService = AppLanguageService(defaults: UserDefaults(suiteName: "MenuBarPreviewLanguage"))
+    let overlayService = OverlayService(appLanguageService: appLanguageService)
     let appLauncherService = AppLauncherService()
     let appVisibilityService = AppVisibilityService()
     let restoreService = RestoreService(
@@ -427,6 +447,7 @@ private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
     ]
 
     return MenuBarContentView(
+        appLanguageService: appLanguageService,
         presetStore: PresetStore(
             presets: presets,
             storageURL: FileManager.default.temporaryDirectory

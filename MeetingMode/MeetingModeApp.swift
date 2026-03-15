@@ -5,15 +5,17 @@ import SwiftUI
 @main
 struct MeetingModeApp: App {
     @NSApplicationDelegateAdaptor(MeetingModeAppDelegate.self) private var appDelegate
+    @StateObject private var appLanguageService: AppLanguageService
     @StateObject private var presetStore: PresetStore
     @StateObject private var hotkeyService: HotkeyService
     @StateObject private var permissionService: PermissionService
     @StateObject private var sessionRunner: SessionRunner
 
     init() {
+        let appLanguageService = AppLanguageService()
         let presetStore = PresetStore()
         let hotkeyService = HotkeyService()
-        let overlayService = OverlayService()
+        let overlayService = OverlayService(appLanguageService: appLanguageService)
         let appLauncherService = AppLauncherService()
         let appVisibilityService = AppVisibilityService()
         let restoreService = RestoreService(
@@ -29,12 +31,14 @@ struct MeetingModeApp: App {
             restoreService: restoreService
         )
 
+        _appLanguageService = StateObject(wrappedValue: appLanguageService)
         _presetStore = StateObject(wrappedValue: presetStore)
         _hotkeyService = StateObject(wrappedValue: hotkeyService)
         _permissionService = StateObject(wrappedValue: permissionService)
         _sessionRunner = StateObject(wrappedValue: sessionRunner)
 
         MeetingModeAppDelegate.dependencies = .init(
+            appLanguageService: appLanguageService,
             presetStore: presetStore,
             hotkeyService: hotkeyService,
             sessionRunner: sessionRunner,
@@ -45,6 +49,7 @@ struct MeetingModeApp: App {
     var body: some Scene {
         Settings {
             SettingsView(
+                appLanguageService: appLanguageService,
                 permissionService: permissionService,
                 hotkeyService: hotkeyService
             )
@@ -55,6 +60,7 @@ struct MeetingModeApp: App {
 @MainActor
 final class MeetingModeAppDelegate: NSObject, NSApplicationDelegate {
     struct Dependencies {
+        let appLanguageService: AppLanguageService
         let presetStore: PresetStore
         let hotkeyService: HotkeyService
         let sessionRunner: SessionRunner
@@ -71,6 +77,7 @@ final class MeetingModeAppDelegate: NSObject, NSApplicationDelegate {
         }
 
         statusBarController = StatusBarController(
+            appLanguageService: dependencies.appLanguageService,
             presetStore: dependencies.presetStore,
             hotkeyService: dependencies.hotkeyService,
             sessionRunner: dependencies.sessionRunner,
@@ -81,6 +88,7 @@ final class MeetingModeAppDelegate: NSObject, NSApplicationDelegate {
 
 @MainActor
 private final class StatusBarController: NSObject {
+    private let appLanguageService: AppLanguageService
     private let presetStore: PresetStore
     private let hotkeyService: HotkeyService
     private let sessionRunner: SessionRunner
@@ -88,18 +96,22 @@ private final class StatusBarController: NSObject {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
     private lazy var settingsWindowController = SettingsWindowController(
+        appLanguageService: appLanguageService,
         permissionService: permissionService,
         hotkeyService: hotkeyService
     )
     private var presetEditorWindowController: PresetEditorWindowController?
     private var sessionPhaseCancellable: AnyCancellable?
+    private var languageCancellable: AnyCancellable?
 
     init(
+        appLanguageService: AppLanguageService,
         presetStore: PresetStore,
         hotkeyService: HotkeyService,
         sessionRunner: SessionRunner,
         permissionService: PermissionService
     ) {
+        self.appLanguageService = appLanguageService
         self.presetStore = presetStore
         self.hotkeyService = hotkeyService
         self.sessionRunner = sessionRunner
@@ -110,6 +122,7 @@ private final class StatusBarController: NSObject {
         configurePopover()
         configureHotkeys()
         bindStatusItemAppearance()
+        bindLanguageUpdates()
     }
 
     @objc private func togglePopover(_ sender: Any?) {
@@ -142,6 +155,7 @@ private final class StatusBarController: NSObject {
         popover.contentSize = NSSize(width: 320, height: 430)
         popover.contentViewController = NSHostingController(
             rootView: MenuBarContentView(
+                appLanguageService: appLanguageService,
                 presetStore: presetStore,
                 sessionRunner: sessionRunner,
                 permissionService: permissionService,
@@ -181,6 +195,15 @@ private final class StatusBarController: NSObject {
             }
     }
 
+    private func bindLanguageUpdates() {
+        languageCancellable = appLanguageService.$selectedLanguage
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.configurePopover()
+                self?.updateStatusItemAppearance()
+            }
+    }
+
     private func updateStatusItemAppearance() {
         guard let button = statusItem.button else {
             return
@@ -205,6 +228,7 @@ private final class StatusBarController: NSObject {
         presetEditorWindowController?.close()
 
         let controller = PresetEditorWindowController(
+            appLanguageService: appLanguageService,
             mode: mode,
             preset: preset,
             onSave: { [weak self] preset in
@@ -253,13 +277,24 @@ private final class StatusBarController: NSObject {
 
 @MainActor
 private final class SettingsWindowController: NSWindowController {
-    init(permissionService: PermissionService, hotkeyService: HotkeyService) {
+    private let appLanguageService: AppLanguageService
+    private let hostingController: NSHostingController<SettingsView>
+    private var languageCancellable: AnyCancellable?
+
+    init(
+        appLanguageService: AppLanguageService,
+        permissionService: PermissionService,
+        hotkeyService: HotkeyService
+    ) {
+        self.appLanguageService = appLanguageService
         let hostingController = NSHostingController(
             rootView: SettingsView(
+                appLanguageService: appLanguageService,
                 permissionService: permissionService,
                 hotkeyService: hotkeyService
             )
         )
+        self.hostingController = hostingController
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 520, height: 380),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -267,30 +302,56 @@ private final class SettingsWindowController: NSWindowController {
             defer: false
         )
 
-        window.title = "Settings"
+        window.title = appLanguageService.localized(
+            "settings.window.title",
+            defaultValue: "Settings"
+        )
         window.isReleasedWhenClosed = false
         window.center()
         window.contentViewController = hostingController
         super.init(window: window)
         shouldCascadeWindows = false
+        languageCancellable = appLanguageService.$selectedLanguage
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.refreshLocalization()
+            }
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    private func refreshLocalization() {
+        window?.title = appLanguageService.localized(
+            "settings.window.title",
+            defaultValue: "Settings"
+        )
+    }
 }
 
 @MainActor
 private final class PresetEditorWindowController: NSWindowController, NSWindowDelegate {
+    private let appLanguageService: AppLanguageService
+    private let mode: PresetEditorView.Mode
+    private let preset: Preset?
+    private let onSave: (Preset) -> Void
     private let onClose: () -> Void
+    private let hostingController: NSHostingController<PresetEditorView>
+    private var languageCancellable: AnyCancellable?
 
     init(
+        appLanguageService: AppLanguageService,
         mode: PresetEditorView.Mode,
         preset: Preset?,
         onSave: @escaping (Preset) -> Void,
         onClose: @escaping () -> Void
     ) {
+        self.appLanguageService = appLanguageService
+        self.mode = mode
+        self.preset = preset
+        self.onSave = onSave
         self.onClose = onClose
 
         let window = NSWindow(
@@ -302,6 +363,7 @@ private final class PresetEditorWindowController: NSWindowController, NSWindowDe
 
         let hostingController = NSHostingController(
             rootView: PresetEditorView(
+                appLanguageService: appLanguageService,
                 mode: mode,
                 preset: preset,
                 onCancel: {
@@ -312,8 +374,9 @@ private final class PresetEditorWindowController: NSWindowController, NSWindowDe
                 }
             )
         )
+        self.hostingController = hostingController
 
-        window.title = mode.title
+        window.title = mode.title(using: appLanguageService)
         window.isReleasedWhenClosed = false
         window.center()
         window.contentViewController = hostingController
@@ -323,6 +386,11 @@ private final class PresetEditorWindowController: NSWindowController, NSWindowDe
         super.init(window: window)
         shouldCascadeWindows = false
         self.window?.delegate = self
+        languageCancellable = appLanguageService.$selectedLanguage
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.refreshLocalization()
+            }
     }
 
     @available(*, unavailable)
@@ -332,5 +400,9 @@ private final class PresetEditorWindowController: NSWindowController, NSWindowDe
 
     func windowWillClose(_ notification: Notification) {
         onClose()
+    }
+
+    private func refreshLocalization() {
+        window?.title = mode.title(using: appLanguageService)
     }
 }

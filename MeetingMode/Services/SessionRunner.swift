@@ -7,11 +7,41 @@ enum SessionPhase: String {
     case restored = "Restored"
 }
 
+enum SessionActionState: Equatable {
+    case inactive
+    case selectPresetBeforeStarting
+    case restoreBeforeStartingAnother
+    case addRunnableActionBeforeStarting
+    case nothingOpened
+    case noActiveSessionToRestore
+    case active(ActiveSessionFeedback)
+    case restored(RestoreSessionFeedback)
+}
+
+struct ActiveSessionFeedback: Equatable {
+    var confirmedHiddenApplicationCount: Int
+    var unresolvedHiddenApplicationCount: Int
+    var launchFailureCount: Int
+    var visibilityFailureCount: Int
+    var overlayWasRequested: Bool
+    var overlayWasShown: Bool
+    var isVisibilityPending: Bool
+}
+
+struct RestoreSessionFeedback: Equatable {
+    var hidOverlay: Bool
+    var revealedApplicationsCount: Int
+    var stillHiddenApplicationsCount: Int
+    var closedApplicationsCount: Int
+    var stillRunningApplicationsCount: Int
+    var isVisibilityPending: Bool
+}
+
 @MainActor
 final class SessionRunner: ObservableObject {
     @Published private(set) var activeSnapshot: SessionSnapshot?
     @Published private(set) var sessionPhase: SessionPhase = .inactive
-    @Published private(set) var lastActionDescription = "Session inactive"
+    @Published private(set) var lastActionState: SessionActionState = .inactive
 
     private let appLauncherService: AppLauncherService
     private let appVisibilityService: AppVisibilityService
@@ -45,10 +75,88 @@ final class SessionRunner: ObservableObject {
         activeSnapshot != nil
     }
 
+    var lastActionDescription: String {
+        switch lastActionState {
+        case .inactive:
+            return L10n.string("session.notice.inactive", defaultValue: "Session inactive")
+        case .selectPresetBeforeStarting:
+            return L10n.string("session.notice.select_preset", defaultValue: "Select a preset before starting")
+        case .restoreBeforeStartingAnother:
+            return L10n.string(
+                "session.notice.restore_before_start",
+                defaultValue: "Restore the current session before starting another one"
+            )
+        case .addRunnableActionBeforeStarting:
+            return L10n.string(
+                "session.notice.add_runnable_action",
+                defaultValue: "Add an app, link, file, or clean screen before starting"
+            )
+        case .nothingOpened:
+            return L10n.string(
+                "session.notice.nothing_opened",
+                defaultValue: "Nothing was opened. Check the preset items and clean screen."
+            )
+        case .noActiveSessionToRestore:
+            return L10n.string(
+                "session.notice.no_active_session",
+                defaultValue: "No active session to restore"
+            )
+        case .active(let feedback):
+            guard let detail = localizedDetail(for: feedback) else {
+                return L10n.string("session.notice.active", defaultValue: "Session active")
+            }
+
+            return L10n.string(
+                "session.notice.active.detail_format",
+                defaultValue: "Session active - %@",
+                arguments: [detail]
+            )
+        case .restored(let feedback):
+            guard let detail = localizedDetail(for: feedback) else {
+                return L10n.string("session.notice.restored", defaultValue: "Session restored")
+            }
+
+            return L10n.string(
+                "session.notice.restored.detail_format",
+                defaultValue: "Session restored - %@",
+                arguments: [detail]
+            )
+        }
+    }
+
+    var lastActionDetail: String? {
+        switch lastActionState {
+        case .active(let feedback):
+            return localizedDetail(for: feedback)
+        case .restored(let feedback):
+            return localizedDetail(for: feedback)
+        default:
+            return nil
+        }
+    }
+
+    var isCheckingHiddenApps: Bool {
+        switch lastActionState {
+        case .restored(let feedback):
+            return feedback.isVisibilityPending
+        default:
+            return false
+        }
+    }
+
+    var restoreHasVisibilityLimit: Bool {
+        switch lastActionState {
+        case .restored(let feedback):
+            return feedback.stillHiddenApplicationsCount > 0
+        default:
+            return false
+        }
+    }
+
     func startIfPossible(with preset: Preset?) {
         guard let preset else {
             sessionPhase = activeSnapshot == nil ? .inactive : sessionPhase
-            lastActionDescription = "Select a preset before starting"
+            lastActionState = .selectPresetBeforeStarting
             return
         }
 
@@ -60,14 +168,14 @@ final class SessionRunner: ObservableObject {
         restoreVisibilityTask?.cancel()
 
         guard activeSnapshot == nil else {
-            lastActionDescription = "Restore the current session before starting another one"
+            lastActionState = .restoreBeforeStartingAnother
             return
         }
 
         guard preset.hasStartableActions else {
             pendingHiddenApplicationCandidates = []
             sessionPhase = .inactive
-            lastActionDescription = "Add an app, link, file, or clean screen before starting"
+            lastActionState = .addRunnableActionBeforeStarting
             return
         }
 
@@ -87,9 +195,9 @@ final class SessionRunner: ObservableObject {
             sessionPhase = .inactive
 
             if launchResult.failureCount > 0 || preset.showsOverlay {
-                lastActionDescription = "Nothing was opened. Check the preset items and clean screen."
+                lastActionState = .nothingOpened
             } else {
-                lastActionDescription = "Add an app, link, file, or clean screen before starting"
+                lastActionState = .addRunnableActionBeforeStarting
             }
 
             return
@@ -129,7 +237,7 @@ final class SessionRunner: ObservableObject {
     func restoreIfPossible() {
         guard activeSnapshot != nil else {
             if sessionPhase != .active {
-                lastActionDescription = "No active session to restore"
+                lastActionState = .noActiveSessionToRestore
             }
             return
         }
@@ -248,38 +356,17 @@ final class SessionRunner: ObservableObject {
             requestedHiddenApplicationCount - confirmedHiddenApplicationCount,
             0
         )
-        var statusNotes: [String] = []
-
-        if confirmedHiddenApplicationCount > 0 {
-            let label = confirmedHiddenApplicationCount == 1 ? "app hidden" : "apps hidden"
-            statusNotes.append("\(confirmedHiddenApplicationCount) \(label)")
-        }
-
-        if isVisibilityPending && requestedHiddenApplicationCount > 0 {
-            statusNotes.append("checking app visibility")
-        } else if unresolvedHiddenApplicationCount > 0 {
-            let label = unresolvedHiddenApplicationCount == 1 ? "app stayed visible" : "apps stayed visible"
-            statusNotes.append("\(unresolvedHiddenApplicationCount) \(label)")
-        }
-
-        if launchFailureCount > 0 {
-            statusNotes.append("\(launchFailureCount) items could not be opened")
-        }
-
-        if visibilityFailureCount > 0 {
-            let label = visibilityFailureCount == 1 ? "app skipped" : "apps skipped"
-            statusNotes.append("\(visibilityFailureCount) \(label)")
-        }
-
-        if overlayWasRequested && !overlayWasShown {
-            statusNotes.append("clean screen unavailable")
-        }
-
-        if statusNotes.isEmpty {
-            lastActionDescription = "Session active"
-        } else {
-            lastActionDescription = "Session active - \(statusNotes.joined(separator: ", "))"
-        }
+        lastActionState = .active(
+            ActiveSessionFeedback(
+                confirmedHiddenApplicationCount: confirmedHiddenApplicationCount,
+                unresolvedHiddenApplicationCount: unresolvedHiddenApplicationCount,
+                launchFailureCount: launchFailureCount,
+                visibilityFailureCount: visibilityFailureCount,
+                overlayWasRequested: overlayWasRequested,
+                overlayWasShown: overlayWasShown,
+                isVisibilityPending: isVisibilityPending
+            )
+        )
     }
 
     private func scheduleRestoreVisibilityConfirmation(
@@ -345,41 +432,16 @@ final class SessionRunner: ObservableObject {
         stillHiddenApplicationsCount: Int,
         isVisibilityPending: Bool
     ) {
-        var restoredItems: [String] = []
-
-        if restoreResult.hidOverlay {
-            restoredItems.append("clean screen hidden")
-        }
-
-        if isVisibilityPending {
-            restoredItems.append("checking hidden apps")
-        } else {
-            if revealedApplicationsCount > 0 {
-                let label = revealedApplicationsCount == 1 ? "hidden app shown again" : "hidden apps shown again"
-                restoredItems.append("\(revealedApplicationsCount) \(label)")
-            }
-
-            if stillHiddenApplicationsCount > 0 {
-                let label = stillHiddenApplicationsCount == 1 ? "hidden app may still be hidden" : "hidden apps may still be hidden"
-                restoredItems.append("\(stillHiddenApplicationsCount) \(label)")
-            }
-        }
-
-        if restoreResult.closedApplicationsCount > 0 {
-            let label = restoreResult.closedApplicationsCount == 1 ? "app" : "apps"
-            restoredItems.append("\(restoreResult.closedApplicationsCount) launched \(label) closed")
-        }
-
-        if restoreResult.stillRunningApplicationsCount > 0 {
-            let label = restoreResult.stillRunningApplicationsCount == 1 ? "app may still be open" : "apps may still be open"
-            restoredItems.append("\(restoreResult.stillRunningApplicationsCount) launched \(label)")
-        }
-
-        if restoredItems.isEmpty {
-            lastActionDescription = "Session restored"
-        } else {
-            lastActionDescription = "Session restored - \(restoredItems.joined(separator: ", "))"
-        }
+        lastActionState = .restored(
+            RestoreSessionFeedback(
+                hidOverlay: restoreResult.hidOverlay,
+                revealedApplicationsCount: revealedApplicationsCount,
+                stillHiddenApplicationsCount: stillHiddenApplicationsCount,
+                closedApplicationsCount: restoreResult.closedApplicationsCount,
+                stillRunningApplicationsCount: restoreResult.stillRunningApplicationsCount,
+                isVisibilityPending: isVisibilityPending
+            )
+        )
     }
 
     private func mergedHiddenApplications(
@@ -394,5 +456,157 @@ final class SessionRunner: ObservableObject {
 
                 return left.localizedName < right.localizedName
             }
+    }
+
+    private func localizedDetail(for feedback: ActiveSessionFeedback) -> String? {
+        var statusNotes: [String] = []
+
+        if feedback.confirmedHiddenApplicationCount > 0 {
+            statusNotes.append(
+                localizedCount(
+                    feedback.confirmedHiddenApplicationCount,
+                    oneKey: "session.notice.active.hidden.one",
+                    otherKey: "session.notice.active.hidden.other",
+                    defaultOne: "%d app hidden",
+                    defaultOther: "%d apps hidden"
+                )
+            )
+        }
+
+        if feedback.isVisibilityPending && feedback.confirmedHiddenApplicationCount + feedback.unresolvedHiddenApplicationCount > 0 {
+            statusNotes.append(
+                L10n.string(
+                    "session.notice.active.checking_visibility",
+                    defaultValue: "checking app visibility"
+                )
+            )
+        } else if feedback.unresolvedHiddenApplicationCount > 0 {
+            statusNotes.append(
+                localizedCount(
+                    feedback.unresolvedHiddenApplicationCount,
+                    oneKey: "session.notice.active.stayed_visible.one",
+                    otherKey: "session.notice.active.stayed_visible.other",
+                    defaultOne: "%d app stayed visible",
+                    defaultOther: "%d apps stayed visible"
+                )
+            )
+        }
+
+        if feedback.launchFailureCount > 0 {
+            statusNotes.append(
+                L10n.string(
+                    "session.notice.active.open_failed",
+                    defaultValue: "%d items could not be opened",
+                    arguments: [feedback.launchFailureCount]
+                )
+            )
+        }
+
+        if feedback.visibilityFailureCount > 0 {
+            statusNotes.append(
+                localizedCount(
+                    feedback.visibilityFailureCount,
+                    oneKey: "session.notice.active.skipped.one",
+                    otherKey: "session.notice.active.skipped.other",
+                    defaultOne: "%d app skipped",
+                    defaultOther: "%d apps skipped"
+                )
+            )
+        }
+
+        if feedback.overlayWasRequested && !feedback.overlayWasShown {
+            statusNotes.append(
+                L10n.string(
+                    "session.notice.active.clean_screen_unavailable",
+                    defaultValue: "clean screen unavailable"
+                )
+            )
+        }
+
+        return statusNotes.isEmpty ? nil : statusNotes.joined(separator: ", ")
+    }
+
+    private func localizedDetail(for feedback: RestoreSessionFeedback) -> String? {
+        var restoredItems: [String] = []
+
+        if feedback.hidOverlay {
+            restoredItems.append(
+                L10n.string(
+                    "session.notice.restore.overlay_hidden",
+                    defaultValue: "clean screen hidden"
+                )
+            )
+        }
+
+        if feedback.isVisibilityPending {
+            restoredItems.append(
+                L10n.string(
+                    "session.notice.restore.checking_hidden_apps",
+                    defaultValue: "checking hidden apps"
+                )
+            )
+        } else {
+            if feedback.revealedApplicationsCount > 0 {
+                restoredItems.append(
+                    localizedCount(
+                        feedback.revealedApplicationsCount,
+                        oneKey: "session.notice.restore.shown_again.one",
+                        otherKey: "session.notice.restore.shown_again.other",
+                        defaultOne: "%d hidden app shown again",
+                        defaultOther: "%d hidden apps shown again"
+                    )
+                )
+            }
+
+            if feedback.stillHiddenApplicationsCount > 0 {
+                restoredItems.append(
+                    localizedCount(
+                        feedback.stillHiddenApplicationsCount,
+                        oneKey: "session.notice.restore.still_hidden.one",
+                        otherKey: "session.notice.restore.still_hidden.other",
+                        defaultOne: "%d hidden app may still be hidden",
+                        defaultOther: "%d hidden apps may still be hidden"
+                    )
+                )
+            }
+        }
+
+        if feedback.closedApplicationsCount > 0 {
+            restoredItems.append(
+                localizedCount(
+                    feedback.closedApplicationsCount,
+                    oneKey: "session.notice.restore.closed.one",
+                    otherKey: "session.notice.restore.closed.other",
+                    defaultOne: "%d launched app closed",
+                    defaultOther: "%d launched apps closed"
+                )
+            )
+        }
+
+        if feedback.stillRunningApplicationsCount > 0 {
+            restoredItems.append(
+                localizedCount(
+                    feedback.stillRunningApplicationsCount,
+                    oneKey: "session.notice.restore.still_open.one",
+                    otherKey: "session.notice.restore.still_open.other",
+                    defaultOne: "%d launched app may still be open",
+                    defaultOther: "%d launched apps may still be open"
+                )
+            )
+        }
+
+        return restoredItems.isEmpty ? nil : restoredItems.joined(separator: ", ")
+    }
+
+    private func localizedCount(
+        _ count: Int,
+        oneKey: String,
+        otherKey: String,
+        defaultOne: String,
+        defaultOther: String
+    ) -> String {
+        let key = count == 1 ? oneKey : otherKey
+        let defaultValue = count == 1 ? defaultOne : defaultOther
+        return L10n.string(key, defaultValue: defaultValue, arguments: [count])
     }
 }

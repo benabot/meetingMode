@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct CleanScreenOverlayView: View {
+    @ObservedObject var appLanguageService: AppLanguageService
+
     var body: some View {
         ZStack {
             LinearGradient(
@@ -16,10 +18,20 @@ struct CleanScreenOverlayView: View {
                 Image(systemName: "rectangle.on.rectangle")
                     .font(.system(size: 34, weight: .semibold))
 
-                Text("Clean screen background enabled")
+                Text(
+                    appLanguageService.localized(
+                        "overlay.title",
+                        defaultValue: "Clean screen background enabled"
+                    )
+                )
                     .font(.title3.weight(.semibold))
 
-                Text("Use the Meeting Mode menu bar item to restore your session.")
+                Text(
+                    appLanguageService.localized(
+                        "overlay.detail",
+                        defaultValue: "Use the Meeting Mode menu bar item to restore your session."
+                    )
+                )
                     .font(.callout)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.white.opacity(0.75))
@@ -32,6 +44,8 @@ struct CleanScreenOverlayView: View {
 }
 
 #Preview {
-    CleanScreenOverlayView()
+    CleanScreenOverlayView(
+        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "OverlayPreviewLanguage"))
+    )
         .frame(width: 900, height: 540)
 }
