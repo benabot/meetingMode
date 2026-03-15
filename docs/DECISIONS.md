@@ -38,6 +38,19 @@
 - `Restore Session` remains visible but disabled while no session is active.
 - Preset editing stays lightweight and is presented from the graphical menu bar flow rather than a separate heavy preferences-style surface.
 
+### Hotkey Strategy
+
+- Hotkeys are handled by one small dedicated `HotkeyService`.
+- Only two configurable shortcuts are in scope: `Start Session` and `Restore Session`.
+- Shortcut capture lives in `Settings`, not in a separate editor surface.
+- Shortcut storage stays local via `UserDefaults`.
+- The service allows set, change, and clear for both shortcuts.
+- Only the obvious local conflict is blocked: `Start Session` and `Restore Session` cannot share the same shortcut.
+- No broader global shortcut management is attempted in this pass.
+- Hotkeys trigger the same start and restore entry points as the popover buttons, so there is no parallel session logic.
+- If no preset is selectable, the Start shortcut fails cleanly through the same session messaging path.
+- If no session is active, the Restore shortcut does nothing destructive and leaves the app in a safe state.
+
 ### Session Behavior
 
 - Session flow stays intentionally small: `inactive -> active -> restored`.

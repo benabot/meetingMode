@@ -45,6 +45,16 @@ final class SessionRunner: ObservableObject {
         activeSnapshot != nil
     }
 
+    func startIfPossible(with preset: Preset?) {
+        guard let preset else {
+            sessionPhase = activeSnapshot == nil ? .inactive : sessionPhase
+            lastActionDescription = "Select a preset before starting"
+            return
+        }
+
+        start(with: preset)
+    }
+
     func start(with preset: Preset) {
         visibilityConfirmationTask?.cancel()
         restoreVisibilityTask?.cancel()
@@ -114,6 +124,17 @@ final class SessionRunner: ObservableObject {
             overlayWasRequested: preset.showsOverlay,
             overlayWasShown: overlayWasShown
         )
+    }
+
+    func restoreIfPossible() {
+        guard activeSnapshot != nil else {
+            if sessionPhase != .active {
+                lastActionDescription = "No active session to restore"
+            }
+            return
+        }
+
+        restoreCurrentSession()
     }
 
     func restoreCurrentSession() {

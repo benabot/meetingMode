@@ -6,11 +6,13 @@ import SwiftUI
 struct MeetingModeApp: App {
     @NSApplicationDelegateAdaptor(MeetingModeAppDelegate.self) private var appDelegate
     @StateObject private var presetStore: PresetStore
+    @StateObject private var hotkeyService: HotkeyService
     @StateObject private var permissionService: PermissionService
     @StateObject private var sessionRunner: SessionRunner
 
     init() {
         let presetStore = PresetStore()
+        let hotkeyService = HotkeyService()
         let overlayService = OverlayService()
         let appLauncherService = AppLauncherService()
         let appVisibilityService = AppVisibilityService()
@@ -28,11 +30,13 @@ struct MeetingModeApp: App {
         )
 
         _presetStore = StateObject(wrappedValue: presetStore)
+        _hotkeyService = StateObject(wrappedValue: hotkeyService)
         _permissionService = StateObject(wrappedValue: permissionService)
         _sessionRunner = StateObject(wrappedValue: sessionRunner)
 
         MeetingModeAppDelegate.dependencies = .init(
             presetStore: presetStore,
+            hotkeyService: hotkeyService,
             sessionRunner: sessionRunner,
             permissionService: permissionService
         )
@@ -40,7 +44,10 @@ struct MeetingModeApp: App {
 
     var body: some Scene {
         Settings {
-            SettingsView(permissionService: permissionService)
+            SettingsView(
+                permissionService: permissionService,
+                hotkeyService: hotkeyService
+            )
         }
     }
 }
@@ -49,6 +56,7 @@ struct MeetingModeApp: App {
 final class MeetingModeAppDelegate: NSObject, NSApplicationDelegate {
     struct Dependencies {
         let presetStore: PresetStore
+        let hotkeyService: HotkeyService
         let sessionRunner: SessionRunner
         let permissionService: PermissionService
     }
@@ -64,6 +72,7 @@ final class MeetingModeAppDelegate: NSObject, NSApplicationDelegate {
 
         statusBarController = StatusBarController(
             presetStore: dependencies.presetStore,
+            hotkeyService: dependencies.hotkeyService,
             sessionRunner: dependencies.sessionRunner,
             permissionService: dependencies.permissionService
         )
@@ -73,27 +82,32 @@ final class MeetingModeAppDelegate: NSObject, NSApplicationDelegate {
 @MainActor
 private final class StatusBarController: NSObject {
     private let presetStore: PresetStore
+    private let hotkeyService: HotkeyService
     private let sessionRunner: SessionRunner
     private let permissionService: PermissionService
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
     private lazy var settingsWindowController = SettingsWindowController(
-        permissionService: permissionService
+        permissionService: permissionService,
+        hotkeyService: hotkeyService
     )
     private var sessionPhaseCancellable: AnyCancellable?
 
     init(
         presetStore: PresetStore,
+        hotkeyService: HotkeyService,
         sessionRunner: SessionRunner,
         permissionService: PermissionService
     ) {
         self.presetStore = presetStore
+        self.hotkeyService = hotkeyService
         self.sessionRunner = sessionRunner
         self.permissionService = permissionService
         super.init()
 
         configureStatusItem()
         configurePopover()
+        configureHotkeys()
         bindStatusItemAppearance()
     }
 
@@ -130,6 +144,9 @@ private final class StatusBarController: NSObject {
                 presetStore: presetStore,
                 sessionRunner: sessionRunner,
                 permissionService: permissionService,
+                startSession: { [weak self] in
+                    self?.startSelectedSession()
+                },
                 openSettings: { [weak self] in
                     self?.showSettings()
                 },
@@ -138,6 +155,15 @@ private final class StatusBarController: NSObject {
                 }
             )
         )
+    }
+
+    private func configureHotkeys() {
+        hotkeyService.setHandler(for: .startSession) { [weak self] in
+            self?.startSelectedSession()
+        }
+        hotkeyService.setHandler(for: .restoreSession) { [weak self] in
+            self?.restoreSession()
+        }
     }
 
     private func bindStatusItemAppearance() {
@@ -167,20 +193,35 @@ private final class StatusBarController: NSObject {
         settingsWindowController.window?.makeKeyAndOrderFront(nil)
     }
 
+    private func startSelectedSession() {
+        popover.performClose(nil)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            guard let self else {
+                return
+            }
+
+            self.sessionRunner.startIfPossible(with: self.presetStore.selectedPreset)
+        }
+    }
+
     private func restoreSession() {
         popover.performClose(nil)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            self?.sessionRunner.restoreCurrentSession()
+            self?.sessionRunner.restoreIfPossible()
         }
     }
 }
 
 @MainActor
 private final class SettingsWindowController: NSWindowController {
-    init(permissionService: PermissionService) {
+    init(permissionService: PermissionService, hotkeyService: HotkeyService) {
         let hostingController = NSHostingController(
-            rootView: SettingsView(permissionService: permissionService)
+            rootView: SettingsView(
+                permissionService: permissionService,
+                hotkeyService: hotkeyService
+            )
         )
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 520, height: 380),

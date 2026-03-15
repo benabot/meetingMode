@@ -5,6 +5,7 @@ struct MenuBarContentView: View {
     @ObservedObject var presetStore: PresetStore
     @ObservedObject var sessionRunner: SessionRunner
     @ObservedObject var permissionService: PermissionService
+    let startSession: () -> Void
     let openSettings: () -> Void
     let restoreSession: () -> Void
 
@@ -73,7 +74,7 @@ struct MenuBarContentView: View {
                         if !sessionRunner.isSessionActive,
                            let preset = presetStore.selectedPreset {
                             Button("Start Session") {
-                                sessionRunner.start(with: preset)
+                                startSession()
                             }
                             .buttonStyle(.borderedProminent)
                             .disabled(!preset.hasStartableActions)
@@ -461,6 +462,7 @@ private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {
             restoreService: restoreService
         ),
         permissionService: PermissionService(),
+        startSession: {},
         openSettings: {},
         restoreSession: {}
     )

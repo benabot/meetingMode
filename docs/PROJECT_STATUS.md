@@ -11,6 +11,7 @@ Date: 2026-03-15
 - The popover width is now aligned with its real content width so it stays readable near the right edge of the menu bar.
 - The current target is not App Sandbox-enabled, so local launch and restore behavior can work predictably during MVP development.
 - `Settings...` now opens a dedicated settings window from the menu bar panel.
+- `Settings...` now includes configurable shortcuts for `Start Session` and `Restore Session`.
 - Models and services compile and stay intentionally small.
 - Presets are now loaded from a simple local JSON source under Application Support.
 - The app seeds one local `Quick Test` preset when no preset data exists yet.
@@ -18,6 +19,7 @@ Date: 2026-03-15
 - A minimal preset editor is available directly from the menu bar content.
 - The preset editor is now split into `Basics`, `What starts`, and `Checklist` so the intent stays readable.
 - The currently selected preset is persisted across relaunches with a small local preference.
+- Start and Restore shortcuts are now persisted locally and restored on relaunch.
 - `Preset` now stores apps, URLs, local files, checklist items, and clean screen intent.
 - Selected apps are now stored as app references with bundle identifier and bundle path, with fallback to display name for older data.
 - The session UI now exposes explicit `Inactive`, `Active`, and `Restored` states.
@@ -44,6 +46,7 @@ Date: 2026-03-15
 - If a tracked app still remains hidden after that deferred confirmation, Meeting Mode now retries through a targeted `openApplication` fallback on that same running app bundle, still without broad restore scope.
 - Restore now closes session-launched apps before attempting to make previously hidden apps visible again, so the session app does not immediately steal focus back.
 - The restore path still escalates from polite quit to force quit for apps launched by the session, but this remains best effort rather than a guaranteed system rollback.
+- Start and Restore shortcuts now trigger the same session actions as the popover buttons.
 - The popover is now intentionally shorter and split into `Preset`, `Plan` or `Session`, and `Actions`.
 - Outside a session, the summary reflects preset intent. During a session, the summary reflects only actions actually applied and tracked.
 - The visibility rule stays intentionally narrow: only regular apps are considered, Meeting Mode itself is excluded, and only apps actually hidden with success are tracked for restore.
@@ -66,6 +69,7 @@ Date: 2026-03-15
 - `Open apps` now uses `Add App…` and an `NSOpenPanel` rooted on `/Applications`, instead of free text entry by app name.
 - Deleting a preset now goes through a simple confirmation and keeps selection coherent.
 - The selected preset is restored after relaunch when it still exists.
+- Start and Restore shortcuts can be set, changed, or cleared from Settings.
 - If the local JSON file is invalid, the app falls back to an empty preset state instead of silently reseeding demo data.
 - If the local JSON file is present but empty (`[]`), the app keeps the empty state.
 - The preset summary shows counts for apps, URLs, files, checklist items, and clean screen.
@@ -76,6 +80,7 @@ Date: 2026-03-15
 - After restore, the menu keeps the last restore result visible instead of immediately falling back to an overly optimistic ready state.
 - `Start Session` is only shown when a preset is actually selectable.
 - `Restore Session` stays disabled while no session is active.
+- The Restore shortcut leaves the app in a safe state when no session is active.
 - The stub session flow goes `inactive -> active -> restored` without getting stuck.
 - A second `start` call does not replace the current session.
 - The snapshot tracks only Meeting Mode changes currently handled by the scaffold: launched apps, exact hidden app instances, opened URLs, opened files, and clean screen state.
