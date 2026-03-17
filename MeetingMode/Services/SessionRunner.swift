@@ -43,24 +43,29 @@ final class SessionRunner: ObservableObject {
     @Published private(set) var sessionPhase: SessionPhase = .inactive
     @Published private(set) var lastActionState: SessionActionState = .inactive
 
-    private let appLauncherService: AppLauncherService
-    private let appVisibilityService: AppVisibilityService
-    private let overlayService: OverlayService
-    private let restoreService: RestoreService
+    nonisolated deinit {}
+
+    private let appLauncherService: any AppLaunching
+    private let appVisibilityService: any AppVisibilityManaging
+    private let overlayService: any OverlayProviding
+    private let restoreService: any SessionRestoring
+    private let snapshotStorageURL: URL
     private var pendingHiddenApplicationCandidates: [HiddenApplicationSnapshot] = []
     private var visibilityConfirmationTask: Task<Void, Never>?
     private var restoreVisibilityTask: Task<Void, Never>?
 
     init(
-        appLauncherService: AppLauncherService,
-        appVisibilityService: AppVisibilityService,
-        overlayService: OverlayService,
-        restoreService: RestoreService
+        appLauncherService: any AppLaunching,
+        appVisibilityService: any AppVisibilityManaging,
+        overlayService: any OverlayProviding,
+        restoreService: any SessionRestoring,
+        snapshotStorageURL: URL? = nil
     ) {
         self.appLauncherService = appLauncherService
         self.appVisibilityService = appVisibilityService
         self.overlayService = overlayService
         self.restoreService = restoreService
+        self.snapshotStorageURL = snapshotStorageURL ?? Self.defaultSnapshotStorageURL()
     }
 
     func loadPersistedSession() {
@@ -635,7 +640,7 @@ final class SessionRunner: ObservableObject {
 
     // MARK: - Snapshot Persistence
 
-    private static func snapshotStorageURL() -> URL {
+    private static func defaultSnapshotStorageURL() -> URL {
         let fileManager = FileManager.default
         let applicationSupportURL = fileManager.urls(
             for: .applicationSupportDirectory,
@@ -650,10 +655,8 @@ final class SessionRunner: ObservableObject {
     private func persistSnapshot() {
         guard let activeSnapshot else { return }
 
-        let url = Self.snapshotStorageURL()
-
         do {
-            let directoryURL = url.deletingLastPathComponent()
+            let directoryURL = snapshotStorageURL.deletingLastPathComponent()
             try FileManager.default.createDirectory(
                 at: directoryURL,
                 withIntermediateDirectories: true,
@@ -663,31 +666,29 @@ final class SessionRunner: ObservableObject {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             let data = try encoder.encode(activeSnapshot)
-            try data.write(to: url, options: .atomic)
+            try data.write(to: snapshotStorageURL, options: .atomic)
         } catch {
             // Best effort only — failing to persist does not block the session.
         }
     }
 
     private func clearPersistedSnapshot() {
-        let url = Self.snapshotStorageURL()
-        try? FileManager.default.removeItem(at: url)
+        try? FileManager.default.removeItem(at: snapshotStorageURL)
     }
 
     private func loadPersistedSnapshot() -> SessionSnapshot? {
-        let url = Self.snapshotStorageURL()
         let fileManager = FileManager.default
 
-        guard fileManager.fileExists(atPath: url.path) else {
+        guard fileManager.fileExists(atPath: snapshotStorageURL.path) else {
             return nil
         }
 
         do {
-            let data = try Data(contentsOf: url)
+            let data = try Data(contentsOf: snapshotStorageURL)
             return try JSONDecoder().decode(SessionSnapshot.self, from: data)
         } catch {
             // Invalid file — remove silently and start inactive.
-            try? fileManager.removeItem(at: url)
+            try? fileManager.removeItem(at: snapshotStorageURL)
             return nil
         }
     }

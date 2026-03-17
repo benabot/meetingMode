@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		70B5EC3A2F69D01F001E4E9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 705BC1782F66F6DA007E577A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 705BC17F2F66F6DA007E577A;
+			remoteInfo = MeetingMode;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		705BC1802F66F6DA007E577A /* MeetingMode.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeetingMode.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		70B5EC362F69D01F001E4E9B /* MeetingModeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeetingModeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -21,10 +32,22 @@
 			path = docs;
 			sourceTree = "<group>";
 		};
+		70B5EC4A2F69D1A0001E4E9B /* MeetingModeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MeetingModeTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		705BC17D2F66F6DA007E577A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		70B5EC332F69D01F001E4E9B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -38,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				705BC1822F66F6DA007E577A /* MeetingMode */,
+				70B5EC4A2F69D1A0001E4E9B /* MeetingModeTests */,
 				705BC1AA2F66F6DB007E577A /* docs */,
 				705BC1812F66F6DA007E577A /* Products */,
 			);
@@ -47,6 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				705BC1802F66F6DA007E577A /* MeetingMode.app */,
+				70B5EC362F69D01F001E4E9B /* MeetingModeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,6 +101,29 @@
 			productReference = 705BC1802F66F6DA007E577A /* MeetingMode.app */;
 			productType = "com.apple.product-type.application";
 		};
+		70B5EC352F69D01F001E4E9B /* MeetingModeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 70B5EC3E2F69D01F001E4E9B /* Build configuration list for PBXNativeTarget "MeetingModeTests" */;
+			buildPhases = (
+				70B5EC322F69D01F001E4E9B /* Sources */,
+				70B5EC332F69D01F001E4E9B /* Frameworks */,
+				70B5EC342F69D01F001E4E9B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				70B5EC3B2F69D01F001E4E9B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				70B5EC4A2F69D1A0001E4E9B /* MeetingModeTests */,
+			);
+			name = MeetingModeTests;
+			packageProductDependencies = (
+			);
+			productName = MeetingModeTests;
+			productReference = 70B5EC362F69D01F001E4E9B /* MeetingModeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -88,6 +136,10 @@
 				TargetAttributes = {
 					705BC17F2F66F6DA007E577A = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					70B5EC352F69D01F001E4E9B = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 705BC17F2F66F6DA007E577A;
 					};
 				};
 			};
@@ -107,12 +159,20 @@
 			projectRoot = "";
 			targets = (
 				705BC17F2F66F6DA007E577A /* MeetingMode */,
+				70B5EC352F69D01F001E4E9B /* MeetingModeTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		705BC17E2F66F6DA007E577A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		70B5EC342F69D01F001E4E9B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -129,7 +189,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		70B5EC322F69D01F001E4E9B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		70B5EC3B2F69D01F001E4E9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 705BC17F2F66F6DA007E577A /* MeetingMode */;
+			targetProxy = 70B5EC3A2F69D01F001E4E9B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		705BC19F2F66F6DB007E577A /* Debug */ = {
@@ -314,6 +389,50 @@
 			};
 			name = Release;
 		};
+		70B5EC3C2F69D01F001E4E9B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3Q33594A3N;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.beabot.MeetingModeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MeetingMode.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MeetingMode";
+			};
+			name = Debug;
+		};
+		70B5EC3D2F69D01F001E4E9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3Q33594A3N;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.beabot.MeetingModeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MeetingMode.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MeetingMode";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -331,6 +450,15 @@
 			buildConfigurations = (
 				705BC1A22F66F6DB007E577A /* Debug */,
 				705BC1A32F66F6DB007E577A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		70B5EC3E2F69D01F001E4E9B /* Build configuration list for PBXNativeTarget "MeetingModeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				70B5EC3C2F69D01F001E4E9B /* Debug */,
+				70B5EC3D2F69D01F001E4E9B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

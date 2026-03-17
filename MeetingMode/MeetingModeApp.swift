@@ -90,6 +90,10 @@ final class MeetingModeAppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+            return
+        }
+
         statusBarController = StatusBarController(
             appLanguageService: dependencies.appLanguageService,
             presetStore: dependencies.presetStore,

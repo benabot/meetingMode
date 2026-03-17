@@ -1,6 +1,6 @@
 # Project Status
 
-Date: 2026-03-15
+Date: 2026-03-17
 
 ## Current State
 
@@ -44,6 +44,10 @@ Date: 2026-03-15
 - On relaunch after a crash, the session resumes as `.active` and `Restore Session` is available.
 - The persisted snapshot includes the latest confirmed `hiddenApplications` from the deferred visibility phase.
 - No multi-screen overlay management is implemented yet.
+- Unit tests are now in place for `PresetStore` (8 tests) and `SessionRunner` (9 tests), all passing.
+- `SessionRunner` now depends on 4 protocols (`AppLaunching`, `AppVisibilityManaging`, `OverlayProviding`, `SessionRestoring`) instead of concrete service classes, making it testable with mocks.
+- The snapshot storage URL is now injectable in `SessionRunner` for test isolation.
+- `@MainActor final class` types that are created and destroyed in tests include an explicit `nonisolated deinit {}` to work around a Swift concurrency back-deploy crash on macOS 14.0.
 
 ## MVP Flow Status
 
@@ -135,6 +139,8 @@ Date: 2026-03-15
 - A few native macOS strings still remain system-managed, such as standard `NSOpenPanel` chrome outside the app-provided title and prompt.
 - The login-item flow can still require approval from macOS, and that approval wording remains system-managed by the OS.
 - The tutorial remains intentionally lightweight: a few pages, plain navigation, no blocking wizard, and no marketing copy.
+- The tutorial text no longer mentions "MVP", "v1", or "current MVP rules". It uses plain user-facing language throughout.
+- `xcodebuild -scheme MeetingMode -destination 'platform=macOS' test` succeeds with 17 tests (8 PresetStore + 9 SessionRunner).
 
 ## Still Intentionally Stubbed
 

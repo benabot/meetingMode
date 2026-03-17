@@ -9,7 +9,7 @@ struct RestoreExecutionResult {
 }
 
 @MainActor
-final class RestoreService {
+final class RestoreService: SessionRestoring {
     private let logger = Logger(subsystem: "fr.beabot.meetingmode", category: "Restore")
     private let overlayService: OverlayService
     private let appLauncherService: AppLauncherService

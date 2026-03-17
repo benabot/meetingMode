@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @MainActor
-final class OverlayService {
+final class OverlayService: OverlayProviding {
     private let appLanguageService: AppLanguageService
     private(set) var isOverlayVisible = false
     private var overlayWindow: NSWindow?

@@ -142,16 +142,16 @@
 "tutorial.next" = "Suivant";
 "tutorial.done" = "Terminer";
 "tutorial.page1.title" = "Ce que fait Meeting Mode";
-"tutorial.page1.body" = "Meeting Mode prépare ce Mac pour une réunion, une démo ou un partage d’écran depuis la barre de menu.";
+"tutorial.page1.body" = "Meeting Mode prépare ce Mac pour une réunion, une démo ou un partage d’écran.";
 "tutorial.page1.bullet1" = "Lancer un preset en un clic.";
-"tutorial.page1.bullet2" = "Garder une préparation petite et prévisible.";
+"tutorial.page1.bullet2" = "Masquer les distractions avant un partage d’écran.";
 "tutorial.page2.title" = "Ce qu’est un preset";
 "tutorial.page2.body" = "Un preset décrit ce qui doit être prêt avant de commencer à partager.";
 "tutorial.page2.bullet1" = "Des apps à ouvrir.";
 "tutorial.page2.bullet2" = "Des liens et des fichiers locaux à ouvrir.";
 "tutorial.page2.bullet3" = "Des éléments de checklist et un clean screen optionnel.";
 "tutorial.page3.title" = "Ce que fait Démarrer la session";
-"tutorial.page3.body" = "Démarrer la session applique le preset avec les règles MVP actuelles.";
+"tutorial.page3.body" = "Démarrer la session applique le preset sélectionné.";
 "tutorial.page3.bullet1" = "Ouvre les apps, liens et fichiers du preset.";
 "tutorial.page3.bullet2" = "Peut masquer les apps visibles hors preset en best effort.";
 "tutorial.page3.bullet3" = "Peut afficher un fond clean screen.";
@@ -160,10 +160,10 @@
 "tutorial.page4.bullet1" = "Masque le clean screen.";
 "tutorial.page4.bullet2" = "Tente de réafficher les apps que Meeting Mode a lui-même masquées.";
 "tutorial.page4.bullet3" = "Reste en best effort uniquement.";
-"tutorial.page5.title" = "Limites importantes";
-"tutorial.page5.body" = "Ce MVP garde volontairement un périmètre étroit.";
-"tutorial.page5.bullet1" = "Pas de restore parfait des fenêtres, onglets ou Spaces.";
-"tutorial.page5.bullet2" = "Pas de gestion avancée des fenêtres en v1.";
+"tutorial.page5.title" = "Bon à savoir";
+"tutorial.page5.body" = "Meeting Mode reste simple et transparent sur ce qu'il peut faire.";
+"tutorial.page5.bullet1" = "Le restore ne repositionne pas les fenêtres ni les onglets.";
+"tutorial.page5.bullet2" = "Le masquage d'apps reste best effort et dépend de macOS.";
 "tutorial.page5.bullet3" = "Certains comportements dépendent encore de ce que macOS autorise.";
 
 "session.phase.inactive" = "Inactive";

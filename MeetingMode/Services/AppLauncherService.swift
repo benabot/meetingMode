@@ -15,7 +15,7 @@ struct ApplicationRestoreResult {
 }
 
 @MainActor
-final class AppLauncherService {
+final class AppLauncherService: AppLaunching {
     func openItems(for preset: Preset) -> LaunchExecutionResult {
         var result = LaunchExecutionResult()
 

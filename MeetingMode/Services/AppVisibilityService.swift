@@ -31,7 +31,7 @@ struct VisibilityRevealConfirmationResult {
 }
 
 @MainActor
-final class AppVisibilityService {
+final class AppVisibilityService: AppVisibilityManaging {
     private let logger = Logger(subsystem: "fr.beabot.meetingmode", category: "AppVisibility")
     private let meetingModeBundleIdentifier: String?
 

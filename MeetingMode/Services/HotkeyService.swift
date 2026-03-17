@@ -269,8 +269,10 @@ final class HotkeyService: ObservableObject {
         self.defaults = defaults
         self.startShortcut = Self.loadShortcut(from: defaults, key: HotkeyAction.startSession.defaultsKey)
         self.restoreShortcut = Self.loadShortcut(from: defaults, key: HotkeyAction.restoreSession.defaultsKey)
-        installEventHandlerIfNeeded()
-        registerAllHotkeys()
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
+            installEventHandlerIfNeeded()
+            registerAllHotkeys()
+        }
     }
 
     func shortcut(for action: HotkeyAction) -> HotkeyShortcut? {

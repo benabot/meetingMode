@@ -37,6 +37,8 @@
 - [ ] Renforcer la persistance locale au-delà du JSON simple et de la sélection courante
 - [ ] Ajouter un sélecteur de fichiers local minimal si la saisie manuelle des chemins devient trop fragile
 - [ ] Faire une passe de polish UI minimale sur la menu bar et Settings
+- [ ] Étendre la couverture de tests aux services restants (RestoreService, AppVisibilityService, OverlayService) via les protocoles déjà en place
+- [ ] Injecter une Clock testable dans SessionRunner pour couvrir les tâches async différées (scheduleVisibilityConfirmation, scheduleRestoreVisibilityConfirmation)
 
 ## Risques / points de vigilance
 
@@ -69,3 +71,6 @@
 - [ ] La fermeture automatique d'une app document-based lancée par Meeting Mode est suffisamment fiable pour être considérée comme validée
 - [x] Les permissions restent en stub, sans faux comportement système
 - [x] Les docs décrivent fidèlement ce qui est implémenté et ce qui reste en stub
+- [x] PresetStore est couvert par 8 tests unitaires isolés
+- [x] SessionRunner est couvert par 9 tests unitaires avec mocks
+- [x] Les textes du tutoriel n'utilisent plus de jargon développeur (MVP, v1, règles MVP)

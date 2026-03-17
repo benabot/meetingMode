@@ -74,7 +74,9 @@
 ### Tutorial Strategy
 
 - Onboarding is intentionally lightweight: a short tutorial window, not a marketing flow or a blocking wizard.
-- The tutorial covers only the core MVP flow and limits: what the app does, what a preset is, what `Start Session` does, what `Restore Session` does, and what v1 does not promise.
+- The tutorial covers only the core flow and limits: what the app does, what a preset is, what `Start Session` does, what `Restore Session` does, and what to expect.
+- Tutorial text uses plain user-facing language only: no "MVP", "v1", or internal development terminology.
+- The last page is titled "Good to know" instead of "Important limits" to frame expectations positively.
 - The tutorial auto-opens only once on first launch.
 - That first-launch behavior is persisted locally with one simple preference key.
 - Reopening the tutorial from `Settings` does not reset the first-launch state.
@@ -228,6 +230,18 @@
 - Kept a flat, explicit structure: `Models`, `Services`, `Views`, `Utilities`, `Resources`, `docs`.
 - Services are stubs with narrow responsibilities.
 - No persistence, no third-party dependencies, no architectural framework.
+
+### Testability Strategy
+
+- `SessionRunner` depends on 4 protocols instead of concrete service classes: `AppLaunching`, `AppVisibilityManaging`, `OverlayProviding`, `SessionRestoring`.
+- The protocols live in one shared file (`SessionDependencies.swift`) and are `@MainActor`.
+- Concrete services (`AppLauncherService`, `AppVisibilityService`, `OverlayService`, `RestoreService`) conform to their respective protocols with no code change to existing methods.
+- `SessionRunner` stores dependencies as `any ProtocolName` existentials, which keeps the init simple and avoids generic type parameters.
+- The snapshot storage URL is injectable via an optional `snapshotStorageURL` parameter with a nil default, so production code is unchanged and tests use isolated temp directories.
+- The call site in `MeetingModeApp.swift` is unchanged because concrete types transparently satisfy protocol requirements.
+- Test mocks are simple structs with configurable return values, no third-party mock framework.
+- `@MainActor final class` types that get created and destroyed in tests (`PresetStore`, `SessionRunner`) require an explicit `nonisolated deinit {}` to avoid a Swift concurrency back-deploy crash on macOS 14.0.
+- Async deferred-confirmation tasks (`scheduleVisibilityConfirmation`, `scheduleRestoreVisibilityConfirmation`) are explicitly out of test scope because they depend on `Task.sleep` and would require clock injection.
 
 ### Deferred Decisions
 

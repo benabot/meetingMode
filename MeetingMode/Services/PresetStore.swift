@@ -10,6 +10,8 @@ final class PresetStore: ObservableObject {
     private let selectionDefaults: UserDefaults?
     private let selectionDefaultsKey = "MeetingMode.selectedPresetID"
 
+    nonisolated deinit {}
+
     init(
         presets: [Preset]? = nil,
         storageURL: URL? = nil,

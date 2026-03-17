@@ -25,10 +25,10 @@ struct TutorialView: View {
                 titleKey: "tutorial.page1.title",
                 titleDefault: "What Meeting Mode does",
                 bodyKey: "tutorial.page1.body",
-                bodyDefault: "Meeting Mode prepares this Mac for a meeting, a demo, or a screen share from the menu bar.",
+                bodyDefault: "Meeting Mode prepares this Mac for a meeting, a demo, or a screen share.",
                 bulletKeys: [
                     ("tutorial.page1.bullet1", "Run a preset in one click."),
-                    ("tutorial.page1.bullet2", "Keep the setup small and predictable."),
+                    ("tutorial.page1.bullet2", "Hide distractions before sharing your screen."),
                 ]
             ),
             Page(
@@ -50,7 +50,7 @@ struct TutorialView: View {
                 titleKey: "tutorial.page3.title",
                 titleDefault: "What Start Session does",
                 bodyKey: "tutorial.page3.body",
-                bodyDefault: "Start Session applies the preset with the current MVP rules.",
+                bodyDefault: "Start Session applies the selected preset.",
                 bulletKeys: [
                     ("tutorial.page3.bullet1", "Opens the preset apps, links, and files."),
                     ("tutorial.page3.bullet2", "May hide visible apps outside the preset in best effort."),
@@ -74,12 +74,12 @@ struct TutorialView: View {
                 id: 4,
                 iconSystemName: "exclamationmark.triangle",
                 titleKey: "tutorial.page5.title",
-                titleDefault: "Important limits",
+                titleDefault: "Good to know",
                 bodyKey: "tutorial.page5.body",
-                bodyDefault: "This MVP keeps the scope intentionally narrow.",
+                bodyDefault: "Meeting Mode stays simple and transparent about what it can do.",
                 bulletKeys: [
-                    ("tutorial.page5.bullet1", "No perfect restore of windows, tabs, or Spaces."),
-                    ("tutorial.page5.bullet2", "No advanced window management in v1."),
+                    ("tutorial.page5.bullet1", "Restore does not reposition windows or tabs."),
+                    ("tutorial.page5.bullet2", "App hiding is best effort and depends on macOS."),
                     ("tutorial.page5.bullet3", "Some behavior still depends on what macOS allows."),
                 ]
             ),

@@ -142,16 +142,16 @@
 "tutorial.next" = "Next";
 "tutorial.done" = "Done";
 "tutorial.page1.title" = "What Meeting Mode does";
-"tutorial.page1.body" = "Meeting Mode prepares this Mac for a meeting, a demo, or a screen share from the menu bar.";
+"tutorial.page1.body" = "Meeting Mode prepares this Mac for a meeting, a demo, or a screen share.";
 "tutorial.page1.bullet1" = "Run a preset in one click.";
-"tutorial.page1.bullet2" = "Keep the setup small and predictable.";
+"tutorial.page1.bullet2" = "Hide distractions before sharing your screen.";
 "tutorial.page2.title" = "What a preset is";
 "tutorial.page2.body" = "A preset describes what should be ready before you start sharing.";
 "tutorial.page2.bullet1" = "Apps to open.";
 "tutorial.page2.bullet2" = "Links and local files to open.";
 "tutorial.page2.bullet3" = "Checklist items and an optional clean screen.";
 "tutorial.page3.title" = "What Start Session does";
-"tutorial.page3.body" = "Start Session applies the preset with the current MVP rules.";
+"tutorial.page3.body" = "Start Session applies the selected preset.";
 "tutorial.page3.bullet1" = "Opens the preset apps, links, and files.";
 "tutorial.page3.bullet2" = "May hide visible apps outside the preset in best effort.";
 "tutorial.page3.bullet3" = "Can show a clean screen background.";
@@ -160,10 +160,10 @@
 "tutorial.page4.bullet1" = "Hides the clean screen.";
 "tutorial.page4.bullet2" = "Tries to re-show apps that Meeting Mode itself hid.";
 "tutorial.page4.bullet3" = "Stays best effort only.";
-"tutorial.page5.title" = "Important limits";
-"tutorial.page5.body" = "This MVP keeps the scope intentionally narrow.";
-"tutorial.page5.bullet1" = "No perfect restore of windows, tabs, or Spaces.";
-"tutorial.page5.bullet2" = "No advanced window management in v1.";
+"tutorial.page5.title" = "Good to know";
+"tutorial.page5.body" = "Meeting Mode stays simple and transparent about what it can do.";
+"tutorial.page5.bullet1" = "Restore does not reposition windows or tabs.";
+"tutorial.page5.bullet2" = "App hiding is best effort and depends on macOS.";
 "tutorial.page5.bullet3" = "Some behavior still depends on what macOS allows.";
 
 "session.phase.inactive" = "Inactive";

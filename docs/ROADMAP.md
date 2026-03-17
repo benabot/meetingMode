@@ -11,13 +11,14 @@ Le socle MVP courant est considéré comme assez stable pour arrêter les grosse
 - clean screen overlay
 - restore best effort limité au scope réellement modifié
 
-La suite doit rester dans cet ordre :
+La suite a été réalisée dans cet ordre :
 
-1. raccourcis clavier
-2. multilingue FR + EN
-3. passe visuelle plus “liquid glass”
-
-Le design avancé ne doit pas commencer avant d'avoir stabilisé les hotkeys et l'i18n.
+1. ~~raccourcis clavier~~ ✓
+2. ~~multilingue FR + EN~~ ✓
+3. ~~passe visuelle plus “liquid glass”~~ ✓
+4. ~~onboarding, icône d'app, launch at login~~ ✓
+5. ~~testabilité et tests unitaires (PresetStore + SessionRunner)~~ ✓
+6. ~~nettoyage des textes du tutoriel~~ ✓
 
 ## Principes de suite
 
@@ -28,7 +29,7 @@ Le design avancé ne doit pas commencer avant d'avoir stabilisé les hotkeys et 
 - garder des changements petits, testables et réversibles
 - ne pas faire de polish visuel qui cache des états ambigus
 
-## Étape 1 — Raccourcis clavier configurables
+## Étape 1 — Raccourcis clavier configurables ✓
 
 **Objectif**
 - Ajouter deux raccourcis clavier configurables dans `Settings` :
@@ -64,7 +65,7 @@ Le design avancé ne doit pas commencer avant d'avoir stabilisé les hotkeys et 
 - Système de commandes avancé
 - Personnalisation riche du clavier au-delà des deux actions MVP
 
-## Étape 2 — Multilingue FR + EN
+## Étape 2 — Multilingue FR + EN ✓
 
 **Objectif**
 - Rendre l'app entièrement multilingue en FR et EN
@@ -100,7 +101,7 @@ Le design avancé ne doit pas commencer avant d'avoir stabilisé les hotkeys et 
 - Localisation partielle ou opportuniste
 - Refactor massif de structure UI uniquement pour la localisation
 
-## Étape 3 — Passe visuelle “liquid glass” minimale
+## Étape 3 — Passe visuelle “liquid glass” minimale ✓
 
 **Objectif**
 - Ajouter une finition visuelle plus “liquid glass”
@@ -135,8 +136,11 @@ Le design avancé ne doit pas commencer avant d'avoir stabilisé les hotkeys et 
 
 ## Résumé de séquencement
 
-1. Stabiliser les raccourcis clavier configurables
-2. Stabiliser toutes les chaînes visibles et la langue FR / EN
-3. Faire seulement ensuite la passe visuelle
+1. ~~Stabiliser les raccourcis clavier configurables~~ ✓
+2. ~~Stabiliser toutes les chaînes visibles et la langue FR / EN~~ ✓
+3. ~~Faire seulement ensuite la passe visuelle~~ ✓
+4. ~~Onboarding, icône d'app, launch at login~~ ✓
+5. ~~Testabilité SessionRunner + tests unitaires PresetStore et SessionRunner~~ ✓
+6. ~~Nettoyage des textes du tutoriel (ton utilisateur, pas développeur)~~ ✓
 
-Tant que 1 et 2 ne sont pas terminés, 3 ne doit pas devenir prioritaire.
+Les 6 étapes de la roadmap initiale sont terminées. La suite se concentre sur l'extension de la couverture de tests et le polish restant.
