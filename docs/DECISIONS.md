@@ -95,6 +95,8 @@
 - The button system is now explicit instead of relying on faint outlines: one filled primary style, one solid secondary style, one destructive style, and one disabled state derived from the same system.
 - Button readability now takes precedence over visual subtlety. Secondary actions use solid dark-tinted fills with high-contrast text, so the glass background stays decorative instead of carrying the interaction contrast.
 - Text readability follows the same rule on the glass cards: light or grey surfaces use dark text, while white text is reserved for genuinely dark or saturated button fills.
+- The `Settings` window no longer shows internal sections (`Project Status`, `Scope Guardrails`) that belong to developer documentation, not to a user-facing product.
+- The footer in the popover uses plain `.caption` text buttons instead of full button styles, so it reads as navigation rather than actions.
 
 ### Session Behavior
 
@@ -164,7 +166,9 @@
 ### Permissions Messaging
 
 - `PermissionService` does not fake `granted` or `pending` states.
-- Current permission UI says only that permissions are not checked or requested yet.
+- The current implementation uses `NSRunningApplication.hide()` and `unhide()` for app visibility, which do not require Accessibility, Automation, or Screen Recording permissions.
+- Permission status is now `.notRequired` instead of `.notChecked` because the app genuinely does not need these permissions.
+- Each permission note explains why it is not required with a concrete technical reason.
 - Settings copy avoids implying that a system permission is already required when it is not.
 
 ### Local Data Source

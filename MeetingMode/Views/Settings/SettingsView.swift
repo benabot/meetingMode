@@ -19,15 +19,6 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     settingsSection(
-                        title: t("settings.group.project_status", "Project Status"),
-                        symbol: "building.2"
-                    ) {
-                        Text(t("settings.project_status.description", "Technical scaffold only. Launch, clean screen, restore, permissions, and persistence remain intentionally minimal."))
-                            .foregroundStyle(MeetingModeTextPalette.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-
-                    settingsSection(
                         title: t("app.language.section", "Language"),
                         symbol: "globe",
                         tone: .accent
@@ -61,6 +52,7 @@ struct SettingsView: View {
                                 isOn: launchAtLoginBinding
                             )
                             .toggleStyle(.switch)
+                            .disabled(launchAtLoginService.status == .unavailable)
                             .padding(12)
                             .meetingModeInsetSurface(tone: .accent)
 
@@ -116,18 +108,6 @@ struct SettingsView: View {
                                 status: permissionService.screenRecordingStatus,
                                 note: t("settings.permissions.screen_recording.note", "Not checked in the current scaffold. The current app does not require it.")
                             )
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-
-                    settingsSection(
-                        title: t("settings.group.scope_guardrails", "Scope Guardrails"),
-                        symbol: "checklist"
-                    ) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(t("settings.scope.one_session", "One active session at a time."))
-                            Text(t("settings.scope.local_persistence", "No persistence layer beyond local files and preferences."))
-                            Text(t("settings.scope.no_advanced_automation", "No app automation beyond the current MVP scope."))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }

@@ -128,7 +128,10 @@ Date: 2026-03-15
 - Apps that were already running before the session are not included in the restore quit scope.
 - If the app is force-quit during an active session and relaunched, the session snapshot is loaded from disk, the phase resumes as `Active`, and `Restore Session` becomes available immediately.
 - After a crash recovery, the overlay is not re-shown because the overlay window was lost with the previous process, but restore of hidden apps still works from the persisted snapshot.
-- Permission messaging states only what is true today: nothing is checked or requested yet.
+- Permission messaging now states that Accessibility, Automation, and Screen Recording are not required by the current implementation, with a concrete technical reason for each.
+- The `Settings` window no longer shows internal developer sections (`Project Status`, `Scope Guardrails`).
+- The `Launch at login` toggle is now disabled when macOS cannot register the login item.
+- Shortcut display now correctly shows punctuation keys (`-`, `=`, `[`, `]`, `;`, `'`, `,`, `.`, `/`, `\\`, `` ` ``) instead of falling back to `Key N`.
 - A few native macOS strings still remain system-managed, such as standard `NSOpenPanel` chrome outside the app-provided title and prompt.
 - The login-item flow can still require approval from macOS, and that approval wording remains system-managed by the OS.
 - The tutorial remains intentionally lightweight: a few pages, plain navigation, no blocking wizard, and no marketing copy.
@@ -136,7 +139,6 @@ Date: 2026-03-15
 ## Still Intentionally Stubbed
 
 - Restore of opened URLs and local files
-- Permission inspection or permission requests
 - Multi-screen overlay management
 
 ## Out Of Scope For This Pass

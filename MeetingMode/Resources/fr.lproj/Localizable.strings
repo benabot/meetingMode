@@ -5,10 +5,8 @@
 
 "settings.window.title" = "Réglages";
 "settings.group.startup" = "Démarrage";
-"settings.group.project_status" = "État du projet";
 "settings.group.shortcuts" = "Raccourcis";
 "settings.group.permissions" = "Autorisations";
-"settings.group.scope_guardrails" = "Garde-fous";
 "settings.group.help" = "Aide";
 "settings.launch_at_login.title" = "Lancer au démarrage";
 "settings.launch_at_login.description" = "Utilise le réglage natif des éléments d’ouverture de session pour Meeting Mode.";
@@ -16,7 +14,6 @@
 "settings.launch_at_login.status.disabled" = "Meeting Mode ne se lance pas automatiquement quand vous ouvrez votre session sur ce Mac.";
 "settings.launch_at_login.status.requires_approval" = "macOS demande encore une validation dans Réglages Système > Général > Ouverture.";
 "settings.launch_at_login.status.unavailable" = "Ce build n’a pas pu s’enregistrer comme élément d’ouverture de session sur ce Mac.";
-"settings.project_status.description" = "Socle technique uniquement. Lancement, clean screen, restore, autorisations et persistance restent volontairement minimaux.";
 "settings.shortcuts.description" = "Configurez un raccourci pour Démarrer la session et un autre pour Restaurer la session. Les raccourcis restent locaux à ce Mac et actifs tant que Meeting Mode est lancé.";
 "settings.shortcuts.recording_hint" = "L’enregistrement exige au moins une touche modificatrice. Appuyez sur Échap pour annuler.";
 "settings.shortcuts.not_set" = "Non défini";
@@ -26,20 +23,20 @@
 "settings.shortcuts.recording" = "Appuyez sur le raccourci…";
 "settings.shortcuts.recording_for_action" = "Appuyez sur le raccourci à utiliser pour %@.";
 "settings.permissions.accessibility" = "Accessibilité";
-"settings.permissions.accessibility.note" = "Non vérifiée dans le socle actuel. Cela comptera seulement quand le masquage d’apps ou le restore seront réels.";
+"settings.permissions.accessibility.note" = "Non requise. L’implémentation actuelle utilise NSRunningApplication pour la visibilité des apps, ce qui ne nécessite pas l’accès Accessibilité.";
 "settings.permissions.automation" = "Automatisation";
-"settings.permissions.automation.note" = "Non vérifiée dans le socle actuel. Cela comptera seulement quand un vrai contrôle d’app sera ajouté.";
+"settings.permissions.automation.note" = "Non requise. Meeting Mode n’utilise pas AppleScript ni d’automatisation inter-apps.";
 "settings.permissions.screen_recording" = "Enregistrement de l’écran";
-"settings.permissions.screen_recording.note" = "Non vérifiée dans le socle actuel. L’app actuelle n’en a pas besoin.";
-"settings.scope.one_session" = "Une seule session active à la fois.";
-"settings.scope.local_persistence" = "Pas de couche de persistance au-delà des fichiers locaux et des préférences.";
-"settings.scope.no_advanced_automation" = "Pas d’automatisation d’app au-delà du périmètre MVP actuel.";
+"settings.permissions.screen_recording.note" = "Non requise. Meeting Mode ne capture ni n’enregistre l’écran.";
 "settings.help.description" = "Rouvrez le tutoriel rapide à tout moment si vous avez besoin d’un rappel court du flux principal et des limites.";
 "settings.help.show_tutorial" = "Voir le tutoriel";
 
 "permissions.status.not_checked" = "Non vérifié";
 "permissions.status.not_checked.detail" = "Meeting Mode n’inspecte ni ne demande encore cette autorisation.";
+"permissions.status.not_required" = "Non requise";
+"permissions.status.not_required.detail" = "Cette autorisation n’est pas requise par l’implémentation actuelle.";
 "permissions.summary.none_checked" = "Aucune autorisation macOS n’est vérifiée ni demandée pour l’instant.";
+"permissions.summary.none_required" = "Aucune autorisation macOS n’est requise par l’implémentation actuelle.";
 
 "hotkeys.action.start" = "Démarrer la session";
 "hotkeys.action.restore" = "Restaurer la session";

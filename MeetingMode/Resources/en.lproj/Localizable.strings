@@ -5,10 +5,8 @@
 
 "settings.window.title" = "Settings";
 "settings.group.startup" = "Startup";
-"settings.group.project_status" = "Project Status";
 "settings.group.shortcuts" = "Shortcuts";
 "settings.group.permissions" = "Permissions";
-"settings.group.scope_guardrails" = "Scope Guardrails";
 "settings.group.help" = "Help";
 "settings.launch_at_login.title" = "Launch at login";
 "settings.launch_at_login.description" = "Use the native macOS login item setting for Meeting Mode.";
@@ -16,7 +14,6 @@
 "settings.launch_at_login.status.disabled" = "Meeting Mode does not launch automatically when you sign in on this Mac.";
 "settings.launch_at_login.status.requires_approval" = "macOS still needs approval in System Settings > General > Login Items.";
 "settings.launch_at_login.status.unavailable" = "This build could not register itself as a login item on this Mac.";
-"settings.project_status.description" = "Technical scaffold only. Launch, clean screen, restore, permissions, and persistence remain intentionally minimal.";
 "settings.shortcuts.description" = "Configure one shortcut for Start Session and one for Restore Session. Shortcuts stay local to this Mac and remain active while Meeting Mode is running.";
 "settings.shortcuts.recording_hint" = "Recording requires at least one modifier key. Press Escape to cancel.";
 "settings.shortcuts.not_set" = "Not set";
@@ -26,20 +23,20 @@
 "settings.shortcuts.recording" = "Press shortcut…";
 "settings.shortcuts.recording_for_action" = "Press the shortcut you want to use for %@.";
 "settings.permissions.accessibility" = "Accessibility";
-"settings.permissions.accessibility.note" = "Not checked in the current scaffold. This only matters once app hiding or restore becomes real.";
+"settings.permissions.accessibility.note" = "Not required. The current implementation uses NSRunningApplication for app visibility, which does not need Accessibility access.";
 "settings.permissions.automation" = "Automation";
-"settings.permissions.automation.note" = "Not checked in the current scaffold. This only matters once real app control is added.";
+"settings.permissions.automation.note" = "Not required. Meeting Mode does not use AppleScript or inter-app automation.";
 "settings.permissions.screen_recording" = "Screen Recording";
-"settings.permissions.screen_recording.note" = "Not checked in the current scaffold. The current app does not require it.";
-"settings.scope.one_session" = "One active session at a time.";
-"settings.scope.local_persistence" = "No persistence layer beyond local files and preferences.";
-"settings.scope.no_advanced_automation" = "No app automation beyond the current MVP scope.";
+"settings.permissions.screen_recording.note" = "Not required. Meeting Mode does not capture or record the screen.";
 "settings.help.description" = "Reopen the quick tutorial at any time if you need a short reminder of the main flow and limits.";
 "settings.help.show_tutorial" = "Show Tutorial";
 
 "permissions.status.not_checked" = "Not checked";
 "permissions.status.not_checked.detail" = "Meeting Mode does not inspect or request this permission yet.";
+"permissions.status.not_required" = "Not required";
+"permissions.status.not_required.detail" = "This permission is not required by the current implementation.";
 "permissions.summary.none_checked" = "No macOS permissions are checked or requested yet.";
+"permissions.summary.none_required" = "No macOS permissions are required by the current implementation.";
 
 "hotkeys.action.start" = "Start Session";
 "hotkeys.action.restore" = "Restore Session";
