@@ -81,6 +81,21 @@
 - The tutorial lives in its own small window so it stays coherent with the menu bar app and does not overload the popover.
 - Navigation stays explicit and simple: `Next`, `Back`, `Skip`, `Done`.
 
+### Visual Strategy
+
+- The first polish pass stays intentionally small: better materials, hierarchy, spacing, and states, but no product refactor.
+- The shared visual language is a subtle glass treatment built from one small reusable surface layer for windows, cards, and inset rows.
+- That glass treatment is driven more by transparent material and depth than by opaque white fills, so the UI reads as glass instead of stacked milk-white panels.
+- Status readability still wins over decoration: `Inactive`, `Active`, and `Restored` keep strong tint and contrast cues.
+- Primary actions stay obvious and close to the session state instead of being hidden behind extra decoration or motion.
+- Popover, `Settings`, and preset editing now share the same visual system so the app feels more deliberate without becoming harder to scan.
+- The glass treatment stays opaque enough for text to remain legible and avoids relying on heavy blur tricks or fragile per-window effects.
+- The menu bar popover now gives more width to primary actions and uses full-width buttons for `Start Session` and `Restore Session`, so French and English labels stay fully readable.
+- The second visual pass also lightens the surfaces and differentiates hero, section, action, and footer cards, so the app reads less like stacked grey boxes.
+- The button system is now explicit instead of relying on faint outlines: one filled primary style, one solid secondary style, one destructive style, and one disabled state derived from the same system.
+- Button readability now takes precedence over visual subtlety. Secondary actions use solid dark-tinted fills with high-contrast text, so the glass background stays decorative instead of carrying the interaction contrast.
+- Text readability follows the same rule on the glass cards: light or grey surfaces use dark text, while white text is reserved for genuinely dark or saturated button fills.
+
 ### Session Behavior
 
 - Session flow stays intentionally small: `inactive -> active -> restored`.

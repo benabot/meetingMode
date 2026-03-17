@@ -77,7 +77,7 @@
 "menubar.summary.create_preset" = "Créez un preset pour préparer votre prochaine session.";
 "menubar.summary.no_runnable_action" = "Aucune action lançable pour l’instant";
 "menubar.detail.restore_tracks" = "Le restore suit %@";
-"menubar.detail.other_apps_may_hide" = "Les autres apps visibles peuvent être masquées en best effort.";
+"menubar.detail.other_apps_may_hide" = "Les autres apps visibles seront masquées (best effort).";
 "menubar.detail.enable_start" = "Ajoutez une app, un lien, un fichier ou activez le clean screen pour lancer la session.";
 "menubar.detail.checklist_with_hide" = "%@ - les autres apps visibles peuvent être masquées en best effort.";
 "menubar.detail.checklist_needs_action" = "%@ - ajoutez au moins une action lançable.";

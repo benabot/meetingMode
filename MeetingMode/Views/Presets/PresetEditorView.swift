@@ -62,80 +62,114 @@ struct PresetEditorView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            header
+        ZStack {
+            MeetingModeWindowBackground()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    editorSection(title: t("preset_editor.section.basics", "Basics")) {
-                        VStack(alignment: .leading, spacing: 12) {
-                            fieldLabel(t("preset_editor.field.name", "Preset name"))
-                            TextField(t("preset_editor.placeholder.name", "Weekly client sync"), text: $draft.name)
-                                .textFieldStyle(.roundedBorder)
+            VStack(alignment: .leading, spacing: 16) {
+                header
 
-                            fieldLabel(t("preset_editor.field.icon", "Icon"))
-                            TextField(t("preset_editor.placeholder.icon", "sparkles"), text: $draft.iconSystemName)
-                                .textFieldStyle(.roundedBorder)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        editorSection(
+                            title: t("preset_editor.section.basics", "Basics"),
+                            symbol: "square.and.pencil",
+                            tone: .accent
+                        ) {
+                            VStack(alignment: .leading, spacing: 12) {
+                                fieldLabel(t("preset_editor.field.name", "Preset name"))
+                                TextField(t("preset_editor.placeholder.name", "Weekly client sync"), text: $draft.name)
+                                    .textFieldStyle(.roundedBorder)
+
+                                fieldLabel(t("preset_editor.field.icon", "Icon"))
+                                TextField(t("preset_editor.placeholder.icon", "sparkles"), text: $draft.iconSystemName)
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                        }
+
+                        editorSection(
+                            title: t("preset_editor.section.what_starts", "What starts"),
+                            symbol: "play.rectangle",
+                            tone: .accent
+                        ) {
+                            VStack(alignment: .leading, spacing: 14) {
+                                selectedAppsBlock
+
+                                textEditorBlock(
+                                    title: t("preset_editor.field.open_links", "Open links"),
+                                    text: $draft.urlsText,
+                                    placeholder: t("preset_editor.placeholder.links", "https://meet.example.com/demo\nhttps://docs.example.com/brief"),
+                                    height: 88,
+                                    usesMonospacedText: true
+                                )
+
+                                textEditorBlock(
+                                    title: t("preset_editor.field.open_files", "Open files"),
+                                    text: $draft.filesText,
+                                    placeholder: t("preset_editor.placeholder.files", "/Users/benoitabot/Documents/brief.pdf\n/Users/benoitabot/Desktop/demo.key"),
+                                    height: 88,
+                                    usesMonospacedText: true
+                                )
+
+                                Toggle(t("preset_editor.toggle.clean_screen", "Show clean screen"), isOn: $draft.showsOverlay)
+                                    .padding(12)
+                                    .meetingModeInsetSurface(tone: .accent)
+                            }
+                        }
+
+                        editorSection(
+                            title: t("preset_editor.section.checklist", "Checklist"),
+                            symbol: "checklist",
+                            tone: .neutral
+                        ) {
+                            textEditorBlock(
+                                title: t("preset_editor.field.checklist", "Checklist"),
+                                text: $draft.checklistText,
+                                placeholder: t("preset_editor.placeholder.checklist", "Check microphone\nClose private tabs\nShare the right screen"),
+                                height: 110,
+                                usesMonospacedText: false
+                            )
                         }
                     }
-
-                    editorSection(title: t("preset_editor.section.what_starts", "What starts")) {
-                        VStack(alignment: .leading, spacing: 14) {
-                            selectedAppsBlock
-
-                            textEditorBlock(
-                                title: t("preset_editor.field.open_links", "Open links"),
-                                text: $draft.urlsText,
-                                placeholder: t("preset_editor.placeholder.links", "https://meet.example.com/demo\nhttps://docs.example.com/brief"),
-                                height: 88,
-                                usesMonospacedText: true
-                            )
-
-                            textEditorBlock(
-                                title: t("preset_editor.field.open_files", "Open files"),
-                                text: $draft.filesText,
-                                placeholder: t("preset_editor.placeholder.files", "/Users/benoitabot/Documents/brief.pdf\n/Users/benoitabot/Desktop/demo.key"),
-                                height: 88,
-                                usesMonospacedText: true
-                            )
-
-                            Toggle(t("preset_editor.toggle.clean_screen", "Show clean screen"), isOn: $draft.showsOverlay)
-                        }
-                    }
-
-                    editorSection(title: t("preset_editor.section.checklist", "Checklist")) {
-                        textEditorBlock(
-                            title: t("preset_editor.field.checklist", "Checklist"),
-                            text: $draft.checklistText,
-                            placeholder: t("preset_editor.placeholder.checklist", "Check microphone\nClose private tabs\nShare the right screen"),
-                            height: 110,
-                            usesMonospacedText: false
-                        )
-                    }
+                    .padding(.bottom, 4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.bottom, 4)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
 
-            footer
+                footer
+            }
+            .padding(20)
         }
-        .padding(20)
         .frame(width: Self.contentWidth, alignment: .leading)
         .frame(minHeight: 620)
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(mode.title(using: appLanguageService))
-                .font(.title3.weight(.semibold))
+        MeetingModeGlassCard(tone: headerTone, style: .hero, spacing: 8, contentPadding: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(headerAccent.opacity(0.14))
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(headerAccent.opacity(0.22), lineWidth: 1)
 
-            Text(t("preset_editor.validation.header", "A preset needs at least one app, link, file, or clean screen to start."))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                    Image(systemName: draft.iconSystemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "sparkles" : draft.iconSystemName)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(headerAccent)
+                }
+                .frame(width: 40, height: 40)
 
-            Text(validationMessage)
-                .font(.caption)
-                .foregroundStyle(draft.hasStartableActions ? Color.secondary : Color.orange)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(mode.title(using: appLanguageService))
+                        .font(.title3.weight(.semibold))
+
+                    Text(t("preset_editor.validation.header", "A preset needs at least one app, link, file, or clean screen to start."))
+                        .font(.subheadline)
+                        .foregroundStyle(MeetingModeTextPalette.secondary)
+
+                    Text(validationMessage)
+                        .font(.caption)
+                        .foregroundStyle(draft.hasStartableActions ? MeetingModeTextPalette.secondary : Color.orange)
+                }
+            }
         }
     }
 
@@ -149,16 +183,16 @@ struct PresetEditorView: View {
                 Button(t("preset_editor.button.add_app", "Add App…")) {
                     presentAppPicker()
                 }
-                .controlSize(.small)
+                .meetingModeActionButton(tone: .accent, role: .secondary, fillsWidth: false, size: .compact)
             }
 
             if draft.apps.isEmpty {
                 Text(t("preset_editor.apps.none", "No apps selected yet."))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MeetingModeTextPalette.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
-                    .background(sectionBackground)
+                    .meetingModeInsetSurface()
             } else {
                 VStack(spacing: 8) {
                     ForEach(draft.apps) { app in
@@ -173,7 +207,7 @@ struct PresetEditorView: View {
                                 if let secondaryLabel = app.secondaryLabel {
                                     Text(secondaryLabel)
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(MeetingModeTextPalette.secondary)
                                         .lineLimit(1)
                                         .truncationMode(.middle)
                                 }
@@ -186,14 +220,13 @@ struct PresetEditorView: View {
                                 draft.removeApp(app)
                             } label: {
                                 Image(systemName: "minus.circle.fill")
-                                    .foregroundStyle(.secondary)
+                                    .font(.subheadline.weight(.semibold))
                             }
-                            .buttonStyle(.plain)
-                            .frame(width: 18, alignment: .center)
+                            .meetingModeActionButton(role: .destructive, fillsWidth: false, size: .compact)
                         }
                         .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(sectionBackground)
+                        .meetingModeInsetSurface()
                     }
                 }
             }
@@ -206,7 +239,7 @@ struct PresetEditorView: View {
             if !draft.canSave {
                 Text(footerMessage)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MeetingModeTextPalette.secondary)
             }
 
             Spacer()
@@ -214,6 +247,7 @@ struct PresetEditorView: View {
             Button(t("preset_editor.button.cancel", "Cancel")) {
                 onCancel()
             }
+            .meetingModeActionButton(tone: .neutral, role: .secondary, fillsWidth: false)
 
             Button(mode.saveButtonTitle(using: appLanguageService)) {
                 onSave(draft.makePreset())
@@ -221,22 +255,24 @@ struct PresetEditorView: View {
             }
             .keyboardShortcut(.defaultAction)
             .disabled(!draft.canSave)
+            .meetingModeActionButton(tone: .accent, role: .primary, fillsWidth: false)
         }
+        .padding(.top, 4)
     }
 
     private func editorSection<Content: View>(
         title: String,
+        symbol: String,
+        tone: MeetingModeVisualTone,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.headline)
-
+        MeetingModeGlassCard(
+            tone: tone,
+            style: tone == .accent ? .action : .section
+        ) {
+            MeetingModeSectionHeader(title: title, symbol: symbol)
             content()
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(sectionBackground)
     }
 
     private func textEditorBlock(
@@ -281,10 +317,6 @@ struct PresetEditorView: View {
         }
     }
 
-    private var sectionBackground: some ShapeStyle {
-        Color(NSColor.controlBackgroundColor)
-    }
-
     private var validationMessage: String {
         if draft.trimmedName.isEmpty {
             return t(
@@ -318,6 +350,18 @@ struct PresetEditorView: View {
             "preset_editor.validation.footer_action",
             "Add at least one app, link, file, or enable clean screen."
         )
+    }
+
+    private var headerTone: MeetingModeVisualTone {
+        if draft.trimmedName.isEmpty || !draft.hasStartableActions {
+            return .neutral
+        }
+
+        return .accent
+    }
+
+    private var headerAccent: Color {
+        headerTone == .accent ? MeetingModeVisualTone.accent.tint : MeetingModeTextPalette.secondary
     }
 
     private func t(_ key: String, _ defaultValue: String, _ arguments: CVarArg...) -> String {
@@ -468,14 +512,18 @@ private struct PlaceholderTextEditor: View {
                 .padding(4)
                 .frame(maxWidth: .infinity, minHeight: height, alignment: .topLeading)
                 .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(NSColor.textBackgroundColor))
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color(NSColor.textBackgroundColor).opacity(0.96))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Color.white.opacity(0.32), lineWidth: 1)
+                        )
                 )
 
             if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Text(placeholder)
                     .font(editorFont)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(MeetingModeTextPalette.muted)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 12)
                     .allowsHitTesting(false)

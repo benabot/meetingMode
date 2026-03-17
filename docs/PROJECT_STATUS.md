@@ -9,6 +9,10 @@ Date: 2026-03-15
 - Menu bar app configured as a background-only app with a native `NSStatusItem`.
 - The menu bar interaction uses a compact graphical `NSPopover` hosting SwiftUI content.
 - The popover width is now aligned with its real content width so it stays readable near the right edge of the menu bar.
+- The popover, settings window, and preset editor now share a more transparent glass-style visual system with reusable cards and inset surfaces.
+- That visual system is now tuned back toward readability first: stronger text contrast, lighter material overlays, and less milk-white fill on the surfaces.
+- Buttons now use a stricter contrast-first hierarchy on top of the glass UI: strong filled primary, solid filled secondary, clear destructive, and visibly inactive disabled states.
+- Text on the lighter glass surfaces now uses a dark grey / anthracite palette for primary and secondary copy, so sections, plans, settings descriptions, and helper labels stay readable without relying on pale white text.
 - The current target is not App Sandbox-enabled, so local launch and restore behavior can work predictably during MVP development.
 - `Settings...` now opens a dedicated settings window from the menu bar panel.
 - `Settings...` now includes configurable shortcuts for `Start Session` and `Restore Session`.
@@ -70,6 +74,9 @@ Date: 2026-03-15
 - The app launches without a main window.
 - The menu bar item remains visible at launch.
 - Clicking the menu bar item opens a compact graphical panel reliably.
+- The menu bar panel, settings window, and preset editor now use the same visual hierarchy: clear status card first, then grouped surfaces for preset, session, and actions.
+- The menu bar actions now use full-width primary buttons, so localized labels such as `Démarrer la session` and `Restaurer la session` no longer need to truncate.
+- Secondary actions now keep more visible tint in the menu bar so `Settings`, `New`, `Edit`, `Restore`, and destructive actions remain distinct at a glance.
 - Clicking `Settings...` closes the panel and opens a dedicated settings window.
 - On first launch, the tutorial opens automatically once in a small dedicated window.
 - After that first-launch tutorial closes, the main menu bar panel opens automatically so the user lands directly in the primary UI.
@@ -80,6 +87,9 @@ Date: 2026-03-15
 - `New Preset` opens a lightweight editor and persists to the local JSON source.
 - `Edit Preset` updates the currently selected preset with the same lightweight editor.
 - `New Preset` and `Edit Preset` now open a fixed-width editor window with vertical scrolling only, so `Open apps`, `Add App…`, and row actions stay inside the visible layout.
+- That preset editor now keeps the same fixed-width layout but uses the same glass-style surfaces as the rest of the app, without adding horizontal scroll or layout drift.
+- The visible hierarchy is now more explicit: hero status card first, more transparent section cards for preset and plan, stronger action surface, and a quieter footer.
+- The button system has been simplified further so the UI no longer depends on thin tinted outlines: buttons are now more solid, more contrast-driven, and easier to read on translucent surfaces.
 - `Open apps` now uses `Add App…` and an `NSOpenPanel` rooted on `/Applications`, instead of free text entry by app name.
 - Deleting a preset now goes through a simple confirmation and keeps selection coherent.
 - The selected preset is restored after relaunch when it still exists.

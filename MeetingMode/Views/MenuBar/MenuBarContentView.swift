@@ -15,108 +15,25 @@ struct MenuBarContentView: View {
     @State private var presetPendingDeletion: Preset?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            header
+        ZStack {
+            MeetingModeWindowBackground()
 
-            if presetStore.hasPresets {
-                section(title: t("menubar.section.preset", "Preset")) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Picker(t("menubar.section.preset", "Preset"), selection: selectedPresetBinding) {
-                            ForEach(presetStore.presets) { preset in
-                                Text(preset.name).tag(Optional(preset.id))
-                            }
-                        }
-                        .labelsHidden()
-                        .disabled(sessionRunner.isSessionActive)
+            VStack(alignment: .leading, spacing: 11) {
+                header
 
-                        HStack {
-                            Button(t("menubar.button.new", "New")) {
-                                openPresetCreator()
-                            }
-                            .disabled(sessionRunner.isSessionActive)
-
-                            if let preset = presetStore.selectedPreset {
-                                Button(t("menubar.button.edit", "Edit")) {
-                                    openPresetEditor(preset)
-                                }
-                                .disabled(sessionRunner.isSessionActive)
-
-                                Button(t("menubar.button.delete", "Delete"), role: .destructive) {
-                                    presetPendingDeletion = preset
-                                }
-                                .disabled(sessionRunner.isSessionActive)
-                            }
-                        }
-                        .controlSize(.small)
-                    }
+                if presetStore.hasPresets {
+                    presetSection
+                    sessionSection
+                    actionsSection
+                } else {
+                    emptyPresetSection
                 }
 
-                section(title: sessionSectionTitle) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(summaryTitle)
-                            .font(.subheadline.weight(.semibold))
-
-                        Text(summaryLine)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-
-                        if let detailLine {
-                            Text(detailLine)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                section(title: t("menubar.section.actions", "Actions")) {
-                    HStack {
-                        if !sessionRunner.isSessionActive,
-                           let preset = presetStore.selectedPreset {
-                            Button(t("menubar.button.start", "Start Session")) {
-                                startSession()
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .disabled(!preset.hasStartableActions)
-                        }
-
-                        Spacer()
-
-                        Button(t("menubar.button.restore", "Restore Session")) {
-                            restoreSession()
-                        }
-                        .disabled(!sessionRunner.canRestoreSession)
-                    }
-                }
-            } else {
-                section(title: t("menubar.section.preset", "Preset")) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(t("menubar.empty.no_presets", "No presets yet"))
-                            .font(.subheadline.weight(.semibold))
-
-                        Button(t("menubar.button.new_preset", "New Preset")) {
-                            openPresetCreator()
-                        }
-                    }
-                }
+                footerBar
             }
-
-            Divider()
-
-            HStack {
-                Button(t("menubar.button.settings", "Settings…")) {
-                    openSettings()
-                }
-
-                Spacer()
-
-                Button(t("menubar.button.quit", "Quit")) {
-                    NSApplication.shared.terminate(nil)
-                }
-            }
-            .controlSize(.small)
+            .padding(12)
         }
-        .padding(14)
-        .frame(width: 292)
+        .frame(width: 334)
         .alert(
             t("menubar.alert.delete_title", "Delete preset?"),
             isPresented: isPresentingDeleteAlert,
@@ -142,34 +59,205 @@ struct MenuBarContentView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Meeting Mode")
-                    .font(.headline)
+        MeetingModeGlassCard(tone: statusTone, style: .hero, spacing: 10, contentPadding: 16) {
+            HStack(alignment: .center, spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(statusTint.opacity(0.12))
+                    Circle()
+                        .stroke(statusTint.opacity(0.24), lineWidth: 1)
 
-                Text(headerSubtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    Image(systemName: sessionRunner.isSessionActive ? "record.circle.fill" : "record.circle")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(statusTint)
+                }
+                .frame(width: 30, height: 30)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Meeting Mode")
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(MeetingModeTextPalette.primary)
+
+                    Text(headerSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(MeetingModeTextPalette.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 10)
+
+                StatusBadge(title: statusTitle, tint: statusTint)
             }
-
-            Spacer()
-
-            StatusBadge(
-                title: statusTitle,
-                tint: statusTint
-            )
         }
     }
 
-    private func section<Content: View>(
+    private var presetSection: some View {
+        sectionCard(
+            title: t("menubar.section.preset", "Preset"),
+            symbol: "square.stack.3d.up",
+            style: .section
+        ) {
+            VStack(alignment: .leading, spacing: 10) {
+                Picker(t("menubar.section.preset", "Preset"), selection: selectedPresetBinding) {
+                    ForEach(presetStore.presets) { preset in
+                        Text(preset.name).tag(Optional(preset.id))
+                    }
+                }
+                .labelsHidden()
+                .disabled(sessionRunner.isSessionActive)
+
+                HStack(spacing: 8) {
+                    Button(t("menubar.button.new", "New")) {
+                        openPresetCreator()
+                    }
+                    .disabled(sessionRunner.isSessionActive)
+                    .meetingModeActionButton(tone: .accent, role: .secondary)
+
+                    if let preset = presetStore.selectedPreset {
+                        Button(t("menubar.button.edit", "Edit")) {
+                            openPresetEditor(preset)
+                        }
+                        .disabled(sessionRunner.isSessionActive)
+                        .meetingModeActionButton(tone: .positive, role: .secondary)
+
+                        Button(role: .destructive) {
+                            presetPendingDeletion = preset
+                        } label: {
+                            Image(systemName: "trash")
+                                .font(.subheadline.weight(.medium))
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(
+                            sessionRunner.isSessionActive
+                                ? MeetingModeTextPalette.disabled
+                                : MeetingModeVisualTone.critical.tint
+                        )
+                        .disabled(sessionRunner.isSessionActive)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 8)
+                        .contentShape(Rectangle())
+                    }
+                }
+            }
+        }
+    }
+
+    private var sessionSection: some View {
+        sectionCard(title: sessionSectionTitle, symbol: sessionSectionSymbol, tone: statusTone, style: .section) {
+            VStack(alignment: .leading, spacing: 7) {
+                Text(summaryTitle)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(MeetingModeTextPalette.primary)
+
+                Text(summaryLine)
+                    .font(.caption)
+                    .foregroundStyle(MeetingModeTextPalette.secondary)
+
+                if let detailLine {
+                    Text(detailLine)
+                        .font(.caption)
+                        .foregroundStyle(MeetingModeTextPalette.secondary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private var actionsSection: some View {
+        sectionCard(
+            title: t("menubar.section.actions", "Actions"),
+            symbol: "bolt.circle",
+            tone: .accent,
+            style: .action
+        ) {
+            VStack(spacing: 10) {
+                if let preset = presetStore.selectedPreset {
+                    Button {
+                        startSession()
+                    } label: {
+                        Text(t("menubar.button.start", "Start Session"))
+                            .lineLimit(1)
+                            .minimumScaleFactor(1)
+                    }
+                    .disabled(sessionRunner.isSessionActive || !preset.hasStartableActions)
+                    .meetingModeActionButton(tone: .accent, role: .primary)
+                    .opacity(sessionRunner.isSessionActive ? 0.65 : 1)
+                }
+
+                Button {
+                    restoreSession()
+                } label: {
+                    Text(t("menubar.button.restore", "Restore Session"))
+                        .lineLimit(1)
+                        .minimumScaleFactor(1)
+                }
+                .disabled(!sessionRunner.canRestoreSession)
+                .meetingModeActionButton(
+                    tone: sessionRunner.canRestoreSession ? .positive : .neutral,
+                    role: .secondary
+                )
+                .opacity(sessionRunner.canRestoreSession ? 1 : 0.55)
+            }
+        }
+    }
+
+    private var emptyPresetSection: some View {
+        sectionCard(
+            title: t("menubar.section.preset", "Preset"),
+            symbol: "tray",
+            tone: .neutral,
+            style: .section
+        ) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(t("menubar.empty.no_presets", "No presets yet"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(MeetingModeTextPalette.primary)
+
+                Text(t("menubar.summary.create_preset", "Create a preset to prepare your next session."))
+                    .font(.caption)
+                    .foregroundStyle(MeetingModeTextPalette.secondary)
+
+                Button(t("menubar.button.new_preset", "New Preset")) {
+                    openPresetCreator()
+                }
+                .meetingModeActionButton(tone: .accent, role: .primary)
+            }
+        }
+    }
+
+    private var footerBar: some View {
+        MeetingModeGlassCard(style: .footer, spacing: 0, contentPadding: 8) {
+            HStack {
+                Button(t("menubar.button.settings", "Settings…")) {
+                    openSettings()
+                }
+                .buttonStyle(.plain)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(MeetingModeTextPalette.secondary)
+
+                Spacer()
+
+                Button(t("menubar.button.quit", "Quit")) {
+                    NSApplication.shared.terminate(nil)
+                }
+                .buttonStyle(.plain)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(MeetingModeTextPalette.muted)
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+
+    private func sectionCard<Content: View>(
         title: String,
+        symbol: String,
+        tone: MeetingModeVisualTone = .neutral,
+        style: MeetingModeGlassCardStyle = .section,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title.uppercased())
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-
+        MeetingModeGlassCard(tone: tone, style: style) {
+            MeetingModeSectionHeader(title: title, symbol: symbol)
             content()
         }
     }
@@ -234,6 +322,21 @@ struct MenuBarContentView: View {
         }
     }
 
+    private var statusTone: MeetingModeVisualTone {
+        if !presetStore.hasPresets {
+            return .neutral
+        }
+
+        switch sessionRunner.sessionPhase {
+        case .inactive:
+            return .accent
+        case .active:
+            return .critical
+        case .restored:
+            return .positive
+        }
+    }
+
     private var summaryTitle: String {
         if let snapshot = sessionRunner.activeSnapshot {
             return snapshot.presetName
@@ -293,6 +396,17 @@ struct MenuBarContentView: View {
             return t("menubar.section.restore", "Restore")
         case .inactive:
             return t("menubar.section.plan", "Plan")
+        }
+    }
+
+    private var sessionSectionSymbol: String {
+        switch sessionRunner.sessionPhase {
+        case .active:
+            return "bolt.horizontal.circle"
+        case .restored:
+            return "arrow.uturn.backward.circle"
+        case .inactive:
+            return "list.bullet.rectangle"
         }
     }
 
@@ -383,11 +497,17 @@ private struct StatusBadge: View {
     var body: some View {
         Text(title)
             .font(.caption2.weight(.semibold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
             .foregroundStyle(tint)
-            .background(tint.opacity(0.12))
-            .clipShape(Capsule())
+            .background(
+                Capsule(style: .continuous)
+                    .fill(tint.opacity(0.14))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(tint.opacity(0.22), lineWidth: 1)
+                    )
+            )
     }
 }
 

@@ -77,7 +77,7 @@
 "menubar.summary.create_preset" = "Create a preset to prepare your next session.";
 "menubar.summary.no_runnable_action" = "No runnable action yet";
 "menubar.detail.restore_tracks" = "Restore tracks %@";
-"menubar.detail.other_apps_may_hide" = "Other visible apps may be hidden best effort.";
+"menubar.detail.other_apps_may_hide" = "Other visible apps may be hidden (best effort).";
 "menubar.detail.enable_start" = "Add an app, link, file, or clean screen to enable Start Session.";
 "menubar.detail.checklist_with_hide" = "%@ - other visible apps may be hidden best effort.";
 "menubar.detail.checklist_needs_action" = "%@ - add at least one runnable action.";

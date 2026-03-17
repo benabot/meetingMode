@@ -13,111 +13,143 @@ struct SettingsView: View {
     @State private var recordingMonitor: Any?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                GroupBox(t("settings.group.project_status", "Project Status")) {
-                    Text(t("settings.project_status.description", "Technical scaffold only. Launch, clean screen, restore, permissions, and persistence remain intentionally minimal."))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+        ZStack {
+            MeetingModeWindowBackground()
 
-                GroupBox(t("app.language.section", "Language")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(t("app.language.description", "Choose the app language. The change applies to Meeting Mode windows and popovers."))
-                            .foregroundStyle(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    settingsSection(
+                        title: t("settings.group.project_status", "Project Status"),
+                        symbol: "building.2"
+                    ) {
+                        Text(t("settings.project_status.description", "Technical scaffold only. Launch, clean screen, restore, permissions, and persistence remain intentionally minimal."))
+                            .foregroundStyle(MeetingModeTextPalette.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
 
-                        Picker("", selection: languageSelection) {
-                            ForEach(AppLanguage.allCases) { language in
-                                Text(language.displayName).tag(language)
+                    settingsSection(
+                        title: t("app.language.section", "Language"),
+                        symbol: "globe",
+                        tone: .accent
+                    ) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(t("app.language.description", "Choose the app language. The change applies to Meeting Mode windows and popovers."))
+                                .foregroundStyle(MeetingModeTextPalette.secondary)
+
+                            Picker("", selection: languageSelection) {
+                                ForEach(AppLanguage.allCases) { language in
+                                    Text(language.displayName).tag(language)
+                                }
                             }
+                            .labelsHidden()
+                            .pickerStyle(.segmented)
                         }
-                        .labelsHidden()
-                        .pickerStyle(.segmented)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
 
-                GroupBox(t("settings.group.startup", "Startup")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(t("settings.launch_at_login.description", "Use the native macOS login item setting for Meeting Mode."))
-                            .foregroundStyle(.secondary)
+                    settingsSection(
+                        title: t("settings.group.startup", "Startup"),
+                        symbol: "power.circle",
+                        tone: .accent
+                    ) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(t("settings.launch_at_login.description", "Use the native macOS login item setting for Meeting Mode."))
+                                .foregroundStyle(MeetingModeTextPalette.secondary)
 
-                        Toggle(
-                            t("settings.launch_at_login.title", "Launch at login"),
-                            isOn: launchAtLoginBinding
-                        )
+                            Toggle(
+                                t("settings.launch_at_login.title", "Launch at login"),
+                                isOn: launchAtLoginBinding
+                            )
+                            .toggleStyle(.switch)
+                            .padding(12)
+                            .meetingModeInsetSurface(tone: .accent)
 
-                        Text(launchAtLoginService.status.detail)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                GroupBox(t("settings.group.shortcuts", "Shortcuts")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(t("settings.shortcuts.description", "Configure one shortcut for Start Session and one for Restore Session. Shortcuts stay local to this Mac and remain active while Meeting Mode is running."))
-                            .foregroundStyle(.secondary)
-
-                        shortcutRow(for: .startSession)
-                        shortcutRow(for: .restoreSession)
-
-                        if let hotkeyErrorMessage {
-                            Text(hotkeyErrorMessage)
+                            Text(launchAtLoginService.status.detail)
                                 .font(.caption)
-                                .foregroundStyle(.red)
+                                .foregroundStyle(MeetingModeTextPalette.secondary)
                         }
-
-                        Text(t("settings.shortcuts.recording_hint", "Recording requires at least one modifier key. Press Escape to cancel."))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
 
-                GroupBox(t("settings.group.permissions", "Permissions")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        permissionRow(
-                            title: t("settings.permissions.accessibility", "Accessibility"),
-                            status: permissionService.accessibilityStatus,
-                            note: t("settings.permissions.accessibility.note", "Not checked in the current scaffold. This only matters once app hiding or restore becomes real.")
-                        )
-                        permissionRow(
-                            title: t("settings.permissions.automation", "Automation"),
-                            status: permissionService.automationStatus,
-                            note: t("settings.permissions.automation.note", "Not checked in the current scaffold. This only matters once real app control is added.")
-                        )
-                        permissionRow(
-                            title: t("settings.permissions.screen_recording", "Screen Recording"),
-                            status: permissionService.screenRecordingStatus,
-                            note: t("settings.permissions.screen_recording.note", "Not checked in the current scaffold. The current app does not require it.")
-                        )
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                    settingsSection(
+                        title: t("settings.group.shortcuts", "Shortcuts"),
+                        symbol: "command",
+                        tone: .accent
+                    ) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(t("settings.shortcuts.description", "Configure one shortcut for Start Session and one for Restore Session. Shortcuts stay local to this Mac and remain active while Meeting Mode is running."))
+                                .foregroundStyle(MeetingModeTextPalette.secondary)
 
-                GroupBox(t("settings.group.scope_guardrails", "Scope Guardrails")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(t("settings.scope.one_session", "One active session at a time."))
-                        Text(t("settings.scope.local_persistence", "No persistence layer beyond local files and preferences."))
-                        Text(t("settings.scope.no_advanced_automation", "No app automation beyond the current MVP scope."))
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                            shortcutRow(for: .startSession)
+                            shortcutRow(for: .restoreSession)
 
-                GroupBox(t("settings.group.help", "Help")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(t("settings.help.description", "Reopen the quick tutorial at any time if you need a short reminder of the main flow and limits."))
-                            .foregroundStyle(.secondary)
+                            if let hotkeyErrorMessage {
+                                Text(hotkeyErrorMessage)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
 
-                        Button(t("settings.help.show_tutorial", "Show Tutorial")) {
-                            showTutorial()
+                            Text(t("settings.shortcuts.recording_hint", "Recording requires at least one modifier key. Press Escape to cancel."))
+                                .font(.caption)
+                                .foregroundStyle(MeetingModeTextPalette.secondary)
                         }
-                        .buttonStyle(.borderedProminent)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    settingsSection(
+                        title: t("settings.group.permissions", "Permissions"),
+                        symbol: "hand.raised"
+                    ) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            permissionRow(
+                                title: t("settings.permissions.accessibility", "Accessibility"),
+                                status: permissionService.accessibilityStatus,
+                                note: t("settings.permissions.accessibility.note", "Not checked in the current scaffold. This only matters once app hiding or restore becomes real.")
+                            )
+                            permissionRow(
+                                title: t("settings.permissions.automation", "Automation"),
+                                status: permissionService.automationStatus,
+                                note: t("settings.permissions.automation.note", "Not checked in the current scaffold. This only matters once real app control is added.")
+                            )
+                            permissionRow(
+                                title: t("settings.permissions.screen_recording", "Screen Recording"),
+                                status: permissionService.screenRecordingStatus,
+                                note: t("settings.permissions.screen_recording.note", "Not checked in the current scaffold. The current app does not require it.")
+                            )
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    settingsSection(
+                        title: t("settings.group.scope_guardrails", "Scope Guardrails"),
+                        symbol: "checklist"
+                    ) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(t("settings.scope.one_session", "One active session at a time."))
+                            Text(t("settings.scope.local_persistence", "No persistence layer beyond local files and preferences."))
+                            Text(t("settings.scope.no_advanced_automation", "No app automation beyond the current MVP scope."))
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    settingsSection(
+                        title: t("settings.group.help", "Help"),
+                        symbol: "questionmark.circle"
+                    ) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(t("settings.help.description", "Reopen the quick tutorial at any time if you need a short reminder of the main flow and limits."))
+                                .foregroundStyle(MeetingModeTextPalette.secondary)
+
+                            Button(t("settings.help.show_tutorial", "Show Tutorial")) {
+                                showTutorial()
+                            }
+                            .meetingModeActionButton(tone: .accent, role: .secondary, fillsWidth: false)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
+                .padding(20)
             }
-            .padding(20)
         }
         .frame(minWidth: 520, minHeight: 560)
         .onAppear {
@@ -152,7 +184,7 @@ struct SettingsView: View {
 
                     Text(hotkeyService.shortcut(for: action)?.displayString ?? t("settings.shortcuts.not_set", "Not set"))
                         .font(.system(.body, design: .monospaced))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MeetingModeTextPalette.secondary)
                 }
 
                 Spacer()
@@ -160,20 +192,28 @@ struct SettingsView: View {
                 Button(recordingButtonTitle(for: action)) {
                     toggleRecording(for: action)
                 }
-                .buttonStyle(.borderedProminent)
+                .meetingModeActionButton(
+                    tone: recordingAction == action ? .accent : .accent,
+                    role: recordingAction == action ? .primary : .secondary,
+                    fillsWidth: false,
+                    size: .compact
+                )
 
                 Button(t("settings.shortcuts.clear", "Clear")) {
                     clearShortcut(for: action)
                 }
                 .disabled(hotkeyService.shortcut(for: action) == nil)
+                .meetingModeActionButton(tone: .neutral, role: .secondary, fillsWidth: false, size: .compact)
             }
 
             if recordingAction == action {
                 Text(t("settings.shortcuts.recording_for_action", "Press the shortcut you want to use for %@.", action.title))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MeetingModeTextPalette.secondary)
             }
         }
+        .padding(12)
+        .meetingModeInsetSurface(tone: recordingAction == action ? .accent : .neutral)
     }
 
     private func recordingButtonTitle(for action: HotkeyAction) -> String {
@@ -248,16 +288,18 @@ struct SettingsView: View {
 
                 Text(status.title)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MeetingModeTextPalette.secondary)
             }
 
             Text(note)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(MeetingModeTextPalette.secondary)
 
             Text(status.detail)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(MeetingModeTextPalette.secondary)
         }
+        .padding(12)
+        .meetingModeInsetSurface()
     }
 
     private var languageSelection: Binding<AppLanguage> {
@@ -276,6 +318,21 @@ struct SettingsView: View {
 
     private func t(_ key: String, _ defaultValue: String, _ arguments: CVarArg...) -> String {
         appLanguageService.localized(key, defaultValue: defaultValue, arguments)
+    }
+
+    private func settingsSection<Content: View>(
+        title: String,
+        symbol: String,
+        tone: MeetingModeVisualTone = .neutral,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        MeetingModeGlassCard(
+            tone: tone,
+            style: tone == .accent ? .action : .section
+        ) {
+            MeetingModeSectionHeader(title: title, symbol: symbol)
+            content()
+        }
     }
 }
 
