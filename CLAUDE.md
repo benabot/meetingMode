@@ -39,7 +39,7 @@ Références principales :
 
 ## État réel du projet
 
-À la date documentée dans `PROJECT_STATUS.md` (**2026-03-15**), le projet n’est pas au stade idée : le socle MVP fonctionne déjà.
+À la date documentée dans `PROJECT_STATUS.md` (**2026-03-17**), le projet n’est pas au stade idée : le socle MVP fonctionne déjà.
 
 ### Déjà en place
 - app macOS only
@@ -47,17 +47,21 @@ Références principales :
 - vraie menu bar app en mode background-only
 - implémentation runtime actuelle en `NSStatusItem` + `NSPopover`
 - presets locaux avec création, édition, suppression et persistance
+- sélection des apps et fichiers dans l’éditeur via `NSOpenPanel` (pas de saisie manuelle)
 - sélection du preset persistée
 - ouverture d’apps, d’URLs et de fichiers locaux
 - masquage best effort des apps visibles hors preset actif
-- overlay de clean screen simple et indépendant
+- overlay de clean screen couvrant tous les écrans connectés au démarrage de la session
 - session active unique
 - restore best effort limité à ce que Meeting Mode a réellement modifié
+- snapshot de session persisté sur disque — relaunch après crash conserve la capacité de restore
 - raccourcis clavier configurables `Start Session` / `Restore Session`
 - réglage `Launch at login`
 - UI FR / EN avec choix explicite de langue
 - tutorial léger de premier lancement
 - persistance locale simple, sans dépendances tierces
+- 4 protocoles extraits pour la testabilité (`AppLaunching`, `AppVisibilityManaging`, `OverlayProviding`, `SessionRestoring`)
+- suite de 17 tests unitaires (8 `PresetStore` + 9 `SessionRunner`)
 
 ### Validé explicitement
 - le flux MVP de base est end-to-end depuis la menu bar
@@ -71,7 +75,7 @@ Références principales :
 - gestion avancée des fenêtres
 - gestion parfaite des onglets, Spaces, bureaux ou états exacts des fenêtres
 - validation suffisamment fiable de fermeture automatique de certaines apps document-based lancées par la session
-- multi-screen overlay
+- distribution (sandbox, signature, notarization)
 
 Références principales :
 - `PROJECT_STATUS.md`
@@ -156,10 +160,14 @@ Services typiques cohérents avec le projet :
 - `SessionRunner`
 - `RestoreService`
 - `OverlayService`
-- `PermissionService`
+- `AppVisibilityService`
 - `AppLauncherService`
+- `PermissionService`
 - `HotkeyService`
+- `LaunchAtLoginService`
+- `TutorialService`
 - `AppLanguageService`
+- `SessionDependencies` (4 protocoles pour la testabilité)
 
 Références principales :
 - `AGENTS.md`
@@ -232,6 +240,12 @@ Ne reviens pas dessus sans raison concrète.
 - le restore de visibilité tente d’abord l’app exacte trackée, puis fallback plus large seulement pour compatibilité / anciens snapshots
 - URLs et fichiers sont ouverts simplement, mais pas refermés en v1
 
+### Persistance du snapshot de session
+- le snapshot actif est persisté dans `Application Support/MeetingMode/active_session.json`
+- au relaunch après crash, `loadPersistedSession()` recharge le snapshot et force `overlayWasShown = false` (la fenêtre est perdue)
+- le fichier est supprimé après restore
+- cette persistance est best effort uniquement
+
 Références principales :
 - `DECISIONS.md`
 - `PROJECT_STATUS.md`
@@ -240,10 +254,16 @@ Références principales :
 
 ## Séquencement roadmap à respecter
 
-Le projet a déjà acté cet ordre :
+Les 7 premières étapes sont terminées :
 1. raccourcis clavier configurables
 2. multilingue FR + EN
 3. passe visuelle “liquid glass” minimale
+4. onboarding, icône d’app, launch at login
+5. testabilité et tests unitaires
+6. nettoyage textes tutoriel
+7. fiabilisation : persistance snapshot, correction overlay au relaunch, multi-screen
+
+La prochaine étape est la **distribution** (sandbox, signature, notarization).
 
 Consigne importante : le polish visuel ne doit jamais passer avant la stabilité fonctionnelle et la clarté d’état.
 

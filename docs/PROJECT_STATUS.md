@@ -37,7 +37,7 @@ Date: 2026-03-17
 - The active session now creates a minimal snapshot for best-effort restore, including only the exact app instances that were actually hidden by Meeting Mode during the session.
 - Apps, URLs, and local files are now opened with simple `NSWorkspace` calls.
 - A small `AppVisibilityService` now hides regular visible apps that are outside the active preset, excluding Meeting Mode itself.
-- A simple clean screen overlay window is available on the main screen as an independent visual background complement.
+- A clean screen overlay is available as an independent visual background complement, covering all connected screens at session start.
 - Restore now hides the clean screen and uses a two-step close path for apps launched by Meeting Mode: polite quit first, force quit fallback if needed.
 - Restore now re-shows only the apps that Meeting Mode itself actually hid during the current session.
 - The active session snapshot is now persisted to a local JSON file so a crash or force quit does not lose restore capability.
@@ -49,6 +49,7 @@ Date: 2026-03-17
 - The snapshot storage URL is now injectable in `SessionRunner` for test isolation.
 - `@MainActor final class` types that are created and destroyed in tests include an explicit `nonisolated deinit {}` to work around a Swift concurrency back-deploy crash on macOS 14.0.
 - Checklist items in presets are visible as preparation reminders in the preset summary but do not gate session start. The one-click start flow is preserved.
+- `Views/Session/SessionStatusView.swift` exists in the codebase but is not referenced by any view or service. It contains only `#Preview` blocks. It is a vestige of an earlier iteration and has not been removed yet.
 
 ## MVP Flow Status
 
@@ -143,6 +144,17 @@ Date: 2026-03-17
 - The tutorial remains intentionally lightweight: a few pages, plain navigation, no blocking wizard, and no marketing copy.
 - The tutorial text no longer mentions "MVP", "v1", or "current MVP rules". It uses plain user-facing language throughout.
 - `xcodebuild -scheme MeetingMode -destination 'platform=macOS' test` succeeds with 17 tests (8 PresetStore + 9 SessionRunner).
+
+## Distribution
+
+- Distribution channel: direct DMG, outside the Mac App Store.
+- `ENABLE_HARDENED_RUNTIME = YES` in both Debug and Release.
+- `ENABLE_APP_SANDBOX = NO` — required for `NSWorkspace` app launch/hide and Carbon hotkeys; incompatible with App Store sandbox rules.
+- Release script: `scripts/build-release.sh` — archives, exports (Developer ID), creates a DMG, notarizes with `notarytool`, and staples.
+- Export options: `scripts/ExportOptions.plist` — method `developer-id`, team `3Q33594A3N`, signing automatic.
+- Prerequisites and manual fallback steps documented in `scripts/README-release.md`.
+- Credentials (Apple ID, app-specific password) are passed as environment variables; nothing is stored in the repository.
+- `MARKETING_VERSION = 0.1.0` — to be bumped before the first public release.
 
 ## Still Intentionally Stubbed
 

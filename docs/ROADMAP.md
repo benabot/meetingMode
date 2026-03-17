@@ -19,6 +19,7 @@ La suite a été réalisée dans cet ordre :
 4. ~~onboarding, icône d'app, launch at login~~ ✓
 5. ~~testabilité et tests unitaires (PresetStore + SessionRunner)~~ ✓
 6. ~~nettoyage des textes du tutoriel~~ ✓
+7. ~~fiabilisation : persistance snapshot sur crash, correction état overlay au relaunch, multi-screen overlay~~ ✓
 
 ## Principes de suite
 
@@ -134,6 +135,56 @@ La suite a été réalisée dans cet ordre :
 - Animation sophistiquée ou décorative qui gêne l'usage
 - Nouveau système de design étendu à tout le produit
 
+## Étape 7 — Fiabilisation et correctifs ✓
+
+**Objectif**
+- Persister le snapshot de session sur disque pour survivre à un crash ou force quit
+- Corriger l'état de l'overlay au relaunch (overlayWasShown forcé à false car la fenêtre est perdue)
+- Étendre l'overlay à tous les écrans connectés au moment du start
+
+**Fichiers concernés**
+- `MeetingMode/Services/SessionRunner.swift`
+- `MeetingMode/Services/OverlayService.swift`
+- `docs/DECISIONS.md`
+- `docs/PROJECT_STATUS.md`
+
+**Dépendances éventuelles**
+- Protocoles de testabilité déjà en place (OverlayProviding, SessionRestoring)
+
+**Critère de validation**
+- Un force quit pendant une session active permet de restaurer via `Restore Session` au relaunch
+- L'UI ne revendique pas un overlay visible après un relaunch
+- L'overlay couvre tous les écrans connectés au démarrage de la session
+
+**Hors périmètre explicite**
+- Surveillance dynamique des changements d'écran pendant la session
+- Restauration de l'overlay après relaunch
+
+## Étape 8 — Préparation distribution
+
+**Objectif**
+- Évaluer et décider du modèle de distribution (direct ou App Store)
+- Mettre en place sandbox, signature et notarization selon le choix retenu
+- S'assurer que le flux launch / hide / restore fonctionne dans le contexte sandboxé ou justifier l'absence de sandbox
+
+**Fichiers concernés**
+- `MeetingMode.xcodeproj` (entitlements, signing)
+- `docs/DECISIONS.md`
+- `docs/PROJECT_STATUS.md`
+
+**Dépendances éventuelles**
+- Décision ferme sur le canal de distribution
+- Validation du flux complet sous sandbox si retenu
+
+**Critère de validation**
+- L'app peut être signée et notarisée sans erreur
+- Le flux MVP complet fonctionne dans la configuration de distribution retenue
+- La décision sandbox / hors sandbox est documentée dans `DECISIONS.md`
+
+**Hors périmètre explicite**
+- Refonte des fonctionnalités pour satisfaire les règles App Store si hors périmètre produit
+- Nouvelle interface de distribution
+
 ## Résumé de séquencement
 
 1. ~~Stabiliser les raccourcis clavier configurables~~ ✓
@@ -142,5 +193,7 @@ La suite a été réalisée dans cet ordre :
 4. ~~Onboarding, icône d'app, launch at login~~ ✓
 5. ~~Testabilité SessionRunner + tests unitaires PresetStore et SessionRunner~~ ✓
 6. ~~Nettoyage des textes du tutoriel (ton utilisateur, pas développeur)~~ ✓
+7. ~~Fiabilisation : persistance snapshot sur crash, correction état overlay au relaunch, multi-screen overlay~~ ✓
+8. Préparation distribution : sandbox, signature, notarization
 
-Les 6 étapes de la roadmap initiale sont terminées. La suite se concentre sur l'extension de la couverture de tests et le polish restant.
+Les 7 premières étapes sont terminées. L'étape 8 (distribution) est la prochaine étape logique.

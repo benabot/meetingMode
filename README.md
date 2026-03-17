@@ -53,15 +53,18 @@ What is already implemented in the current build:
 
 - menu bar app with a compact popover UI
 - local presets with create, edit, delete, and selected preset persistence
+- app and file selection in the preset editor via `NSOpenPanel` (no free-text path entry)
 - app launch from preset data
 - best-effort hiding of regular visible apps that are outside the active preset
 - link and local file opening
-- clean screen overlay as an independent visual complement
+- clean screen overlay covering all connected screens as an independent visual complement
 - active session state
 - restore UI flow
 - best-effort re-show of only the apps that Meeting Mode actually hid during the current session
 - best-effort quit for apps launched by Meeting Mode during the session
 - the current runtime flow has been revalidated with `Safari` and `Notes` as hidden apps, then shown again by `Restore Session`
+- session snapshot persisted to disk so restore remains available after a crash or force quit
+- unit test suite: 17 tests across `PresetStore` (8 tests) and `SessionRunner` (9 tests)
 
 What is not implemented yet:
 

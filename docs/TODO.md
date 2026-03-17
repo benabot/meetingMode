@@ -34,11 +34,12 @@
 ## Plus tard
 
 - [ ] Ajouter un messaging de permissions plus précis si l'automation inter-apps devient réelle
-- [ ] Renforcer la persistance locale au-delà du JSON simple et de la sélection courante
-- [ ] Ajouter un sélecteur de fichiers local minimal si la saisie manuelle des chemins devient trop fragile
-- [ ] Faire une passe de polish UI minimale sur la menu bar et Settings
+- [x] Renforcer la persistance locale : snapshot de session persisté sur disque (active_session.json), rechargement au relaunch après crash, overlayWasShown corrigé au rechargement
+- [x] Ajouter un sélecteur de fichiers local (NSOpenPanel pour apps et fichiers dans l'éditeur de preset, au lieu de saisie manuelle)
+- [x] Faire une passe de polish UI minimale sur la menu bar et Settings (bouton delete discret, bouton restore disabled plus lisible, footer plus discret, plan detail sur 2 lignes)
 - [ ] Étendre la couverture de tests aux services restants (RestoreService, AppVisibilityService, OverlayService) via les protocoles déjà en place
 - [ ] Injecter une Clock testable dans SessionRunner pour couvrir les tâches async différées (scheduleVisibilityConfirmation, scheduleRestoreVisibilityConfirmation)
+- [ ] Préparer la distribution : sandbox (ou justification de l'absence), signature, notarization
 
 ## Risques / points de vigilance
 

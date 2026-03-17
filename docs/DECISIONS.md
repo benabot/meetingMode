@@ -99,6 +99,9 @@
 - Text readability follows the same rule on the glass cards: light or grey surfaces use dark text, while white text is reserved for genuinely dark or saturated button fills.
 - The `Settings` window no longer shows internal sections (`Project Status`, `Scope Guardrails`) that belong to developer documentation, not to a user-facing product.
 - The footer in the popover uses plain `.caption` text buttons instead of full button styles, so it reads as navigation rather than actions.
+- The trash delete button in the preset section uses `.plain` button style and muted tint to stay visually recessive relative to the primary actions.
+- The disabled `Restore Session` button uses a reduced opacity style so the disabled state is distinguishable without relying on color alone.
+- The plan detail line in the popover allows up to 2 lines so French and English longer labels do not truncate or collapse the card.
 
 ### Session Behavior
 
@@ -232,8 +235,9 @@
 ### Architecture
 
 - Kept a flat, explicit structure: `Models`, `Services`, `Views`, `Utilities`, `Resources`, `docs`.
-- Services are stubs with narrow responsibilities.
-- No persistence, no third-party dependencies, no architectural framework.
+- Services have narrow, explicit responsibilities. None are stubs: all service logic is real and in use.
+- Local persistence is in place for presets (JSON in Application Support), session snapshot (JSON in Application Support), selected preset ID, hotkeys, language preference, and tutorial first-launch flag.
+- No third-party dependencies, no architectural framework.
 
 ### Testability Strategy
 
@@ -253,9 +257,20 @@
 - They do not gate session start. The one-click start flow takes priority over pre-launch verification.
 - A pre-call checklist modal was tried and removed because it broke the core product principle of launching a preset in one click.
 
+### Distribution Strategy
+
+- The distribution channel is direct (DMG), outside the Mac App Store.
+- App Store submission is explicitly ruled out for the current implementation because `NSWorkspace` app launch, `NSRunningApplication.hide/terminate`, and Carbon `RegisterEventHotKey` require the absence of the App Sandbox. Sandboxing would break the core session flow.
+- `ENABLE_APP_SANDBOX = NO` is intentional and documented. It applies to both Debug and Release configurations.
+- `ENABLE_HARDENED_RUNTIME = YES` is required for notarization and is already set in both configurations.
+- `CODE_SIGN_STYLE = Automatic` with `DEVELOPMENT_TEAM = 3Q33594A3N`. Xcode resolves the Developer ID Application certificate automatically at archive time.
+- The release process is documented in `scripts/README-release.md` and automated by `scripts/build-release.sh`.
+- Notarization uses `xcrun notarytool` with an app-specific password. Credentials are never stored in the repository; they are passed as environment variables.
+- The DMG contains the signed app and a symlink to `/Applications` for drag-to-install. No custom DMG window layout at this stage.
+- `MARKETING_VERSION = 0.1.0` reflects a pre-release. The version should be bumped before the first public release.
+
 ### Deferred Decisions
 
 - Real permission acquisition.
-- App sandbox and distribution tradeoffs once automation is implemented.
 - Local persistence format.
 - Whether a pure SwiftUI menu bar implementation is worth revisiting later if the runtime behavior becomes reliable enough.
