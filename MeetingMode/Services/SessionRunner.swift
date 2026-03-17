@@ -71,9 +71,17 @@ final class SessionRunner: ObservableObject {
     func loadPersistedSession() {
         guard activeSnapshot == nil else { return }
 
-        guard let snapshot = loadPersistedSnapshot() else { return }
+        guard var snapshot = loadPersistedSnapshot() else { return }
+
+        // After a crash or force quit, the overlay NSWindow is lost.
+        // Clear the flag so the snapshot reflects reality and the UI
+        // does not claim the clean screen is still visible.
+        if snapshot.overlayWasShown {
+            snapshot.overlayWasShown = false
+        }
 
         activeSnapshot = snapshot
+        persistSnapshot()
         sessionPhase = .active
         lastActionState = .active(
             ActiveSessionFeedback(
@@ -81,7 +89,7 @@ final class SessionRunner: ObservableObject {
                 unresolvedHiddenApplicationCount: 0,
                 launchFailureCount: 0,
                 visibilityFailureCount: 0,
-                overlayWasRequested: snapshot.overlayWasShown,
+                overlayWasRequested: false,
                 overlayWasShown: false,
                 isVisibilityPending: false
             )

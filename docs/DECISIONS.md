@@ -143,7 +143,7 @@
 - On launch, `loadPersistedSession()` reads the file and restores the session phase to `.active` so the UI shows `Restore Session` as available.
 - If the persisted file is missing or invalid, the app starts in `.inactive` without error.
 - After a crash recovery, `pendingHiddenApplicationCandidates` is empty because the deferred confirmation cannot be replayed. The persisted `hiddenApplications` already reflects whatever was confirmed before the crash.
-- After a crash recovery, the overlay is not re-shown because the overlay window was lost with the previous process. The snapshot still records `overlayWasShown` for informational purposes only.
+- After a crash recovery, the overlay window is lost with the previous process. `loadPersistedSession()` now clears `overlayWasShown` in the reloaded snapshot before storing it, so the UI does not claim the clean screen is still visible and `RestoreService` does not attempt to hide a nonexistent overlay.
 - This persistence is best effort only and does not change the restore contract.
 
 ### Opening Strategy
@@ -155,9 +155,11 @@
 
 ### Overlay Strategy
 
-- Clean screen uses one borderless `NSWindow` only, created from `OverlayService`.
-- The overlay is constrained to the main screen `visibleFrame` so the menu bar remains accessible for restore.
-- The overlay stays visually simple: one SwiftUI view, no multi-screen support, no complex animation, no advanced window choreography.
+- Clean screen uses one borderless `NSWindow` per connected screen, created from `OverlayService`.
+- Each overlay window is constrained to its screen's `visibleFrame` so the menu bar remains accessible for restore.
+- The overlay covers all screens present at the time `showOverlay()` is called. If a screen is disconnected during the session, macOS closes the associated window automatically. If a screen is connected after start, it is not covered until the next session.
+- No dynamic screen change monitoring is attempted in this pass (`NSApplication.didChangeScreenParametersNotification` is not observed).
+- The overlay stays visually simple: one SwiftUI view per screen, no complex animation, no advanced window choreography.
 - The overlay is explicitly shown without activating the menu bar app, so `Start Session` produces a visible effect without intentionally changing the active app.
 - The overlay is independent from any specific app. It is not an exception system where some apps are expected to stay above it through fragile window-level behavior.
 - The visible session behavior should come mainly from app visibility rules: preset apps stay accessible because they are kept visible, and non-preset apps are hidden in best effort.

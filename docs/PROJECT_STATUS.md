@@ -43,7 +43,7 @@ Date: 2026-03-17
 - The active session snapshot is now persisted to a local JSON file so a crash or force quit does not lose restore capability.
 - On relaunch after a crash, the session resumes as `.active` and `Restore Session` is available.
 - The persisted snapshot includes the latest confirmed `hiddenApplications` from the deferred visibility phase.
-- No multi-screen overlay management is implemented yet.
+- The clean screen overlay now covers all connected screens at the time of `showOverlay()`, with one borderless window per screen. Screens connected after session start are not covered until the next session.
 - Unit tests are now in place for `PresetStore` (8 tests) and `SessionRunner` (9 tests), all passing.
 - `SessionRunner` now depends on 4 protocols (`AppLaunching`, `AppVisibilityManaging`, `OverlayProviding`, `SessionRestoring`) instead of concrete service classes, making it testable with mocks.
 - The snapshot storage URL is now injectable in `SessionRunner` for test isolation.
@@ -123,7 +123,7 @@ Date: 2026-03-17
 - The snapshot tracks only Meeting Mode changes currently handled by the scaffold: launched apps, exact hidden app instances, opened URLs, opened files, and clean screen state.
 - Invalid app names, URLs, or file paths do not crash the session flow; they are counted as non-blocking open failures.
 - Only regular apps outside the preset are candidates for hiding, and only apps that were actually confirmed hidden after the start flow are tracked for restore.
-- The clean screen overlay uses one borderless window on the main screen visible frame, so the menu bar stays reachable for restore.
+- The clean screen overlay uses one borderless window per connected screen, each constrained to that screen's visible frame, so the menu bar stays reachable for restore.
 - The overlay now sits below regular app windows on purpose. Preset apps stay accessible because they are not hidden, not because they pierce the overlay through fragile window-level tricks.
 - Restore hides the clean screen, explicitly re-shows only the tracked apps that Meeting Mode itself hid, and attempts a polite quit followed by force quit if needed for apps launched by the session, but it does not attempt to close URLs or files.
 - While restore visibility is still being confirmed, the popover summary now says `Checking hidden apps` instead of reporting a finished restore too early.
@@ -133,7 +133,7 @@ Date: 2026-03-17
 - The real menu bar flow has now been revalidated on the machine with `Safari` and `Notes`: they hide during the session and become visible again after `Restore Session`.
 - Apps that were already running before the session are not included in the restore quit scope.
 - If the app is force-quit during an active session and relaunched, the session snapshot is loaded from disk, the phase resumes as `Active`, and `Restore Session` becomes available immediately.
-- After a crash recovery, the overlay is not re-shown because the overlay window was lost with the previous process, but restore of hidden apps still works from the persisted snapshot.
+- After a crash recovery, the overlay window is lost with the previous process. `loadPersistedSession()` now clears `overlayWasShown` in the reloaded snapshot so the menu bar UI no longer shows "clean screen background on" and restore does not attempt to hide a nonexistent overlay. Restore of hidden apps still works from the persisted snapshot.
 - Permission messaging now states that Accessibility, Automation, and Screen Recording are not required by the current implementation, with a concrete technical reason for each.
 - The `Settings` window no longer shows internal developer sections (`Project Status`, `Scope Guardrails`).
 - The `Launch at login` toggle is now disabled when macOS cannot register the login item.
@@ -147,7 +147,6 @@ Date: 2026-03-17
 ## Still Intentionally Stubbed
 
 - Restore of opened URLs and local files
-- Multi-screen overlay management
 
 ## Out Of Scope For This Pass
 
