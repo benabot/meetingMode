@@ -40,6 +40,9 @@ Date: 2026-03-15
 - A simple clean screen overlay window is available on the main screen as an independent visual background complement.
 - Restore now hides the clean screen and uses a two-step close path for apps launched by Meeting Mode: polite quit first, force quit fallback if needed.
 - Restore now re-shows only the apps that Meeting Mode itself actually hid during the current session.
+- The active session snapshot is now persisted to a local JSON file so a crash or force quit does not lose restore capability.
+- On relaunch after a crash, the session resumes as `.active` and `Restore Session` is available.
+- The persisted snapshot includes the latest confirmed `hiddenApplications` from the deferred visibility phase.
 - No multi-screen overlay management is implemented yet.
 
 ## MVP Flow Status
@@ -123,6 +126,8 @@ Date: 2026-03-15
 - A targeted local Safari / Notes probe now confirms the runtime path used by the app: apps can hide and re-show only after control returns to the main event loop, so visibility confirmation is intentionally deferred.
 - The real menu bar flow has now been revalidated on the machine with `Safari` and `Notes`: they hide during the session and become visible again after `Restore Session`.
 - Apps that were already running before the session are not included in the restore quit scope.
+- If the app is force-quit during an active session and relaunched, the session snapshot is loaded from disk, the phase resumes as `Active`, and `Restore Session` becomes available immediately.
+- After a crash recovery, the overlay is not re-shown because the overlay window was lost with the previous process, but restore of hidden apps still works from the persisted snapshot.
 - Permission messaging states only what is true today: nothing is checked or requested yet.
 - A few native macOS strings still remain system-managed, such as standard `NSOpenPanel` chrome outside the app-provided title and prompt.
 - The login-item flow can still require approval from macOS, and that approval wording remains system-managed by the OS.

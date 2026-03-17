@@ -130,6 +130,18 @@
 - The snapshot also keeps only the exact app instances that were actually hidden with success, keyed by process identifier with bundle identifier fallback for older data.
 - The snapshot is not a promise of perfect restore; it is only a best-effort ledger of Meeting Mode actions.
 
+### Session Snapshot Persistence
+
+- The active session snapshot is persisted to `Application Support/MeetingMode/active_session.json` so a crash or force quit during an active session does not lose restore capability.
+- The snapshot file is written atomically with the same JSON encoding as presets (`prettyPrinted` + `sortedKeys`).
+- The snapshot is persisted at two points: immediately after creation in `start()`, and again after the deferred visibility confirmation updates `hiddenApplications` in `refreshHiddenApplications()`.
+- The snapshot file is deleted when `activeSnapshot` becomes `nil` after restore.
+- On launch, `loadPersistedSession()` reads the file and restores the session phase to `.active` so the UI shows `Restore Session` as available.
+- If the persisted file is missing or invalid, the app starts in `.inactive` without error.
+- After a crash recovery, `pendingHiddenApplicationCandidates` is empty because the deferred confirmation cannot be replayed. The persisted `hiddenApplications` already reflects whatever was confirmed before the crash.
+- After a crash recovery, the overlay is not re-shown because the overlay window was lost with the previous process. The snapshot still records `overlayWasShown` for informational purposes only.
+- This persistence is best effort only and does not change the restore contract.
+
 ### Opening Strategy
 
 - Opening stays on native macOS APIs only: `NSWorkspace` for apps, URLs, and local files.

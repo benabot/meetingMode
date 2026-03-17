@@ -63,6 +63,26 @@ final class SessionRunner: ObservableObject {
         self.restoreService = restoreService
     }
 
+    func loadPersistedSession() {
+        guard activeSnapshot == nil else { return }
+
+        guard let snapshot = loadPersistedSnapshot() else { return }
+
+        activeSnapshot = snapshot
+        sessionPhase = .active
+        lastActionState = .active(
+            ActiveSessionFeedback(
+                confirmedHiddenApplicationCount: snapshot.hiddenApplicationCount,
+                unresolvedHiddenApplicationCount: 0,
+                launchFailureCount: 0,
+                visibilityFailureCount: 0,
+                overlayWasRequested: snapshot.overlayWasShown,
+                overlayWasShown: false,
+                isVisibilityPending: false
+            )
+        )
+    }
+
     var isSessionActive: Bool {
         activeSnapshot != nil
     }
@@ -215,6 +235,7 @@ final class SessionRunner: ObservableObject {
             openedFiles: launchResult.openedFiles,
             overlayWasShown: overlayWasShown
         )
+        persistSnapshot()
         sessionPhase = .active
         updateActiveSessionDescription(
             requestedHiddenApplicationCount: visibilityResult.requestedApplicationCount,
@@ -265,6 +286,7 @@ final class SessionRunner: ObservableObject {
 
         let restoreResult = restoreService.restore(from: activeSnapshot)
         self.activeSnapshot = nil
+        clearPersistedSnapshot()
         pendingHiddenApplicationCandidates = []
         sessionPhase = .restored
         updateRestoreDescription(
@@ -331,6 +353,7 @@ final class SessionRunner: ObservableObject {
             confirmation.hiddenApplications
         )
         self.activeSnapshot = activeSnapshot
+        persistSnapshot()
         pendingHiddenApplicationCandidates = confirmation.stillVisibleApplications
 
         updateActiveSessionDescription(
@@ -608,5 +631,64 @@ final class SessionRunner: ObservableObject {
         let key = count == 1 ? oneKey : otherKey
         let defaultValue = count == 1 ? defaultOne : defaultOther
         return L10n.string(key, defaultValue: defaultValue, arguments: [count])
+    }
+
+    // MARK: - Snapshot Persistence
+
+    private static func snapshotStorageURL() -> URL {
+        let fileManager = FileManager.default
+        let applicationSupportURL = fileManager.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first ?? fileManager.homeDirectoryForCurrentUser
+
+        return applicationSupportURL
+            .appendingPathComponent("MeetingMode", isDirectory: true)
+            .appendingPathComponent("active_session.json")
+    }
+
+    private func persistSnapshot() {
+        guard let activeSnapshot else { return }
+
+        let url = Self.snapshotStorageURL()
+
+        do {
+            let directoryURL = url.deletingLastPathComponent()
+            try FileManager.default.createDirectory(
+                at: directoryURL,
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            let data = try encoder.encode(activeSnapshot)
+            try data.write(to: url, options: .atomic)
+        } catch {
+            // Best effort only — failing to persist does not block the session.
+        }
+    }
+
+    private func clearPersistedSnapshot() {
+        let url = Self.snapshotStorageURL()
+        try? FileManager.default.removeItem(at: url)
+    }
+
+    private func loadPersistedSnapshot() -> SessionSnapshot? {
+        let url = Self.snapshotStorageURL()
+        let fileManager = FileManager.default
+
+        guard fileManager.fileExists(atPath: url.path) else {
+            return nil
+        }
+
+        do {
+            let data = try Data(contentsOf: url)
+            return try JSONDecoder().decode(SessionSnapshot.self, from: data)
+        } catch {
+            // Invalid file — remove silently and start inactive.
+            try? fileManager.removeItem(at: url)
+            return nil
+        }
     }
 }

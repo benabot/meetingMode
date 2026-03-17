@@ -33,6 +33,7 @@ struct MeetingModeApp: App {
             overlayService: overlayService,
             restoreService: restoreService
         )
+        sessionRunner.loadPersistedSession()
 
         _appLanguageService = StateObject(wrappedValue: appLanguageService)
         _presetStore = StateObject(wrappedValue: presetStore)
