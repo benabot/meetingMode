@@ -102,13 +102,7 @@ struct PresetEditorView: View {
                                     usesMonospacedText: true
                                 )
 
-                                textEditorBlock(
-                                    title: t("preset_editor.field.open_files", "Open files"),
-                                    text: $draft.filesText,
-                                    placeholder: t("preset_editor.placeholder.files", "/Users/benoitabot/Documents/brief.pdf\n/Users/benoitabot/Desktop/demo.key"),
-                                    height: 88,
-                                    usesMonospacedText: true
-                                )
+                                selectedFilesBlock
 
                                 Toggle(t("preset_editor.toggle.clean_screen", "Show clean screen"), isOn: $draft.showsOverlay)
                                     .padding(12)
@@ -234,6 +228,65 @@ struct PresetEditorView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private var selectedFilesBlock: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                fieldLabel(t("preset_editor.field.open_files", "Open files"))
+
+                Spacer(minLength: 12)
+
+                Button(t("preset_editor.button.add_file", "Add File…")) {
+                    presentFilePicker()
+                }
+                .meetingModeActionButton(tone: .accent, role: .secondary, fillsWidth: false, size: .compact)
+            }
+
+            if draft.files.isEmpty {
+                Text(t("preset_editor.files.none", "No files selected yet."))
+                    .font(.caption)
+                    .foregroundStyle(MeetingModeTextPalette.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .meetingModeInsetSurface()
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(Array(draft.files.enumerated()), id: \.offset) { index, path in
+                        HStack(alignment: .top, spacing: 10) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(URL(fileURLWithPath: path).lastPathComponent)
+                                    .font(.subheadline.weight(.medium))
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Text(path)
+                                    .font(.caption.monospaced())
+                                    .foregroundStyle(MeetingModeTextPalette.secondary)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            }
+                            .layoutPriority(1)
+
+                            Spacer(minLength: 8)
+
+                            Button {
+                                draft.removeFile(at: index)
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .font(.subheadline.weight(.semibold))
+                            }
+                            .meetingModeActionButton(role: .destructive, fillsWidth: false, size: .compact)
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .meetingModeInsetSurface()
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var footer: some View {
         HStack(alignment: .center) {
             if !draft.canSave {
@@ -314,6 +367,21 @@ struct PresetEditorView: View {
 
         if panel.runModal() == .OK {
             draft.addApplications(from: panel.urls)
+        }
+    }
+
+    private func presentFilePicker() {
+        let panel = NSOpenPanel()
+        panel.title = t("preset_editor.file_picker.title", "Add Files")
+        panel.prompt = t("preset_editor.file_picker.prompt", "Add File")
+        panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+        panel.allowsMultipleSelection = true
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.resolvesAliases = true
+
+        if panel.runModal() == .OK {
+            draft.addFiles(from: panel.urls)
         }
     }
 
@@ -405,7 +473,7 @@ private struct PresetEditorDraft {
     var iconSystemName: String
     var apps: [PresetApp]
     var urlsText: String
-    var filesText: String
+    var files: [String]
     var checklistText: String
     var showsOverlay: Bool
 
@@ -415,7 +483,7 @@ private struct PresetEditorDraft {
         iconSystemName = preset?.iconSystemName ?? "sparkles"
         apps = preset?.appsToLaunch ?? []
         urlsText = preset?.urlsToOpen.joined(separator: "\n") ?? ""
-        filesText = preset?.filesToOpen.joined(separator: "\n") ?? ""
+        files = preset?.filesToOpen ?? []
         checklistText = preset?.checklistItems.map(\.title).joined(separator: "\n") ?? ""
         showsOverlay = preset?.showsOverlay ?? false
     }
@@ -427,7 +495,7 @@ private struct PresetEditorDraft {
     var hasStartableActions: Bool {
         !apps.isEmpty
             || !normalizedLines(from: urlsText).isEmpty
-            || !normalizedLines(from: filesText).isEmpty
+            || !files.isEmpty
             || showsOverlay
     }
 
@@ -454,6 +522,21 @@ private struct PresetEditorDraft {
         apps.removeAll { $0.id == app.id }
     }
 
+    mutating func addFiles(from urls: [URL]) {
+        for url in urls {
+            let path = url.path
+            guard !files.contains(path) else {
+                continue
+            }
+            files.append(path)
+        }
+    }
+
+    mutating func removeFile(at index: Int) {
+        guard files.indices.contains(index) else { return }
+        files.remove(at: index)
+    }
+
     func makePreset() -> Preset {
         Preset(
             id: id ?? UUID(),
@@ -461,7 +544,7 @@ private struct PresetEditorDraft {
             iconSystemName: normalizedIconSystemName,
             appsToLaunch: apps,
             urlsToOpen: normalizedLines(from: urlsText),
-            filesToOpen: normalizedLines(from: filesText),
+            filesToOpen: files,
             checklistItems: normalizedLines(from: checklistText).map { ChecklistItem(title: $0) },
             showsOverlay: showsOverlay
         )

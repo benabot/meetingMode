@@ -211,7 +211,9 @@
 - The editor is intentionally split into `Basics`, `What starts`, and `Checklist` so identity, start actions, and preparation steps are not mixed together.
 - The validation rule is surfaced at the top of the sheet: a preset needs at least one app, link, file, or clean screen to be startable.
 - Apps are no longer entered as free text. The sheet now uses `Add App…` with `NSOpenPanel`, then displays the selected apps as a removable list.
-- Editing stays text-based only where it is still the smallest reasonable UI: links, local file paths, and checklist items.
+- Local files are no longer entered as free text. The sheet now uses `Add File…` with `NSOpenPanel` starting from the user's home directory, then displays the selected files as a removable list showing file name and full path.
+- The file picker accepts any file type and allows multiple selection.
+- Editing stays text-based only where it is still the smallest reasonable UI: links and checklist items.
 - A preset must contain at least one startable action to be saved: app, URL, file, or clean screen.
 - Checklist-only presets are deliberately blocked for now because checklist execution is not implemented yet.
 - Saving rewrites the local JSON file atomically, without adding a heavier persistence layer.
@@ -242,6 +244,12 @@
 - Test mocks are simple structs with configurable return values, no third-party mock framework.
 - `@MainActor final class` types that get created and destroyed in tests (`PresetStore`, `SessionRunner`) require an explicit `nonisolated deinit {}` to avoid a Swift concurrency back-deploy crash on macOS 14.0.
 - Async deferred-confirmation tasks (`scheduleVisibilityConfirmation`, `scheduleRestoreVisibilityConfirmation`) are explicitly out of test scope because they depend on `Task.sleep` and would require clock injection.
+
+### Checklist Strategy
+
+- Checklist items are stored in presets as preparation reminders visible in the preset summary.
+- They do not gate session start. The one-click start flow takes priority over pre-launch verification.
+- A pre-call checklist modal was tried and removed because it broke the core product principle of launching a preset in one click.
 
 ### Deferred Decisions
 

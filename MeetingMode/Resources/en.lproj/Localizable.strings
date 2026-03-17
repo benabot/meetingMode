@@ -128,6 +128,10 @@
 "preset_editor.placeholder.links" = "https://meet.example.com/demo\nhttps://docs.example.com/brief";
 "preset_editor.placeholder.files" = "/Users/benoitabot/Documents/brief.pdf\n/Users/benoitabot/Desktop/demo.key";
 "preset_editor.placeholder.checklist" = "Check microphone\nClose private tabs\nShare the right screen";
+"preset_editor.button.add_file" = "Add File…";
+"preset_editor.files.none" = "No files selected yet.";
+"preset_editor.file_picker.title" = "Add Files";
+"preset_editor.file_picker.prompt" = "Add File";
 "preset_editor.app_picker.title" = "Add Apps";
 "preset_editor.app_picker.prompt" = "Add App";
 

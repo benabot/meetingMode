@@ -48,6 +48,7 @@ Date: 2026-03-17
 - `SessionRunner` now depends on 4 protocols (`AppLaunching`, `AppVisibilityManaging`, `OverlayProviding`, `SessionRestoring`) instead of concrete service classes, making it testable with mocks.
 - The snapshot storage URL is now injectable in `SessionRunner` for test isolation.
 - `@MainActor final class` types that are created and destroyed in tests include an explicit `nonisolated deinit {}` to work around a Swift concurrency back-deploy crash on macOS 14.0.
+- Checklist items in presets are visible as preparation reminders in the preset summary but do not gate session start. The one-click start flow is preserved.
 
 ## MVP Flow Status
 
@@ -98,6 +99,7 @@ Date: 2026-03-17
 - The visible hierarchy is now more explicit: hero status card first, more transparent section cards for preset and plan, stronger action surface, and a quieter footer.
 - The button system has been simplified further so the UI no longer depends on thin tinted outlines: buttons are now more solid, more contrast-driven, and easier to read on translucent surfaces.
 - `Open apps` now uses `Add App…` and an `NSOpenPanel` rooted on `/Applications`, instead of free text entry by app name.
+- `Open files` now uses `Add File…` and an `NSOpenPanel` rooted on the user's home directory, instead of free text entry by path. The picker accepts any file type and allows multiple selection.
 - Deleting a preset now goes through a simple confirmation and keeps selection coherent.
 - The selected preset is restored after relaunch when it still exists.
 - Start and Restore shortcuts can be set, changed, or cleared from Settings.
