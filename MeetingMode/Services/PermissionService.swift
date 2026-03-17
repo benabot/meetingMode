@@ -3,6 +3,7 @@ import Foundation
 
 enum PermissionStatus {
     case notChecked
+    case notRequired
 
     var title: String {
         switch self {
@@ -10,6 +11,11 @@ enum PermissionStatus {
             return L10n.string(
                 "permissions.status.not_checked",
                 defaultValue: "Not checked"
+            )
+        case .notRequired:
+            return L10n.string(
+                "permissions.status.not_required",
+                defaultValue: "Not required"
             )
         }
     }
@@ -21,15 +27,20 @@ enum PermissionStatus {
                 "permissions.status.not_checked.detail",
                 defaultValue: "Meeting Mode does not inspect or request this permission yet."
             )
+        case .notRequired:
+            return L10n.string(
+                "permissions.status.not_required.detail",
+                defaultValue: "This permission is not required by the current implementation."
+            )
         }
     }
 }
 
 @MainActor
 final class PermissionService: ObservableObject {
-    @Published private(set) var accessibilityStatus: PermissionStatus = .notChecked
-    @Published private(set) var automationStatus: PermissionStatus = .notChecked
-    @Published private(set) var screenRecordingStatus: PermissionStatus = .notChecked
+    @Published private(set) var accessibilityStatus: PermissionStatus = .notRequired
+    @Published private(set) var automationStatus: PermissionStatus = .notRequired
+    @Published private(set) var screenRecordingStatus: PermissionStatus = .notRequired
 
     init() {
         refreshStatuses()
@@ -37,14 +48,14 @@ final class PermissionService: ObservableObject {
 
     var shortSummary: String {
         L10n.string(
-            "permissions.summary.none_checked",
-            defaultValue: "No macOS permissions are checked or requested yet."
+            "permissions.summary.none_required",
+            defaultValue: "No macOS permissions are required by the current implementation."
         )
     }
 
     func refreshStatuses() {
-        accessibilityStatus = .notChecked
-        automationStatus = .notChecked
-        screenRecordingStatus = .notChecked
+        accessibilityStatus = .notRequired
+        automationStatus = .notRequired
+        screenRecordingStatus = .notRequired
     }
 }

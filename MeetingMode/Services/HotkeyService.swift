@@ -136,6 +136,10 @@ struct HotkeyShortcut: Codable, Hashable {
             return digit
         }
 
+        if let punctuation = punctuationKeyNames[keyCode] {
+            return punctuation
+        }
+
         return L10n.string(
             "hotkeys.key.unknown",
             defaultValue: "Key %d",
@@ -183,6 +187,20 @@ struct HotkeyShortcut: Codable, Hashable {
         UInt16(kVK_ANSI_7): "7",
         UInt16(kVK_ANSI_8): "8",
         UInt16(kVK_ANSI_9): "9",
+    ]
+
+    private static let punctuationKeyNames: [UInt16: String] = [
+        UInt16(kVK_ANSI_Minus): "-",
+        UInt16(kVK_ANSI_Equal): "=",
+        UInt16(kVK_ANSI_LeftBracket): "[",
+        UInt16(kVK_ANSI_RightBracket): "]",
+        UInt16(kVK_ANSI_Semicolon): ";",
+        UInt16(kVK_ANSI_Quote): "'",
+        UInt16(kVK_ANSI_Comma): ",",
+        UInt16(kVK_ANSI_Period): ".",
+        UInt16(kVK_ANSI_Slash): "/",
+        UInt16(kVK_ANSI_Backslash): "\\",
+        UInt16(kVK_ANSI_Grave): "`",
     ]
 
     private static let specialKeyNames: [UInt16: String] = [
