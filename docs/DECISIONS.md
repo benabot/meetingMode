@@ -259,8 +259,12 @@
 
 ### Distribution Strategy
 
-- The distribution channel is direct (DMG), outside the Mac App Store.
-- App Store submission is explicitly ruled out for the current implementation because `NSWorkspace` app launch, `NSRunningApplication.hide/terminate`, and Carbon `RegisterEventHotKey` require the absence of the App Sandbox. Sandboxing would break the core session flow.
+- The distribution channel is direct (DMG), outside the Mac App Store. This is the current priority.
+- A full sandbox audit has been produced and documented in `docs/SANDBOX_AUDIT.md` (2026-03-18).
+- App Store is achievable but requires approximately 10 days of refactoring: security-scoped bookmarks for persistent file and app path access, migration from the deprecated `launchApplication(at:...)` to `openApplication(at:configuration:completionHandler:)`, and removal of `terminate()`/`forceTerminate()` which are unconditionally blocked in sandbox.
+- The main App Store product compromise: restore would no longer quit apps launched by the session. The user would have to close them manually.
+- The sandbox audit also corrects a false assumption in this document: Carbon `RegisterEventHotKey` is **not** blocked in sandbox. The Mac App Store restriction applies to `CGEventTap` (passive global keyboard monitoring), not to `RegisterEventHotKey` which works through the window server as a declarative opt-in API. Several App Store apps use it. No migration required on that front.
+- This App Store work is explicitly deferred until after the direct DMG distribution is shipped and stable.
 - `ENABLE_APP_SANDBOX = NO` is intentional and documented. It applies to both Debug and Release configurations.
 - `ENABLE_HARDENED_RUNTIME = YES` is required for notarization and is already set in both configurations.
 - `CODE_SIGN_STYLE = Automatic` with `DEVELOPMENT_TEAM = 3Q33594A3N`. Xcode resolves the Developer ID Application certificate automatically at archive time.

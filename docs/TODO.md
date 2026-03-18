@@ -40,6 +40,7 @@
 - [ ] Étendre la couverture de tests aux services restants (RestoreService, AppVisibilityService, OverlayService) via les protocoles déjà en place
 - [ ] Injecter une Clock testable dans SessionRunner pour couvrir les tâches async différées (scheduleVisibilityConfirmation, scheduleRestoreVisibilityConfirmation)
 - [ ] Préparer la distribution : sandbox (ou justification de l'absence), signature, notarization
+- [ ] Distribution App Store : implémenter security-scoped bookmarks (fichiers + apps), migrer `launchApplication` → `openApplication`, retirer `terminate`/`forceTerminate` (voir `docs/SANDBOX_AUDIT.md` — ~10 jours, à faire après la distribution DMG)
 
 ## Risques / points de vigilance
 
