@@ -5,9 +5,14 @@ import Foundation
 @MainActor
 struct MockAppLauncher: AppLaunching {
     var openItemsResult = LaunchExecutionResult()
+    var openContentResult = ContentExecutionResult()
 
     func openItems(for preset: Preset) -> LaunchExecutionResult {
         openItemsResult
+    }
+
+    func openContent(for preset: Preset) -> ContentExecutionResult {
+        openContentResult
     }
 }
 

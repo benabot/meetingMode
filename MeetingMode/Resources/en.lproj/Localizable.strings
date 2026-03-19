@@ -59,6 +59,10 @@
 "menubar.button.restore" = "Restore Session";
 "menubar.button.settings" = "Settings…";
 "menubar.button.quit" = "Quit";
+"menu.quit" = "Quit Meeting Mode";
+"menu.quit.confirm" = "A session is active. Restore and quit?";
+"menu.quit.restore_and_quit" = "Restore and Quit";
+"menu.quit.cancel" = "Cancel";
 "menubar.alert.delete_title" = "Delete preset?";
 "menubar.alert.delete_message" = "\"%@\" will be removed from local storage.";
 "menubar.empty.no_presets" = "No presets yet";

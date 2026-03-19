@@ -4,6 +4,10 @@ import Foundation
 struct LaunchExecutionResult {
     var launchedApplications: [String] = []
     var launchedApplicationBundleIdentifiers: [String] = []
+    var failureCount = 0
+}
+
+struct ContentExecutionResult {
     var openedURLs: [String] = []
     var openedFiles: [String] = []
     var failureCount = 0
@@ -30,6 +34,12 @@ final class AppLauncherService: AppLaunching {
                 result.failureCount += 1
             }
         }
+
+        return result
+    }
+
+    func openContent(for preset: Preset) -> ContentExecutionResult {
+        var result = ContentExecutionResult()
 
         for urlString in preset.urlsToOpen {
             if let openedURL = openURL(from: urlString) {
@@ -108,7 +118,7 @@ final class AppLauncherService: AppLaunching {
             return nil
         }
 
-        return NSWorkspace.shared.open(url) ? trimmedURL : nil
+        return openWithConfiguration(url)  ? trimmedURL : nil
     }
 
     private func openFile(at filePath: String) -> String? {
@@ -123,7 +133,27 @@ final class AppLauncherService: AppLaunching {
         }
 
         let fileURL = URL(fileURLWithPath: expandedPath)
-        return NSWorkspace.shared.open(fileURL) ? expandedPath : nil
+        return openWithConfiguration(fileURL) ? expandedPath : nil
+    }
+
+    private func openWithConfiguration(_ url: URL, timeout: TimeInterval = 3.0) -> Bool {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+
+        var didFinish = false
+        var openSucceeded = false
+
+        NSWorkspace.shared.open(url, configuration: configuration) { _, error in
+            openSucceeded = error == nil
+            didFinish = true
+        }
+
+        let deadline = Date().addingTimeInterval(timeout)
+        while !didFinish && Date() < deadline {
+            RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
+        }
+
+        return openSucceeded
     }
 
     private func resolvedApplicationURL(for application: PresetApp) -> URL? {

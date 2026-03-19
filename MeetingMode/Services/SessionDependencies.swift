@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 protocol AppLaunching {
     func openItems(for preset: Preset) -> LaunchExecutionResult
+    func openContent(for preset: Preset) -> ContentExecutionResult
 }
 
 @MainActor

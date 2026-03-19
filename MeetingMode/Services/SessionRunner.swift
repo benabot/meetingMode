@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import Foundation
 
@@ -217,17 +218,35 @@ final class SessionRunner: ObservableObject {
         pendingHiddenApplicationCandidates = visibilityResult.requestedApplications
         let overlayWasShown = preset.showsOverlay ? overlayService.showOverlay() : false
 
+        // Open URLs and files after the hide pass so their host apps
+        // (browser, Preview, etc.) are not immediately hidden.
+        let contentResult = appLauncherService.openContent(for: preset)
+
+        // After opening content, some previously-hidden apps may have become
+        // visible again (e.g. Safari brought back by an URL open). Remove
+        // those from the pending candidates so the deferred confirmation
+        // does not re-hide them.
+        let visibleBundleIDs = Set(
+            NSWorkspace.shared.runningApplications
+                .filter { !$0.isTerminated && !$0.isHidden }
+                .compactMap(\.bundleIdentifier)
+        )
+        pendingHiddenApplicationCandidates = pendingHiddenApplicationCandidates.filter {
+            !visibleBundleIDs.contains($0.bundleIdentifier)
+        }
+
+        let totalFailureCount = launchResult.failureCount + contentResult.failureCount
         let appliedActionCount = launchResult.launchedApplications.count
             + visibilityResult.requestedApplicationCount
-            + launchResult.openedURLs.count
-            + launchResult.openedFiles.count
+            + contentResult.openedURLs.count
+            + contentResult.openedFiles.count
             + (overlayWasShown ? 1 : 0)
 
         guard appliedActionCount > 0 else {
             pendingHiddenApplicationCandidates = []
             sessionPhase = .inactive
 
-            if launchResult.failureCount > 0 || preset.showsOverlay {
+            if totalFailureCount > 0 || preset.showsOverlay {
                 lastActionState = .nothingOpened
             } else {
                 lastActionState = .addRunnableActionBeforeStarting
@@ -244,15 +263,15 @@ final class SessionRunner: ObservableObject {
             launchedApplications: launchResult.launchedApplications,
             launchedApplicationBundleIdentifiers: launchResult.launchedApplicationBundleIdentifiers,
             hiddenApplications: [],
-            openedURLs: launchResult.openedURLs,
-            openedFiles: launchResult.openedFiles,
+            openedURLs: contentResult.openedURLs,
+            openedFiles: contentResult.openedFiles,
             overlayWasShown: overlayWasShown
         )
         persistSnapshot()
         sessionPhase = .active
         updateActiveSessionDescription(
             requestedHiddenApplicationCount: visibilityResult.requestedApplicationCount,
-            launchFailureCount: launchResult.failureCount,
+            launchFailureCount: totalFailureCount,
             visibilityFailureCount: visibilityResult.failureCount,
             overlayWasRequested: preset.showsOverlay,
             overlayWasShown: overlayWasShown,
@@ -260,8 +279,8 @@ final class SessionRunner: ObservableObject {
         )
         scheduleVisibilityConfirmation(
             for: activeSnapshot?.id,
-            requestedHiddenApplications: visibilityResult.requestedApplications,
-            launchFailureCount: launchResult.failureCount,
+            requestedHiddenApplications: pendingHiddenApplicationCandidates,
+            launchFailureCount: totalFailureCount,
             visibilityFailureCount: visibilityResult.failureCount,
             overlayWasRequested: preset.showsOverlay,
             overlayWasShown: overlayWasShown

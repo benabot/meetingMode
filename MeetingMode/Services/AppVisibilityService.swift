@@ -94,9 +94,33 @@ final class AppVisibilityService: AppVisibilityManaging {
             RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
         }
 
-        let hiddenApplications = uniqueApplications.filter(isTrackedApplicationHidden(_:))
+        var hiddenApplications = uniqueApplications.filter(isTrackedApplicationHidden(_:))
         let hiddenSet = Set(hiddenApplications)
-        let stillVisibleApplications = uniqueApplications.filter { !hiddenSet.contains($0) }
+        var stillVisibleApplications = uniqueApplications.filter { !hiddenSet.contains($0) }
+
+        // Retry hide() once for apps that did not respond to the first attempt.
+        // Some system apps (e.g. System Settings) acknowledge hide() slowly.
+        if !stillVisibleApplications.isEmpty {
+            for visibleApplication in stillVisibleApplications {
+                let matches = runningApplications(matching: visibleApplication)
+                for app in matches where !app.isTerminated && !app.isHidden {
+                    logger.notice("Hide retry \(self.logLabel(for: app), privacy: .public)")
+                    _ = app.hide()
+                }
+            }
+
+            let retryDeadline = Date().addingTimeInterval(1.0)
+            while Date() < retryDeadline {
+                let remaining = stillVisibleApplications.filter { !isTrackedApplicationHidden($0) }
+                if remaining.isEmpty { break }
+                RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
+            }
+
+            let newlyHidden = stillVisibleApplications.filter(isTrackedApplicationHidden(_:))
+            hiddenApplications.append(contentsOf: newlyHidden)
+            let updatedHiddenSet = Set(hiddenApplications)
+            stillVisibleApplications = uniqueApplications.filter { !updatedHiddenSet.contains($0) }
+        }
 
         for hiddenApplication in hiddenApplications {
             logger.notice(

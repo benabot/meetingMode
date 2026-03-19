@@ -13,6 +13,8 @@ struct MenuBarContentView: View {
     let restoreSession: () -> Void
 
     @State private var presetPendingDeletion: Preset?
+    @State private var isQuitConfirmationVisible = false
+    @State private var isRestoringBeforeQuit = false
 
     var body: some View {
         ZStack {
@@ -228,25 +230,70 @@ struct MenuBarContentView: View {
 
     private var footerBar: some View {
         MeetingModeGlassCard(style: .footer, spacing: 0, contentPadding: 8) {
-            HStack {
-                Button(t("menubar.button.settings", "Settings…")) {
-                    openSettings()
+            VStack(spacing: 8) {
+                if isQuitConfirmationVisible {
+                    quitConfirmation
+                }
+
+                HStack {
+                    Button(t("menubar.button.settings", "Settings…")) {
+                        openSettings()
+                    }
+                    .buttonStyle(.plain)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(MeetingModeTextPalette.secondary)
+
+                    Spacer()
+
+                    Button(t("menu.quit", "Quit Meeting Mode")) {
+                        if sessionRunner.isSessionActive {
+                            isQuitConfirmationVisible = true
+                        } else {
+                            NSApplication.shared.terminate(nil)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(MeetingModeTextPalette.primary)
+                    .disabled(isRestoringBeforeQuit)
+                }
+                .padding(.horizontal, 4)
+            }
+        }
+    }
+
+    private var quitConfirmation: some View {
+        VStack(spacing: 6) {
+            Text(t("menu.quit.confirm", "A session is active. Restore and quit?"))
+                .font(.caption)
+                .foregroundStyle(MeetingModeTextPalette.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 8) {
+                Button(t("menu.quit.cancel", "Cancel")) {
+                    isQuitConfirmationVisible = false
                 }
                 .buttonStyle(.plain)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(MeetingModeTextPalette.secondary)
+                .disabled(isRestoringBeforeQuit)
 
-                Spacer()
-
-                Button(t("menubar.button.quit", "Quit")) {
-                    NSApplication.shared.terminate(nil)
+                Button(t("menu.quit.restore_and_quit", "Restore and Quit")) {
+                    isRestoringBeforeQuit = true
+                    sessionRunner.restoreCurrentSession()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        NSApplication.shared.terminate(nil)
+                    }
                 }
                 .buttonStyle(.plain)
                 .font(.caption.weight(.medium))
-                .foregroundStyle(MeetingModeTextPalette.muted)
+                .foregroundStyle(MeetingModeVisualTone.positive.tint)
+                .disabled(isRestoringBeforeQuit)
             }
-            .padding(.horizontal, 4)
         }
+        .padding(.horizontal, 4)
+        .padding(.top, 4)
     }
 
     private func sectionCard<Content: View>(

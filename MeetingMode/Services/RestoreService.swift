@@ -39,6 +39,7 @@ final class RestoreService: SessionRestoring {
         result.stillRunningApplicationsCount = applicationRestoreResult.stillRunningApplicationsCount
         logger.notice("Restore launched apps closed=\(result.closedApplicationsCount, privacy: .public) stillRunning=\(result.stillRunningApplicationsCount, privacy: .public)")
 
+        // TODO: v1 does not close files or URLs opened during the session
         result.requestedVisibleApplications = appVisibilityService.beginVisibilityRestore(from: snapshot)
         logger.notice("Restore hidden apps requested=\(result.requestedVisibleApplications.count, privacy: .public)")
         return result
