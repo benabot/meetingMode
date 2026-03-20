@@ -76,3 +76,51 @@
 - [x] PresetStore est couvert par 8 tests unitaires isolés
 - [x] SessionRunner est couvert par 9 tests unitaires avec mocks
 - [x] Les textes du tutoriel n'utilisent plus de jargon développeur (MVP, v1, règles MVP)
+
+
+## V2 — Fermeture best effort des URLs et fichiers
+
+### À faire
+
+- [ ] Étendre `SessionSnapshot` pour tracer les URLs et fichiers ouverts par la session
+- [ ] Distinguer dans le snapshot ce qui a été ouvert dans une app déjà en cours d'exécution vs une app lancée par Meeting Mode
+- [ ] Réutiliser le scope de quit existant pour fermer les apps lancées par la session qui servent de support à une URL ou un fichier
+- [ ] Ne pas tenter de fermer un onglet précis dans un navigateur déjà ouvert
+- [ ] Ne pas tenter de fermer un document précis dans une app déjà ouverte
+- [ ] Afficher dans le résultat de restore trois états séparés : fermé, resté ouvert, non fermable proprement
+- [ ] Mettre à jour les textes FR + EN pour ne pas promettre de fermeture parfaite
+- [ ] Ajouter des tests unitaires ciblés sur la nouvelle logique de snapshot et de restore
+- [ ] Documenter explicitement la limite produit dans `README.md`, `DECISIONS.md` et `PROJECT_STATUS.md`
+
+### Critère de terminé V2
+
+- [ ] Les URLs et fichiers ouverts pendant la session sont tracés dans le snapshot
+- [ ] Le restore ferme les apps lancées par Meeting Mode quand elles sont le support de ces ouvertures
+- [ ] Le restore n'annonce jamais à tort qu'un onglet ou document précis a été fermé
+- [ ] Le résultat utilisateur distingue clairement les cas réellement restaurés des limites macOS
+
+## V3 — Release App Store
+
+### À faire
+
+- [ ] Créer une cible / configuration de validation sandboxée (`ENABLE_APP_SANDBOX = YES`)
+- [ ] Migrer `launchApplication(at:...)` vers `openApplication(at:configuration:completionHandler:)`
+- [ ] Ajouter les entitlements App Store nécessaires pour fichiers sélectionnés par l'utilisateur
+- [ ] Refactorer `Preset` et `PresetApp` pour stocker des security-scoped bookmarks au lieu de chemins bruts
+- [ ] Ajouter une migration locale depuis les presets existants basés sur chemins
+- [ ] Appeler `startAccessingSecurityScopedResource()` / `stopAccessing...` au bon moment
+- [ ] Retirer `terminate()` / `forceTerminate()` du restore dans la variante App Store
+- [ ] Réécrire le messaging produit pour indiquer que le restore App Store ne ferme plus les apps tierces
+- [ ] Vérifier `hide()` / `unhide()` / `activate()` sur une vraie build sandboxée
+- [ ] Vérifier les raccourcis globaux dans la build sandboxée
+- [ ] Valider ouverture d'apps et fichiers après relance avec bookmarks persistants
+- [ ] Préparer signature, archive, notarization et soumission App Store
+- [ ] Mettre à jour `SANDBOX_AUDIT.md`, `DECISIONS.md`, `PROJECT_STATUS.md` et `README.md` avec l'état réel
+
+### Critère de terminé V3
+
+- [ ] La build sandboxée couvre le flux réel start / hide / overlay / restore simple
+- [ ] Les presets persistés restent utilisables après relance grâce aux bookmarks
+- [ ] Le restore App Store ne tente plus de quitter d'app tierce
+- [ ] La documentation décrit exactement les compromis de la version App Store
+- [ ] L'archive App Store est prête sans divergence entre code, entitlements et doc

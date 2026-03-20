@@ -150,6 +150,28 @@ Date: 2026-03-17
 - Distribution channel: direct DMG, outside the Mac App Store.
 - `ENABLE_HARDENED_RUNTIME = YES` in both Debug and Release.
 - `ENABLE_APP_SANDBOX = NO` — required for `NSWorkspace` app launch/hide and Carbon hotkeys; incompatible with App Store sandbox rules.
+
+## Next documented milestones
+
+### V2 — Close files and URLs opened by the session
+
+- The next functional extension is a **best-effort cleanup** of content opened by Meeting Mode during a session.
+- Scope is intentionally narrow:
+  - if Meeting Mode launched an app in order to open a URL or file, that app can be closed during restore if it belongs to the session-launched scope
+  - if a URL was opened into an already-running browser, v2 does **not** promise closing the exact tab afterward
+  - if a file was opened inside an already-running document app, v2 does **not** promise closing the exact document afterward
+- The session snapshot already tracks URLs and files opened successfully; v2 extends restore reporting so the app can distinguish what was actually closed from what remains open due to macOS limitations.
+- No advanced window management, tab targeting, AppleScript automation, or broad app-control expansion is planned for this version.
+
+### V3 — App Store release track
+
+- The App Store track is explicitly **after** direct distribution is stable.
+- This version requires a focused compatibility pass rather than new MVP product scope:
+  - migrate remaining launch code to sandbox-compatible APIs
+  - replace persisted raw file/app paths with security-scoped bookmarks
+  - remove the current restore behavior that asks session-launched apps to quit via `terminate()` / `forceTerminate()`
+- Main product consequence for the App Store build: restore remains useful for overlay and hidden apps, but it no longer promises automatic quitting of apps launched by the session.
+- Carbon hotkeys are not the blocker; sandboxed restore semantics are.
 - Release script: `scripts/build-release.sh` — archives, exports (Developer ID), creates a DMG, notarizes with `notarytool`, and staples.
 - Export options: `scripts/ExportOptions.plist` — method `developer-id`, team `3Q33594A3N`, signing automatic.
 - Prerequisites and manual fallback steps documented in `scripts/README-release.md`.

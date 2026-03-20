@@ -160,30 +160,143 @@ La suite a été réalisée dans cet ordre :
 - Surveillance dynamique des changements d'écran pendant la session
 - Restauration de l'overlay après relaunch
 
-## Étape 8 — Préparation distribution
+## Étape 8 — Canal direct stable (DMG)
 
 **Objectif**
-- Évaluer et décider du modèle de distribution (direct ou App Store)
-- Mettre en place sandbox, signature et notarization selon le choix retenu
-- S'assurer que le flux launch / hide / restore fonctionne dans le contexte sandboxé ou justifier l'absence de sandbox
+- Finaliser une distribution directe fiable hors App Store
+- Signer et notariser sans rouvrir le périmètre produit
+- Garder le restore actuel explicite : apps lancées par la session seulement, pas de promesse sur URLs et fichiers
 
 **Fichiers concernés**
-- `MeetingMode.xcodeproj` (entitlements, signing)
+- `MeetingMode.xcodeproj`
+- `docs/DECISIONS.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/SANDBOX_AUDIT.md`
+
+**Dépendances éventuelles**
+- Choix confirmé : distribution directe prioritaire
+- Validation build signée + notarized
+
+**Critère de validation**
+- L'app peut être signée et notarisée sans erreur
+- Le flux MVP complet fonctionne dans la build distribuée
+- Les limites de restore restent documentées honnêtement
+
+**Hors périmètre explicite**
+- Migration App Store
+- Refactor sandbox
+- Fermeture précise d'onglets ou de documents déjà ouverts dans d'autres apps
+
+## V2 — Fermeture best effort des URLs et fichiers ouverts par la session
+
+**Recommandation nette**
+- Oui pour une V2, mais avec un cadre strict : fermeture **best effort** des éléments ouverts par Meeting Mode, sans gestion avancée des fenêtres, sans fermeture d'onglets préexistants, sans promesse de rollback parfait.
+
+**Objectif**
+- Étendre le restore pour réduire le bruit laissé par la session
+- Fermer, en best effort, les URLs et fichiers ouverts par Meeting Mode pendant la session
+- Garder un état de session explicite et vérifiable
+
+**Décision produit**
+- Une URL ouverte dans une app **déjà en cours d'exécution** n'est pas considérée comme fermable précisément si cela implique de retrouver puis fermer un onglet précis
+- Un fichier ouvert dans une app **déjà en cours d'exécution** n'est pas considéré comme fermable précisément si cela implique de piloter les documents de l'app
+- En revanche, si Meeting Mode a lancé une app pour porter l'ouverture d'une URL ou d'un fichier, cette app peut entrer dans le scope de fermeture du restore, au même titre qu'une app lancée par la session
+- La doc et l'UI doivent distinguer clairement : `fermé`, `resté ouvert`, `non fermable proprement`
+
+**Approche technique recommandée**
+1. enrichir le snapshot de session pour tracer les ouvertures déclenchées : URL, fichier, app cible résolue si connue
+2. distinguer deux cas :
+   - ouverture portée par une app lancée par la session → éligible à fermeture via le quit déjà existant
+   - ouverture injectée dans une app déjà ouverte → non éligible à fermeture fine en v2
+3. afficher dans le résultat de restore ce qui a réellement été fermé et ce qui reste ouvert par limite macOS
+4. ne pas introduire AppleScript, automation profonde ou gestion de tabs/documents en v2
+
+**Fichiers concernés**
+- `MeetingMode/Models/SessionSnapshot.swift`
+- `MeetingMode/Services/SessionRunner.swift`
+- `MeetingMode/Services/AppLauncherService.swift`
+- `MeetingMode/Services/RestoreService.swift`
+- `MeetingMode/Views/MenuBar/MenuBarContentView.swift`
+- `MeetingMode/Resources/`
+- `docs/DECISIONS.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/README.md` si le dépôt garde la doc sous `docs/`
+
+**Dépendances éventuelles**
+- Étape 8 terminée
+- Snapshot de session persistant déjà en place
+- Aucun ajout de dépendance externe
+
+**Critère de validation**
+- Le snapshot enregistre les URLs et fichiers ouverts par la session courante
+- Le restore ferme bien les apps lancées par Meeting Mode qui servaient à ouvrir ces contenus
+- Le restore ne prétend pas fermer un onglet de navigateur ou un document isolé dans une app déjà ouverte
+- Le résultat de restore distingue les cas confirmés des cas non fermables proprement
+- Aucun glissement vers la gestion avancée des fenêtres, onglets ou Apple Events
+
+**Hors périmètre explicite**
+- Fermeture d'un onglet précis dans Safari, Chrome, Arc, etc.
+- Fermeture d'un document précis dans Preview, Pages, Numbers, etc. si l'app était déjà ouverte
+- Restore parfait de l'état de navigation ou de documents
+- AppleScript, ScriptingBridge, automation inter-apps profonde
+
+## V3 — Release App Store
+
+**Recommandation nette**
+- Faisable, mais c'est une vraie V3 de distribution, pas une simple formalité. Le compromis produit principal est clair : en sandbox App Store, le restore ne doit plus tenter de quitter des apps tierces via `terminate()` / `forceTerminate()`.
+
+**Objectif**
+- Rendre l'app publiable sur le Mac App Store
+- Conserver le cœur produit : presets, launch, hide, overlay, restore simple
+- Adapter explicitement le produit aux contraintes sandbox
+
+**Décision produit**
+- Le restore App Store devient : réafficher ce que Meeting Mode a masqué, retirer l'overlay, nettoyer l'état de session
+- La fermeture automatique d'apps tierces lancées par la session est retirée de la promesse produit App Store
+- L'ouverture persistante d'apps et fichiers sélectionnés par l'utilisateur repose sur des security-scoped bookmarks
+
+**Approche technique recommandée**
+1. activer une branche de travail sandboxée et valider le flux réel dans une build `ENABLE_APP_SANDBOX = YES`
+2. migrer `launchApplication(at:...)` vers `openApplication(at:configuration:completionHandler:)`
+3. refactorer le modèle `Preset` pour stocker des security-scoped bookmarks pour :
+   - fichiers locaux
+   - apps sélectionnées via `NSOpenPanel`
+4. ajouter la résolution et l'accès `startAccessingSecurityScopedResource()` au moment de l'ouverture
+5. retirer `terminate()` / `forceTerminate()` du restore App Store et ajuster la copie UI
+6. tester explicitement `hide()` / `unhide()` / `activate()` dans une build sandboxée réelle
+7. préparer la fiche de release App Store avec wording exact sur les permissions et limites
+
+**Fichiers concernés**
+- `MeetingMode.xcodeproj`
+- `MeetingMode/*.entitlements`
+- `MeetingMode/Models/Preset.swift`
+- `MeetingMode/Models/PresetApp.swift`
+- `MeetingMode/Services/PresetStore.swift`
+- `MeetingMode/Services/AppLauncherService.swift`
+- `MeetingMode/Services/RestoreService.swift`
+- `MeetingMode/Views/Presets/`
+- `MeetingMode/Views/MenuBar/MenuBarContentView.swift`
+- `docs/SANDBOX_AUDIT.md`
 - `docs/DECISIONS.md`
 - `docs/PROJECT_STATUS.md`
 
 **Dépendances éventuelles**
-- Décision ferme sur le canal de distribution
-- Validation du flux complet sous sandbox si retenu
+- V2 cadrée ou explicitement repoussée si elle dépend encore du quit d'apps tierces
+- Entitlements App Store validés
+- Migration de données locale pour presets existants stockés en chemins bruts
 
 **Critère de validation**
-- L'app peut être signée et notarisée sans erreur
-- Le flux MVP complet fonctionne dans la configuration de distribution retenue
-- La décision sandbox / hors sandbox est documentée dans `DECISIONS.md`
+- Build sandboxée fonctionnelle avec `ENABLE_APP_SANDBOX = YES`
+- Les presets existants migrent ou échouent proprement vers le nouveau format bookmark
+- Les apps et fichiers sélectionnés par l'utilisateur s'ouvrent encore après relance
+- Le masquage / réaffichage fonctionne réellement dans la build sandboxée
+- Le restore App Store ne tente plus d'envoyer de quit interdit à des apps tierces
+- L'app passe signature, notarization, archive et préparation App Store sans incohérence documentaire
 
 **Hors périmètre explicite**
-- Refonte des fonctionnalités pour satisfaire les règles App Store si hors périmètre produit
-- Nouvelle interface de distribution
+- Contournement via AppleScript pour retrouver un quit automatique complet
+- Gestion avancée des fenêtres
+- Sync cloud ou autres élargissements de scope profitant du chantier sandbox
 
 ## Résumé de séquencement
 
@@ -194,6 +307,8 @@ La suite a été réalisée dans cet ordre :
 5. ~~Testabilité SessionRunner + tests unitaires PresetStore et SessionRunner~~ ✓
 6. ~~Nettoyage des textes du tutoriel (ton utilisateur, pas développeur)~~ ✓
 7. ~~Fiabilisation : persistance snapshot sur crash, correction état overlay au relaunch, multi-screen overlay~~ ✓
-8. Préparation distribution : sandbox, signature, notarization
+8. Canal direct stable : signature, notarization, packaging DMG
+9. V2 : fermeture best effort des URLs et fichiers ouverts par la session, sans gestion fine des onglets/documents
+10. V3 : migration sandbox et release App Store
 
-Les 7 premières étapes sont terminées. L'étape 8 (distribution) est la prochaine étape logique.
+La suite recommandée est donc : **DMG stable d'abord**, **V2 ensuite pour élargir le restore sans magie**, puis **V3 App Store** avec compromis produit explicites.

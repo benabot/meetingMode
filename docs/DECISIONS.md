@@ -206,6 +206,7 @@
 - A polite quit request is not treated as proof that an app really closed. The UI now distinguishes between a confirmed close and an app that may still be open.
 - The stronger fallback exists only for apps launched by the current session, not for apps that were already open before it.
 - URLs and local files are opened in a simple way, but v1 restore does not attempt to close them.
+- This is not treated as a bug in v1. The planned v2 behavior is limited to best-effort cleanup of session-opened content, without per-tab or per-document control inside already-running apps.
 - Restore still remains limited in scope and is not a promise of full system rollback.
 - The post-restore UI keeps the last restore result visible, and while app visibility is still being confirmed it explicitly says `checking hidden apps` rather than presenting a clean success too early.
 - Runtime validation is now split clearly in the docs: app visibility restore is validated on the current machine, while polite quit for document-based apps remains a separate best-effort topic.
@@ -265,6 +266,26 @@
 - The main App Store product compromise: restore would no longer quit apps launched by the session. The user would have to close them manually.
 - The sandbox audit also corrects a false assumption in this document: Carbon `RegisterEventHotKey` is **not** blocked in sandbox. The Mac App Store restriction applies to `CGEventTap` (passive global keyboard monitoring), not to `RegisterEventHotKey` which works through the window server as a declarative opt-in API. Several App Store apps use it. No migration required on that front.
 - This App Store work is explicitly deferred until after the direct DMG distribution is shipped and stable.
+
+## Upcoming product decisions already framed
+
+### V2 — Files and URLs should close only in best effort mode
+
+- Decision: v2 may extend restore to clean up **session-opened** URLs and files, but only under a narrow and testable contract.
+- Decision: Meeting Mode does **not** claim it can later close a specific browser tab or a specific document that was opened inside an app already running before the session.
+- Decision: when a URL or file opening caused Meeting Mode to launch an app that was not previously running, that app is part of the existing restore quit scope and can therefore be closed as part of cleanup.
+- Decision: restore UI and docs must report three states clearly: actually closed, intentionally left open, and not closable cleanly under macOS constraints.
+- Rejected for v2: AppleScript-driven tab closure, document scripting, deep browser integration, advanced window restoration.
+
+### V3 — App Store release requires a narrower restore promise
+
+- Decision: the App Store version is a separate release track, not a small packaging step.
+- Decision: the sandbox migration scope is limited to what is required for shipping:
+  - security-scoped bookmarks for user-selected apps and files
+  - migration to `openApplication(at:configuration:completionHandler:)`
+  - removal of `terminate()` / `forceTerminate()` from restore semantics
+- Decision: the App Store build must communicate a reduced restore contract explicitly: overlay cleanup and hidden-app visibility restore remain in scope; quitting session-launched apps does not.
+- Decision: no attempt will be made to preserve the current DMG restore behavior through unsupported or review-fragile tricks. Reliability and reviewability win.
 - `ENABLE_APP_SANDBOX = NO` is intentional and documented. It applies to both Debug and Release configurations.
 - `ENABLE_HARDENED_RUNTIME = YES` is required for notarization and is already set in both configurations.
 - `CODE_SIGN_STYLE = Automatic` with `DEVELOPMENT_TEAM = 3Q33594A3N`. Xcode resolves the Developer ID Application certificate automatically at archive time.

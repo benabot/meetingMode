@@ -11,9 +11,10 @@ Ordre de lecture recommandé :
 3. `DECISIONS.md` — décisions prises, arbitrages validés, choses à ne pas rediscuter sans raison concrète
 4. `ROADMAP.md` — séquencement produit et technique
 5. `TODO.md` — travaux restants et critères opérationnels encore ouverts
-6. `AGENTS.md` — règles d’exécution pour faire des changements propres et minimaux
-7. `XCODE_SETUP.md` — ouverture projet, schéma, build
-8. `CHATGPT_PROJECT_INSTRUCTIONS.md` — cadre de réponse et priorités de travail
+6. `SANDBOX_AUDIT.md` — audit statique sandbox, coût réel d’un passage App Store, APIs bloquées vs compatibles
+7. `AGENTS.md` — règles d’exécution pour faire des changements propres et minimaux
+8. `XCODE_SETUP.md` — ouverture projet, schéma, build
+9. `CHATGPT_PROJECT_INSTRUCTIONS.md` — cadre de réponse et priorités de travail
 
 **Règle ferme :** en cas de divergence, considère `PROJECT_STATUS.md` et `DECISIONS.md` comme plus fiables que ce résumé.
 
@@ -46,6 +47,7 @@ Références principales :
 - Swift + SwiftUI, avec petits ponts AppKit quand nécessaire
 - vraie menu bar app en mode background-only
 - implémentation runtime actuelle en `NSStatusItem` + `NSPopover`
+- icône d’app custom dans le bundle (AppIcon)
 - presets locaux avec création, édition, suppression et persistance
 - sélection des apps et fichiers dans l’éditeur via `NSOpenPanel` (pas de saisie manuelle)
 - sélection du preset persistée
@@ -62,6 +64,8 @@ Références principales :
 - persistance locale simple, sans dépendances tierces
 - 4 protocoles extraits pour la testabilité (`AppLaunching`, `AppVisibilityManaging`, `OverlayProviding`, `SessionRestoring`)
 - suite de 17 tests unitaires (8 `PresetStore` + 9 `SessionRunner`)
+- pipeline de distribution directe (DMG) : `ENABLE_HARDENED_RUNTIME = YES`, script `scripts/build-release.sh`, notarization via `notarytool`, export Developer ID automatique
+- audit sandbox complet (`SANDBOX_AUDIT.md`, 2026-03-18)
 
 ### Validé explicitement
 - le flux MVP de base est end-to-end depuis la menu bar
@@ -75,7 +79,8 @@ Références principales :
 - gestion avancée des fenêtres
 - gestion parfaite des onglets, Spaces, bureaux ou états exacts des fenêtres
 - validation suffisamment fiable de fermeture automatique de certaines apps document-based lancées par la session
-- distribution (sandbox, signature, notarization)
+- première release publique (version actuelle : `MARKETING_VERSION = 0.1.0`, pré-release)
+- distribution App Store (sandbox, security-scoped bookmarks, retrait de `terminate()` — voir `SANDBOX_AUDIT.md`, estimé ~10 jours)
 
 Références principales :
 - `PROJECT_STATUS.md`
@@ -214,7 +219,9 @@ Ne reviens pas dessus sans raison concrète.
 - `MenuBarExtra` n’est pas la solution retenue pour le runtime actuel
 - l’implémentation actuelle repose sur `NSStatusItem` + `NSPopover`
 - l’app est `LSUIElement = YES` et reste hors du Dock une fois lancée
-- le target MVP n’est **pas sandboxé** pour l’instant afin de garder un comportement de launch / hide / restore prévisible pendant le développement
+- l’app porte une icône custom via `AppIcon` dans l’asset catalog (Finder, Launchpad)
+- le target MVP n’est **pas sandboxé** (`ENABLE_APP_SANDBOX = NO`, intentionnel et documenté)
+- `ENABLE_HARDENED_RUNTIME = YES` dans Debug et Release (requis pour notarization)
 
 ### Persistance
 - persistance locale simple
@@ -246,9 +253,29 @@ Ne reviens pas dessus sans raison concrète.
 - le fichier est supprimé après restore
 - cette persistance est best effort uniquement
 
+### Distribution
+- canal prioritaire : **distribution directe (DMG)**, hors App Store
+- `CODE_SIGN_STYLE = Automatic` avec `DEVELOPMENT_TEAM = 3Q33594A3N`
+- script de release : `scripts/build-release.sh` (archive, export Developer ID, DMG, notarization, staple)
+- export options : `scripts/ExportOptions.plist`
+- credentials (Apple ID, app-specific password) passés en variables d'environnement, jamais dans le repo
+- process documenté dans `scripts/README-release.md`
+- `MARKETING_VERSION = 0.1.0` — à incrémenter avant la première release publique
+
+### Sandbox et App Store (audit 2026-03-18)
+- un audit statique complet a été produit dans `SANDBOX_AUDIT.md`
+- **Carbon `RegisterEventHotKey` n'est PAS bloqué en sandbox** — la confusion courante vient de `CGEventTap` (bloqué, nécessite Accessibility). `RegisterEventHotKey` passe par le window server et est utilisé par des apps App Store. Pas de migration requise.
+- **`terminate()` / `forceTerminate()` sont bloqués** en sandbox — aucun entitlement ne couvre cela. Le restore App Store ne pourrait plus quitter les apps lancées par la session.
+- `hide()` / `unhide()` / `activate()` sont probablement compatibles sandbox mais **doivent être vérifiés** sur une build sandboxée réelle
+- les chemins bruts (apps, fichiers) ne survivent pas au relaunch en sandbox → nécessite des security-scoped bookmarks
+- `OverlayService`, `PresetStore`, `LaunchAtLoginService` sont **100% compatibles sandbox**
+- effort estimé pour le passage App Store : ~10 jours (après DMG stable)
+- l'App Store est explicitement reporté après la distribution directe
+
 Références principales :
 - `DECISIONS.md`
 - `PROJECT_STATUS.md`
+- `SANDBOX_AUDIT.md`
 
 ---
 
@@ -263,7 +290,12 @@ Les 7 premières étapes sont terminées :
 6. nettoyage textes tutoriel
 7. fiabilisation : persistance snapshot, correction overlay au relaunch, multi-screen
 
-La prochaine étape est la **distribution** (sandbox, signature, notarization).
+L’étape 8 (**canal direct stable : DMG signé + notarisé**) est outillée (scripts, hardened runtime, signing config) mais la première release publique n’a pas encore été expédiée.
+
+Séquence restante :
+- **8. DMG stable** — première release publique, version bump
+- **9. V2** — fermeture best effort des URLs et fichiers ouverts par la session, sans gestion fine des onglets/documents
+- **10. V3** — migration sandbox et release App Store (compromis produit : le restore ne quitte plus les apps)
 
 Consigne importante : le polish visuel ne doit jamais passer avant la stabilité fonctionnelle et la clarté d’état.
 
@@ -271,6 +303,7 @@ Références principales :
 - `ROADMAP.md`
 - `PROJECT_STATUS.md`
 - `DECISIONS.md`
+- `SANDBOX_AUDIT.md`
 
 ---
 

@@ -1,0 +1,243 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1773956655813,
+  "projectRoot": "/Users/benoitabot/Sites/meetingMode",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "scripts"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "MeetingMode": {
+      "path": "MeetingMode",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1773956655767,
+      "keyFiles": [
+        "MeetingModeApp.swift"
+      ]
+    },
+    "MeetingMode.xcodeproj": {
+      "path": "MeetingMode.xcodeproj",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1773956655784,
+      "keyFiles": [
+        "project.pbxproj"
+      ]
+    },
+    "MeetingModeTests": {
+      "path": "MeetingModeTests",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1773956655788,
+      "keyFiles": [
+        "PresetStoreTests.swift",
+        "SessionRunnerTests.swift"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 6,
+      "lastAccessed": 1773956655789,
+      "keyFiles": [
+        "DECISIONS.md",
+        "PROJECT_STATUS.md",
+        "ROADMAP.md",
+        "SANDBOX_AUDIT.md",
+        "TODO.md"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 3,
+      "lastAccessed": 1773956655790,
+      "keyFiles": [
+        "ExportOptions.plist",
+        "README-release.md",
+        "build-release.sh"
+      ]
+    },
+    "MeetingMode/Models": {
+      "path": "MeetingMode/Models",
+      "purpose": "Data models",
+      "fileCount": 3,
+      "lastAccessed": 1773956655792,
+      "keyFiles": [
+        "ChecklistItem.swift",
+        "Preset.swift",
+        "SessionSnapshot.swift"
+      ]
+    },
+    "MeetingMode/Services": {
+      "path": "MeetingMode/Services",
+      "purpose": "Business logic services",
+      "fileCount": 11,
+      "lastAccessed": 1773956655793,
+      "keyFiles": [
+        "AppLauncherService.swift",
+        "AppVisibilityService.swift",
+        "HotkeyService.swift"
+      ]
+    },
+    "MeetingMode/Views": {
+      "path": "MeetingMode/Views",
+      "purpose": "View templates",
+      "fileCount": 0,
+      "lastAccessed": 1773956655800,
+      "keyFiles": []
+    },
+    "MeetingModeTests/Mocks": {
+      "path": "MeetingModeTests/Mocks",
+      "purpose": "Mock data",
+      "fileCount": 1,
+      "lastAccessed": 1773956655803,
+      "keyFiles": [
+        "MockSessionServices.swift"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "MeetingMode/Services/AppLauncherService.swift",
+      "accessCount": 15,
+      "lastAccessed": 1773958300722,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Services/SessionRunner.swift",
+      "accessCount": 8,
+      "lastAccessed": 1773958614915,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 7,
+      "lastAccessed": 1774024371890,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Views/MenuBar/MenuBarContentView.swift",
+      "accessCount": 5,
+      "lastAccessed": 1773957360948,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Services/AppVisibilityService.swift",
+      "accessCount": 2,
+      "lastAccessed": 1773956926899,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Services/RestoreService.swift",
+      "accessCount": 2,
+      "lastAccessed": 1773956933988,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Resources/en.lproj/Localizable.strings",
+      "accessCount": 2,
+      "lastAccessed": 1773957060799,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Resources/fr.lproj/Localizable.strings",
+      "accessCount": 2,
+      "lastAccessed": 1773957065533,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Services/SessionDependencies.swift",
+      "accessCount": 2,
+      "lastAccessed": 1773958263901,
+      "type": "file"
+    },
+    {
+      "path": "MeetingModeTests/Mocks/MockSessionServices.swift",
+      "accessCount": 2,
+      "lastAccessed": 1773958329035,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Models/Preset.swift",
+      "accessCount": 1,
+      "lastAccessed": 1773956815948,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/Models/SessionSnapshot.swift",
+      "accessCount": 1,
+      "lastAccessed": 1773956816311,
+      "type": "file"
+    },
+    {
+      "path": "MeetingMode/MeetingModeApp.swift",
+      "accessCount": 1,
+      "lastAccessed": 1773957018588,
+      "type": "file"
+    },
+    {
+      "path": "docs/TODO.md",
+      "accessCount": 1,
+      "lastAccessed": 1774024242158,
+      "type": "file"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "accessCount": 1,
+      "lastAccessed": 1774024242210,
+      "type": "file"
+    },
+    {
+      "path": "docs/PROJECT_STATUS.md",
+      "accessCount": 1,
+      "lastAccessed": 1774024242858,
+      "type": "file"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "accessCount": 1,
+      "lastAccessed": 1774024243189,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 1,
+      "lastAccessed": 1774024243590,
+      "type": "directory"
+    },
+    {
+      "path": "docs/SANDBOX_AUDIT.md",
+      "accessCount": 1,
+      "lastAccessed": 1774024247063,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

@@ -68,8 +68,52 @@ What is already implemented in the current build:
 
 What is not implemented yet:
 
-- restore of opened links and opened files
+- cleanup of URLs and local files opened by the session
 - advanced window management
+
+## Planned Next Versions
+
+### V2 — Session-opened URLs and files cleanup
+
+Planned scope:
+
+- track which URLs and local files were opened by the current session
+- attempt a best-effort cleanup when `Restore Session` runs
+- keep the product contract narrow and explicit
+
+What this means in practice:
+
+- if Meeting Mode opened a file in an app it launched for the session, restore may quit that app as part of the existing launched-app cleanup path
+- if Meeting Mode opened a URL in a browser that was already running, the app should not claim it can close the exact tab reliably
+- if Meeting Mode opened a file inside an app that was already running, the app should not claim it can close the exact document reliably
+
+V2 limits:
+
+- no per-tab browser control
+- no per-document control inside already-running apps
+- no promise of perfect cleanup
+- restore remains best effort and session-scoped
+
+### V3 — Mac App Store release track
+
+Planned scope:
+
+- prepare a sandbox-compatible release variant
+- migrate file access to security-scoped bookmarks
+- replace deprecated / weakly documented launch paths with sandbox-compatible APIs
+- reduce the restore contract where sandbox rules make the current DMG behavior impossible
+
+Known impact from the current audit:
+
+- `NSRunningApplication.terminate()` and `forceTerminate()` are not available as a normal App Sandbox strategy
+- an App Store build therefore cannot promise the same launched-app closing behavior as the current non-sandbox MVP build
+- file reopening from persisted presets requires security-scoped bookmarks instead of raw stored paths
+
+V3 product consequence:
+
+- the DMG track can keep the current best-effort launched-app closing behavior
+- the App Store track must present a narrower, more explicit restore contract
+- no App Store release should pretend to offer a full system rollback
 
 Important caveat:
 
@@ -124,11 +168,13 @@ Out of scope for the MVP:
 
 ## Development Direction
 
-The next product step is not a new big surface area. It is to make the current session flow more reliable and more explicit:
+The product path is now split into two pragmatic tracks:
 
-1. revalidate the visibility rule against real macOS behavior
-2. keep clearer feedback when some apps stay visible
-3. preserve the narrow restore scope
-4. avoid drifting into window-management behavior
+1. finish the non-sandbox product flow with better cleanup of session-opened URLs and files
+2. prepare a separate App Store-compatible release track with a deliberately reduced restore contract
 
-If macOS behavior is ambiguous, the app should degrade conservatively instead of pretending the restore is perfect.
+The guiding rule stays the same:
+
+- if macOS behavior is ambiguous, degrade conservatively
+- if sandbox rules block a behavior, remove the promise instead of faking it
+- do not drift into window-management or tab-management behavior
