@@ -48,9 +48,9 @@ struct TutorialView: View {
                 id: 2,
                 iconSystemName: "play.circle",
                 titleKey: "tutorial.page3.title",
-                titleDefault: "What Start Session does",
+                titleDefault: "What Prepare Mac does",
                 bodyKey: "tutorial.page3.body",
-                bodyDefault: "Start Session applies the selected preset.",
+                bodyDefault: "Prepare Mac applies the selected preset.",
                 bulletKeys: [
                     ("tutorial.page3.bullet1", "Opens the preset apps, links, and files."),
                     ("tutorial.page3.bullet2", "May hide visible apps outside the preset in best effort."),
@@ -61,9 +61,9 @@ struct TutorialView: View {
                 id: 3,
                 iconSystemName: "arrow.uturn.backward.circle",
                 titleKey: "tutorial.page4.title",
-                titleDefault: "What Restore Session does",
+                titleDefault: "What Restore Mac does",
                 bodyKey: "tutorial.page4.body",
-                bodyDefault: "Restore Session only targets the changes that Meeting Mode actually made.",
+                bodyDefault: "Restore Mac only targets the changes that Meeting Mode actually made.",
                 bulletKeys: [
                     ("tutorial.page4.bullet1", "Hides the clean screen."),
                     ("tutorial.page4.bullet2", "Tries to re-show apps that Meeting Mode itself hid."),

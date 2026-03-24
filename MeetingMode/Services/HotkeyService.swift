@@ -14,12 +14,12 @@ enum HotkeyAction: String, CaseIterable, Identifiable {
         case .startSession:
             return L10n.string(
                 "hotkeys.action.start",
-                defaultValue: "Start Session"
+                defaultValue: "Prepare Mac"
             )
         case .restoreSession:
             return L10n.string(
                 "hotkeys.action.restore",
-                defaultValue: "Restore Session"
+                defaultValue: "Restore Mac"
             )
         }
     }
@@ -243,7 +243,7 @@ enum HotkeyConfigurationError: LocalizedError {
         case .duplicateShortcut:
             return L10n.string(
                 "hotkeys.error.duplicate",
-                defaultValue: "Start Session and Restore Session cannot use the same shortcut."
+                defaultValue: "Prepare Mac and Restore Mac cannot use the same shortcut."
             )
         case .registrationFailed:
             return L10n.string(

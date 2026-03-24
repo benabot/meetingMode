@@ -14,7 +14,7 @@
 "settings.launch_at_login.status.disabled" = "Meeting Mode ne se lance pas automatiquement quand vous ouvrez votre session sur ce Mac.";
 "settings.launch_at_login.status.requires_approval" = "macOS demande encore une validation dans Réglages Système > Général > Ouverture.";
 "settings.launch_at_login.status.unavailable" = "Ce build n’a pas pu s’enregistrer comme élément d’ouverture de session sur ce Mac.";
-"settings.shortcuts.description" = "Configurez un raccourci pour Démarrer la session et un autre pour Restaurer la session. Les raccourcis restent locaux à ce Mac et actifs tant que Meeting Mode est lancé.";
+"settings.shortcuts.description" = "Configurez un raccourci pour Préparer le Mac et un autre pour Rétablir le Mac. Les raccourcis restent locaux à ce Mac et actifs tant que Meeting Mode est lancé.";
 "settings.shortcuts.recording_hint" = "L’enregistrement exige au moins une touche modificatrice. Appuyez sur Échap pour annuler.";
 "settings.shortcuts.not_set" = "Non défini";
 "settings.shortcuts.clear" = "Effacer";
@@ -38,10 +38,10 @@
 "permissions.summary.none_checked" = "Aucune autorisation macOS n’est vérifiée ni demandée pour l’instant.";
 "permissions.summary.none_required" = "Aucune autorisation macOS n’est requise par l’implémentation actuelle.";
 
-"hotkeys.action.start" = "Démarrer la session";
-"hotkeys.action.restore" = "Restaurer la session";
+"hotkeys.action.start" = "Préparer le Mac";
+"hotkeys.action.restore" = "Rétablir le Mac";
 "hotkeys.error.missing_modifier" = "Les raccourcis doivent inclure au moins une touche modificatrice.";
-"hotkeys.error.duplicate" = "Démarrer la session et Restaurer la session ne peuvent pas utiliser le même raccourci.";
+"hotkeys.error.duplicate" = "Préparer le Mac et Rétablir le Mac ne peuvent pas utiliser le même raccourci.";
 "hotkeys.error.registration_failed" = "Ce raccourci n’a pas pu être enregistré sur ce Mac.";
 "hotkeys.key.space" = "Espace";
 "hotkeys.key.unknown" = "Touche %d";
@@ -55,8 +55,8 @@
 "menubar.button.edit" = "Modifier";
 "menubar.button.delete" = "Supprimer";
 "menubar.button.new_preset" = "Nouveau preset";
-"menubar.button.start" = "Démarrer la session";
-"menubar.button.restore" = "Restaurer la session";
+"menubar.button.start" = "Préparer le Mac";
+"menubar.button.restore" = "Rétablir le Mac";
 "menubar.button.settings" = "Réglages…";
 "menubar.button.quit" = "Quitter";
 "menu.quit" = "Quitter Meeting Mode";
@@ -79,7 +79,7 @@
 "menubar.summary.no_runnable_action" = "Aucune action lançable pour l’instant";
 "menubar.detail.restore_tracks" = "Le restore suit %@";
 "menubar.detail.other_apps_may_hide" = "Les autres apps visibles seront masquées (best effort).";
-"menubar.detail.enable_start" = "Ajoutez une app, un lien, un fichier ou activez le clean screen pour lancer la session.";
+"menubar.detail.enable_start" = "Ajoutez une app, un lien, un fichier ou activez le clean screen pour préparer le Mac.";
 "menubar.detail.checklist_with_hide" = "%@ - les autres apps visibles peuvent être masquées en best effort.";
 "menubar.detail.checklist_needs_action" = "%@ - ajoutez au moins une action lançable.";
 "menubar.count.format" = "%d %@";
@@ -158,13 +158,13 @@
 "tutorial.page2.bullet1" = "Des apps à ouvrir.";
 "tutorial.page2.bullet2" = "Des liens et des fichiers locaux à ouvrir.";
 "tutorial.page2.bullet3" = "Des éléments de checklist et un clean screen optionnel.";
-"tutorial.page3.title" = "Ce que fait Démarrer la session";
-"tutorial.page3.body" = "Démarrer la session applique le preset sélectionné.";
+"tutorial.page3.title" = "Ce que fait Préparer le Mac";
+"tutorial.page3.body" = "Préparer le Mac applique le preset sélectionné.";
 "tutorial.page3.bullet1" = "Ouvre les apps, liens et fichiers du preset.";
 "tutorial.page3.bullet2" = "Peut masquer les apps visibles hors preset en best effort.";
 "tutorial.page3.bullet3" = "Peut afficher un fond clean screen.";
-"tutorial.page4.title" = "Ce que fait Restaurer la session";
-"tutorial.page4.body" = "Restaurer la session ne cible que les changements que Meeting Mode a réellement appliqués.";
+"tutorial.page4.title" = "Ce que fait Rétablir le Mac";
+"tutorial.page4.body" = "Rétablir le Mac ne cible que les changements que Meeting Mode a réellement appliqués.";
 "tutorial.page4.bullet1" = "Masque le clean screen.";
 "tutorial.page4.bullet2" = "Tente de réafficher les apps que Meeting Mode a lui-même masquées.";
 "tutorial.page4.bullet3" = "Reste en best effort uniquement.";

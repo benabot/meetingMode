@@ -69,7 +69,7 @@ struct SettingsView: View {
                         tone: .accent
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text(t("settings.shortcuts.description", "Configure one shortcut for Start Session and one for Restore Session. Shortcuts stay local to this Mac and remain active while Meeting Mode is running."))
+                            Text(t("settings.shortcuts.description", "Configure one shortcut for Prepare Mac and one for Restore Mac. Shortcuts stay local to this Mac and remain active while Meeting Mode is running."))
                                 .foregroundStyle(MeetingModeTextPalette.secondary)
 
                             shortcutRow(for: .startSession)

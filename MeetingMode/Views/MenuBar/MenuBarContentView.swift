@@ -178,7 +178,7 @@ struct MenuBarContentView: View {
                     Button {
                         startSession()
                     } label: {
-                        Text(t("menubar.button.start", "Start Session"))
+                        Text(t("menubar.button.start", "Prepare Mac"))
                             .lineLimit(1)
                             .minimumScaleFactor(1)
                     }
@@ -190,7 +190,7 @@ struct MenuBarContentView: View {
                 Button {
                     restoreSession()
                 } label: {
-                    Text(t("menubar.button.restore", "Restore Session"))
+                    Text(t("menubar.button.restore", "Restore Mac"))
                         .lineLimit(1)
                         .minimumScaleFactor(1)
                 }
@@ -486,7 +486,7 @@ struct MenuBarContentView: View {
         if preset.checklistItems.isEmpty {
             return preset.hasStartableActions
                 ? t("menubar.detail.other_apps_may_hide", "Other visible apps may be hidden best effort.")
-                : t("menubar.detail.enable_start", "Add an app, link, file, or clean screen to enable Start Session.")
+                : t("menubar.detail.enable_start", "Add an app, link, file, or clean screen to enable Prepare Mac.")
         }
 
         let checklistLabel = countLabel(
