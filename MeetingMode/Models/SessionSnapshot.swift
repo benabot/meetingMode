@@ -19,6 +19,38 @@ struct HiddenApplicationSnapshot: Codable, Hashable {
     }
 }
 
+struct OpenedURLRecord: Codable, Hashable {
+    let url: String
+    let targetBundleIdentifier: String?
+    let targetWasLaunchedByMeetingMode: Bool
+
+    init(
+        url: String,
+        targetBundleIdentifier: String? = nil,
+        targetWasLaunchedByMeetingMode: Bool = false
+    ) {
+        self.url = url
+        self.targetBundleIdentifier = targetBundleIdentifier
+        self.targetWasLaunchedByMeetingMode = targetWasLaunchedByMeetingMode
+    }
+}
+
+struct OpenedFileRecord: Codable, Hashable {
+    let filePath: String
+    let targetBundleIdentifier: String?
+    let targetWasLaunchedByMeetingMode: Bool
+
+    init(
+        filePath: String,
+        targetBundleIdentifier: String? = nil,
+        targetWasLaunchedByMeetingMode: Bool = false
+    ) {
+        self.filePath = filePath
+        self.targetBundleIdentifier = targetBundleIdentifier
+        self.targetWasLaunchedByMeetingMode = targetWasLaunchedByMeetingMode
+    }
+}
+
 struct SessionSnapshot: Identifiable, Codable, Hashable {
     let id: UUID
     let presetID: UUID
@@ -27,8 +59,8 @@ struct SessionSnapshot: Identifiable, Codable, Hashable {
     var launchedApplications: [String]
     var launchedApplicationBundleIdentifiers: [String]
     var hiddenApplications: [HiddenApplicationSnapshot]
-    var openedURLs: [String]
-    var openedFiles: [String]
+    var openedURLs: [OpenedURLRecord]
+    var openedFiles: [OpenedFileRecord]
     var overlayWasShown: Bool
 
     init(
@@ -39,8 +71,8 @@ struct SessionSnapshot: Identifiable, Codable, Hashable {
         launchedApplications: [String],
         launchedApplicationBundleIdentifiers: [String] = [],
         hiddenApplications: [HiddenApplicationSnapshot] = [],
-        openedURLs: [String],
-        openedFiles: [String],
+        openedURLs: [OpenedURLRecord],
+        openedFiles: [OpenedFileRecord],
         overlayWasShown: Bool
     ) {
         self.id = id
@@ -89,8 +121,19 @@ struct SessionSnapshot: Identifiable, Codable, Hashable {
                 )
             }
         }
-        openedURLs = try container.decodeIfPresent([String].self, forKey: .openedURLs) ?? []
-        openedFiles = try container.decodeIfPresent([String].self, forKey: .openedFiles) ?? []
+        if let decodedOpenedURLs = try? container.decode([OpenedURLRecord].self, forKey: .openedURLs) {
+            openedURLs = decodedOpenedURLs
+        } else {
+            let legacyOpenedURLs = try container.decodeIfPresent([String].self, forKey: .openedURLs) ?? []
+            openedURLs = legacyOpenedURLs.map { OpenedURLRecord(url: $0) }
+        }
+
+        if let decodedOpenedFiles = try? container.decode([OpenedFileRecord].self, forKey: .openedFiles) {
+            openedFiles = decodedOpenedFiles
+        } else {
+            let legacyOpenedFiles = try container.decodeIfPresent([String].self, forKey: .openedFiles) ?? []
+            openedFiles = legacyOpenedFiles.map { OpenedFileRecord(filePath: $0) }
+        }
         overlayWasShown = try container.decodeIfPresent(Bool.self, forKey: .overlayWasShown) ?? false
     }
 

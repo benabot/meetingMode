@@ -2,23 +2,34 @@ import Foundation
 
 @testable import MeetingMode
 
-@MainActor
 struct MockAppLauncher: AppLaunching {
     var openItemsResult = LaunchExecutionResult()
     var openContentResult = ContentExecutionResult()
     var closeContentResult = ContentRestoreResult()
+    let openContentLaunchContext = MockAppLauncherLaunchContext()
 
     func openItems(for preset: Preset) -> LaunchExecutionResult {
         openItemsResult
     }
 
-    func openContent(for preset: Preset) -> ContentExecutionResult {
-        openContentResult
+    func openContent(
+        for preset: Preset,
+        launchedApplicationBundleIdentifiers: Set<String>
+    ) -> ContentExecutionResult {
+        openContentLaunchContext.launchedApplicationBundleIdentifiers.append(launchedApplicationBundleIdentifiers)
+        return openContentResult
     }
 
-    func closeContent(from snapshot: SessionSnapshot) -> ContentRestoreResult {
+    func closeContent(
+        from snapshot: SessionSnapshot,
+        closedApplicationBundleIdentifiers: Set<String>
+    ) -> ContentRestoreResult {
         closeContentResult
     }
+}
+
+final class MockAppLauncherLaunchContext {
+    var launchedApplicationBundleIdentifiers: [Set<String>] = []
 }
 
 @MainActor

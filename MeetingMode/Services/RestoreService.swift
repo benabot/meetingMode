@@ -41,7 +41,10 @@ final class RestoreService: SessionRestoring {
         result.stillRunningApplicationsCount = applicationRestoreResult.stillRunningApplicationsCount
         logger.notice("Restore launched apps closed=\(result.closedApplicationsCount, privacy: .public) stillRunning=\(result.stillRunningApplicationsCount, privacy: .public)")
 
-        let contentRestoreResult = appLauncherService.closeContent(from: snapshot)
+        let contentRestoreResult = appLauncherService.closeContent(
+            from: snapshot,
+            closedApplicationBundleIdentifiers: applicationRestoreResult.closedApplicationBundleIdentifiers
+        )
         result.cleanedURLsCount = contentRestoreResult.cleanedURLsCount
         result.skippedFilesCount = contentRestoreResult.skippedFilesCount
         logger.notice("Restore content cleanedURLs=\(result.cleanedURLsCount, privacy: .public) skippedFiles=\(result.skippedFilesCount, privacy: .public)")

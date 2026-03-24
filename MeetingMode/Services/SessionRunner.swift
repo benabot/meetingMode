@@ -222,7 +222,10 @@ final class SessionRunner: ObservableObject {
 
         // Open URLs and files after the hide pass so their host apps
         // (browser, Preview, etc.) are not immediately hidden.
-        let contentResult = appLauncherService.openContent(for: preset)
+        let contentResult = appLauncherService.openContent(
+            for: preset,
+            launchedApplicationBundleIdentifiers: Set(launchResult.launchedApplicationBundleIdentifiers)
+        )
 
         // After opening content, some previously-hidden apps may have become
         // visible again (e.g. Safari brought back by an URL open). Remove

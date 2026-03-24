@@ -3,8 +3,14 @@ import Foundation
 @MainActor
 protocol AppLaunching {
     func openItems(for preset: Preset) -> LaunchExecutionResult
-    func openContent(for preset: Preset) -> ContentExecutionResult
-    func closeContent(from snapshot: SessionSnapshot) -> ContentRestoreResult
+    func openContent(
+        for preset: Preset,
+        launchedApplicationBundleIdentifiers: Set<String>
+    ) -> ContentExecutionResult
+    func closeContent(
+        from snapshot: SessionSnapshot,
+        closedApplicationBundleIdentifiers: Set<String>
+    ) -> ContentRestoreResult
 }
 
 @MainActor

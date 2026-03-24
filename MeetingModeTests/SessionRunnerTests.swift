@@ -117,6 +117,32 @@ final class SessionRunnerTests: XCTestCase {
         XCTAssertEqual(runner.activeSnapshot?.launchedApplications, ["Calculator"])
     }
 
+    func test_startPassesLaunchedAppBundleIdentifiersToContentOpening() {
+        var launcher = MockAppLauncher()
+        launcher.openItemsResult = LaunchExecutionResult(
+            launchedApplications: ["Calculator"],
+            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+        )
+        let runner = makeRunner(launcher: launcher)
+        let preset = Preset(
+            name: "Demo",
+            appsToLaunch: [
+                PresetApp(
+                    displayName: "Calculator",
+                    bundleIdentifier: "com.apple.calculator",
+                    bundlePath: "/System/Applications/Calculator.app"
+                ),
+            ]
+        )
+
+        runner.start(with: preset)
+
+        XCTAssertEqual(
+            launcher.openContentLaunchContext.launchedApplicationBundleIdentifiers,
+            [Set(["com.apple.calculator"])]
+        )
+    }
+
     // MARK: - Restore guards
 
     func test_restoreWithNoSession_noActiveSessionState() {

@@ -8,8 +8,8 @@ struct LaunchExecutionResult {
 }
 
 struct ContentExecutionResult {
-    var openedURLs: [String] = []
-    var openedFiles: [String] = []
+    var openedURLs: [OpenedURLRecord] = []
+    var openedFiles: [OpenedFileRecord] = []
     var failureCount = 0
 }
 
@@ -21,6 +21,7 @@ struct ContentRestoreResult {
 struct ApplicationRestoreResult {
     var closedApplicationsCount = 0
     var stillRunningApplicationsCount = 0
+    var closedApplicationBundleIdentifiers: Set<String> = []
 }
 
 @MainActor
@@ -43,11 +44,17 @@ final class AppLauncherService: AppLaunching {
         return result
     }
 
-    func openContent(for preset: Preset) -> ContentExecutionResult {
+    func openContent(
+        for preset: Preset,
+        launchedApplicationBundleIdentifiers: Set<String>
+    ) -> ContentExecutionResult {
         var result = ContentExecutionResult()
 
         for urlString in preset.urlsToOpen {
-            if let openedURL = openURL(from: urlString) {
+            if let openedURL = openURL(
+                from: urlString,
+                launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+            ) {
                 result.openedURLs.append(openedURL)
             } else if !urlString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 result.failureCount += 1
@@ -55,7 +62,10 @@ final class AppLauncherService: AppLaunching {
         }
 
         for filePath in preset.filesToOpen {
-            if let openedFile = openFile(at: filePath) {
+            if let openedFile = openFile(
+                at: filePath,
+                launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+            ) {
                 result.openedFiles.append(openedFile)
             } else if !filePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 result.failureCount += 1
@@ -65,22 +75,21 @@ final class AppLauncherService: AppLaunching {
         return result
     }
 
-    func closeContent(from snapshot: SessionSnapshot) -> ContentRestoreResult {
-        var result = ContentRestoreResult()
-        result.skippedFilesCount = snapshot.openedFiles.count
+    func closeContent(
+        from snapshot: SessionSnapshot,
+        closedApplicationBundleIdentifiers: Set<String>
+    ) -> ContentRestoreResult {
+        ContentRestoreResult(
+            cleanedURLsCount: snapshot.openedURLs.filter { record in
+                guard record.targetWasLaunchedByMeetingMode,
+                      let targetBundleIdentifier = record.targetBundleIdentifier else {
+                    return false
+                }
 
-        let browserTargets = browserCleanupTargets()
-        guard !browserTargets.isEmpty else {
-            return result
-        }
-
-        for openedURL in snapshot.openedURLs {
-            if closeBrowserContent(from: openedURL, using: browserTargets) {
-                result.cleanedURLsCount += 1
-            }
-        }
-
-        return result
+                return closedApplicationBundleIdentifiers.contains(targetBundleIdentifier)
+            }.count,
+            skippedFilesCount: snapshot.openedFiles.count
+        )
     }
 
     func restoreApplications(from snapshot: SessionSnapshot) -> ApplicationRestoreResult {
@@ -95,6 +104,9 @@ final class AppLauncherService: AppLaunching {
             for application in runningApplications {
                 if closeApplication(application) {
                     result.closedApplicationsCount += 1
+                    if let bundleIdentifier = application.bundleIdentifier {
+                        result.closedApplicationBundleIdentifiers.insert(bundleIdentifier)
+                    }
                 } else {
                     result.stillRunningApplicationsCount += 1
                 }
@@ -133,7 +145,10 @@ final class AppLauncherService: AppLaunching {
         )
     }
 
-    private func openURL(from urlString: String) -> String? {
+    private func openURL(
+        from urlString: String,
+        launchedApplicationBundleIdentifiers: Set<String>
+    ) -> OpenedURLRecord? {
         let trimmedURL = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedURL.isEmpty,
               let url = URL(string: trimmedURL),
@@ -141,10 +156,22 @@ final class AppLauncherService: AppLaunching {
             return nil
         }
 
-        return openWithConfiguration(url)  ? trimmedURL : nil
+        let targetApplicationURL = resolvedTargetApplicationURL(for: url)
+        guard openWithConfiguration(url) else {
+            return nil
+        }
+
+        return Self.openedURLRecord(
+            for: trimmedURL,
+            targetApplicationURL: targetApplicationURL,
+            launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+        )
     }
 
-    private func openFile(at filePath: String) -> String? {
+    private func openFile(
+        at filePath: String,
+        launchedApplicationBundleIdentifiers: Set<String>
+    ) -> OpenedFileRecord? {
         let trimmedPath = filePath.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPath.isEmpty else {
             return nil
@@ -156,7 +183,16 @@ final class AppLauncherService: AppLaunching {
         }
 
         let fileURL = URL(fileURLWithPath: expandedPath)
-        return openWithConfiguration(fileURL) ? expandedPath : nil
+        let targetApplicationURL = resolvedTargetApplicationURL(for: fileURL)
+        guard openWithConfiguration(fileURL) else {
+            return nil
+        }
+
+        return Self.openedFileRecord(
+            for: expandedPath,
+            targetApplicationURL: targetApplicationURL,
+            launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+        )
     }
 
     private func openWithConfiguration(_ url: URL, timeout: TimeInterval = 3.0) -> Bool {
@@ -177,6 +213,10 @@ final class AppLauncherService: AppLaunching {
         }
 
         return openSucceeded
+    }
+
+    private func resolvedTargetApplicationURL(for url: URL) -> URL? {
+        NSWorkspace.shared.urlForApplication(toOpen: url)
     }
 
     private func resolvedApplicationURL(for application: PresetApp) -> URL? {
@@ -201,6 +241,57 @@ final class AppLauncherService: AppLaunching {
         }
 
         return resolvedApplicationURL(named: applicationName)
+    }
+
+    static func targetBundleIdentifier(for applicationURL: URL?) -> String? {
+        guard let applicationURL else {
+            return nil
+        }
+
+        return Bundle(url: applicationURL)?.bundleIdentifier
+    }
+
+    static func targetWasLaunchedByMeetingMode(
+        targetBundleIdentifier: String?,
+        launchedApplicationBundleIdentifiers: Set<String>
+    ) -> Bool {
+        guard let targetBundleIdentifier else {
+            return false
+        }
+
+        return launchedApplicationBundleIdentifiers.contains(targetBundleIdentifier)
+    }
+
+    static func openedURLRecord(
+        for url: String,
+        targetApplicationURL: URL?,
+        launchedApplicationBundleIdentifiers: Set<String>
+    ) -> OpenedURLRecord {
+        let targetBundleIdentifier = Self.targetBundleIdentifier(for: targetApplicationURL)
+        return OpenedURLRecord(
+            url: url,
+            targetBundleIdentifier: targetBundleIdentifier,
+            targetWasLaunchedByMeetingMode: Self.targetWasLaunchedByMeetingMode(
+                targetBundleIdentifier: targetBundleIdentifier,
+                launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+            )
+        )
+    }
+
+    static func openedFileRecord(
+        for filePath: String,
+        targetApplicationURL: URL?,
+        launchedApplicationBundleIdentifiers: Set<String>
+    ) -> OpenedFileRecord {
+        let targetBundleIdentifier = Self.targetBundleIdentifier(for: targetApplicationURL)
+        return OpenedFileRecord(
+            filePath: filePath,
+            targetBundleIdentifier: targetBundleIdentifier,
+            targetWasLaunchedByMeetingMode: Self.targetWasLaunchedByMeetingMode(
+                targetBundleIdentifier: targetBundleIdentifier,
+                launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+            )
+        )
     }
 
     private func resolvedApplicationURL(named applicationName: String) -> URL? {
@@ -268,137 +359,10 @@ final class AppLauncherService: AppLaunching {
         return application.isTerminated
     }
 
-    private func browserCleanupTargets() -> [BrowserCleanupTarget] {
-        let frontmostBundleIdentifier = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-
-        return Self.browserCleanupCatalog
-            .filter { isApplicationRunning(bundleIdentifier: $0.bundleIdentifier) }
-            .sorted {
-                if $0.bundleIdentifier == frontmostBundleIdentifier {
-                    return true
-                }
-
-                if $1.bundleIdentifier == frontmostBundleIdentifier {
-                    return false
-                }
-
-                return $0.priority < $1.priority
-            }
-    }
-
-    private func closeBrowserContent(from urlString: String, using browserTargets: [BrowserCleanupTarget]) -> Bool {
-        let candidateURLs = browserCleanupCandidates(for: urlString)
-        guard !candidateURLs.isEmpty else {
-            return false
-        }
-
-        for browserTarget in browserTargets {
-            let candidateList = candidateURLs
-                .map(Self.appleScriptStringLiteral)
-                .joined(separator: ", ")
-
-            let scriptSource = """
-            tell application "\(browserTarget.appleScriptName)"
-                if not running then return "0"
-                set candidateURLs to {\(candidateList)}
-                repeat with browserWindow in windows
-                    repeat with browserTab in tabs of browserWindow
-                        if (URL of browserTab as text) is in candidateURLs then
-                            close browserTab
-                            return "1"
-                        end if
-                    end repeat
-                end repeat
-                return "0"
-            end tell
-            """
-
-            if executeAppleScript(scriptSource) {
-                return true
-            }
-        }
-
-        return false
-    }
-
-    private func browserCleanupCandidates(for urlString: String) -> [String] {
-        let trimmedURL = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedURL.isEmpty,
-              let url = URL(string: trimmedURL),
-              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let scheme = components.scheme?.lowercased(),
-              Self.browserCleanupSchemes.contains(scheme),
-              let host = components.host?.lowercased() else {
-            return []
-        }
-
-        let path = components.percentEncodedPath.isEmpty ? "/" : components.percentEncodedPath
-        let query = components.percentEncodedQuery.map { "?\($0)" } ?? ""
-        let fragment = components.percentEncodedFragment.map { "#\($0)" } ?? ""
-        let port = components.port.map { ":\($0)" } ?? ""
-
-        var candidates = Set<String>()
-        candidates.insert(trimmedURL)
-        candidates.insert(url.absoluteString)
-        candidates.insert("\(scheme)://\(host)\(port)\(path)\(query)\(fragment)")
-
-        if path == "/" {
-            candidates.insert("\(scheme)://\(host)\(port)")
-            candidates.insert("\(scheme)://\(host)\(port)/")
-        }
-
-        return Array(candidates)
-    }
-
-    private func executeAppleScript(_ source: String) -> Bool {
-        guard let script = NSAppleScript(source: source) else {
-            return false
-        }
-
-        var error: NSDictionary?
-        let descriptor = script.executeAndReturnError(&error)
-        guard let result = descriptor.stringValue else {
-            return false
-        }
-
-        return result == "1"
-    }
-
-    private static func appleScriptStringLiteral(_ value: String) -> String {
-        "\"" + value
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"") + "\""
-    }
 }
 
 private struct OpenedApplication {
     let displayName: String
     let bundleIdentifier: String?
     let shouldTerminateOnRestore: Bool
-}
-
-private struct BrowserCleanupTarget {
-    let bundleIdentifier: String
-    let appleScriptName: String
-    let priority: Int
-}
-
-private extension AppLauncherService {
-    static let browserCleanupCatalog: [BrowserCleanupTarget] = [
-        BrowserCleanupTarget(
-            bundleIdentifier: "com.apple.Safari",
-            appleScriptName: "Safari",
-            priority: 0
-        ),
-        BrowserCleanupTarget(
-            bundleIdentifier: "com.google.Chrome",
-            appleScriptName: "Google Chrome",
-            priority: 1
-        ),
-    ]
-
-    static let browserCleanupSchemes: Set<String> = [
-        "http",
-        "https",
-    ]
 }
