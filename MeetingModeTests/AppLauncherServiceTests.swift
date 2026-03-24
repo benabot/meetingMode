@@ -47,6 +47,15 @@ final class AppLauncherServiceTests: XCTestCase {
         )
     }
 
+    func test_mergedLaunchedApplicationBundleIdentifiers_includesContentLaunchedApps() {
+        let merged = AppLauncherService.mergedLaunchedApplicationBundleIdentifiers(
+            explicitBundleIdentifiers: ["com.apple.calculator"],
+            contentBundleIdentifiers: ["com.apple.TextEdit"]
+        )
+
+        XCTAssertEqual(Set(merged), Set(["com.apple.calculator", "com.apple.TextEdit"]))
+    }
+
     func test_closeContent_doesNotSkipFileWhenLaunchedHostAppClosed() async {
         let result = await MainActor.run { () -> ContentRestoreResult in
             let service = AppLauncherService()

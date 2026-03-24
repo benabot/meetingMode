@@ -10,6 +10,7 @@ struct LaunchExecutionResult {
 struct ContentExecutionResult {
     var openedURLs: [OpenedURLRecord] = []
     var openedFiles: [OpenedFileRecord] = []
+    var launchedApplicationBundleIdentifiers: Set<String> = []
     var failureCount = 0
 }
 
@@ -49,13 +50,16 @@ final class AppLauncherService: AppLaunching {
         launchedApplicationBundleIdentifiers: Set<String>
     ) -> ContentExecutionResult {
         var result = ContentExecutionResult()
+        var knownLaunchedApplicationBundleIdentifiers = launchedApplicationBundleIdentifiers
 
         for urlString in preset.urlsToOpen {
             if let openedURL = openURL(
                 from: urlString,
-                launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+                launchedApplicationBundleIdentifiers: knownLaunchedApplicationBundleIdentifiers,
+                launchedApplicationBundleIdentifiersToAppend: &result.launchedApplicationBundleIdentifiers
             ) {
                 result.openedURLs.append(openedURL)
+                knownLaunchedApplicationBundleIdentifiers.formUnion(result.launchedApplicationBundleIdentifiers)
             } else if !urlString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 result.failureCount += 1
             }
@@ -64,9 +68,11 @@ final class AppLauncherService: AppLaunching {
         for filePath in preset.filesToOpen {
             if let openedFile = openFile(
                 at: filePath,
-                launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+                launchedApplicationBundleIdentifiers: knownLaunchedApplicationBundleIdentifiers,
+                launchedApplicationBundleIdentifiersToAppend: &result.launchedApplicationBundleIdentifiers
             ) {
                 result.openedFiles.append(openedFile)
+                knownLaunchedApplicationBundleIdentifiers.formUnion(result.launchedApplicationBundleIdentifiers)
             } else if !filePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 result.failureCount += 1
             }
@@ -156,7 +162,8 @@ final class AppLauncherService: AppLaunching {
 
     private func openURL(
         from urlString: String,
-        launchedApplicationBundleIdentifiers: Set<String>
+        launchedApplicationBundleIdentifiers: Set<String>,
+        launchedApplicationBundleIdentifiersToAppend: inout Set<String>
     ) -> OpenedURLRecord? {
         let trimmedURL = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedURL.isEmpty,
@@ -166,20 +173,28 @@ final class AppLauncherService: AppLaunching {
         }
 
         let targetApplicationURL = resolvedTargetApplicationURL(for: url)
+        let targetBundleIdentifier = Self.targetBundleIdentifier(for: targetApplicationURL)
+        let targetApplicationWasRunningBeforeOpen = targetBundleIdentifier.map(isApplicationRunning(bundleIdentifier:)) ?? false
         guard openWithConfiguration(url) else {
             return nil
+        }
+
+        if let targetBundleIdentifier, !targetApplicationWasRunningBeforeOpen {
+            launchedApplicationBundleIdentifiersToAppend.insert(targetBundleIdentifier)
         }
 
         return Self.openedURLRecord(
             for: trimmedURL,
             targetApplicationURL: targetApplicationURL,
             launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+                .union(launchedApplicationBundleIdentifiersToAppend)
         )
     }
 
     private func openFile(
         at filePath: String,
-        launchedApplicationBundleIdentifiers: Set<String>
+        launchedApplicationBundleIdentifiers: Set<String>,
+        launchedApplicationBundleIdentifiersToAppend: inout Set<String>
     ) -> OpenedFileRecord? {
         let trimmedPath = filePath.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPath.isEmpty else {
@@ -193,14 +208,21 @@ final class AppLauncherService: AppLaunching {
 
         let fileURL = URL(fileURLWithPath: expandedPath)
         let targetApplicationURL = resolvedTargetApplicationURL(for: fileURL)
+        let targetBundleIdentifier = Self.targetBundleIdentifier(for: targetApplicationURL)
+        let targetApplicationWasRunningBeforeOpen = targetBundleIdentifier.map(isApplicationRunning(bundleIdentifier:)) ?? false
         guard openWithConfiguration(fileURL) else {
             return nil
+        }
+
+        if let targetBundleIdentifier, !targetApplicationWasRunningBeforeOpen {
+            launchedApplicationBundleIdentifiersToAppend.insert(targetBundleIdentifier)
         }
 
         return Self.openedFileRecord(
             for: expandedPath,
             targetApplicationURL: targetApplicationURL,
             launchedApplicationBundleIdentifiers: launchedApplicationBundleIdentifiers
+                .union(launchedApplicationBundleIdentifiersToAppend)
         )
     }
 
@@ -269,6 +291,13 @@ final class AppLauncherService: AppLaunching {
         }
 
         return launchedApplicationBundleIdentifiers.contains(targetBundleIdentifier)
+    }
+
+    static func mergedLaunchedApplicationBundleIdentifiers(
+        explicitBundleIdentifiers: [String],
+        contentBundleIdentifiers: Set<String>
+    ) -> [String] {
+        Array(Set(explicitBundleIdentifiers).union(contentBundleIdentifiers))
     }
 
     static func openedURLRecord(

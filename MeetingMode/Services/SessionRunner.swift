@@ -266,7 +266,10 @@ final class SessionRunner: ObservableObject {
             presetName: preset.name,
             startedAt: Date(),
             launchedApplications: launchResult.launchedApplications,
-            launchedApplicationBundleIdentifiers: launchResult.launchedApplicationBundleIdentifiers,
+            launchedApplicationBundleIdentifiers: AppLauncherService.mergedLaunchedApplicationBundleIdentifiers(
+                explicitBundleIdentifiers: launchResult.launchedApplicationBundleIdentifiers,
+                contentBundleIdentifiers: contentResult.launchedApplicationBundleIdentifiers
+            ),
             hiddenApplications: [],
             openedURLs: contentResult.openedURLs,
             openedFiles: contentResult.openedFiles,
