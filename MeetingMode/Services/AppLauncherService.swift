@@ -79,7 +79,16 @@ final class AppLauncherService: AppLaunching {
         from snapshot: SessionSnapshot,
         closedApplicationBundleIdentifiers: Set<String>
     ) -> ContentRestoreResult {
-        ContentRestoreResult(
+        let coveredFileCount = snapshot.openedFiles.filter { record in
+            guard record.targetWasLaunchedByMeetingMode,
+                  let targetBundleIdentifier = record.targetBundleIdentifier else {
+                return false
+            }
+
+            return closedApplicationBundleIdentifiers.contains(targetBundleIdentifier)
+        }.count
+
+        return ContentRestoreResult(
             cleanedURLsCount: snapshot.openedURLs.filter { record in
                 guard record.targetWasLaunchedByMeetingMode,
                       let targetBundleIdentifier = record.targetBundleIdentifier else {
@@ -88,7 +97,7 @@ final class AppLauncherService: AppLaunching {
 
                 return closedApplicationBundleIdentifiers.contains(targetBundleIdentifier)
             }.count,
-            skippedFilesCount: snapshot.openedFiles.count
+            skippedFilesCount: snapshot.openedFiles.count - coveredFileCount
         )
     }
 
