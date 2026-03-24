@@ -34,6 +34,7 @@
 ## Plus tard
 
 - [ ] Ajouter un messaging de permissions plus précis si l'automation inter-apps devient réelle
+- [x] Stabiliser le restore cleanup best effort actuel: le restore principal est validé, les URLs peuvent rester ouvertes, et les fichiers restent le principal gap produit
 - [x] Renforcer la persistance locale : snapshot de session persisté sur disque (active_session.json), rechargement au relaunch après crash, overlayWasShown corrigé au rechargement
 - [x] Ajouter un sélecteur de fichiers local (NSOpenPanel pour apps et fichiers dans l'éditeur de preset, au lieu de saisie manuelle)
 - [x] Faire une passe de polish UI minimale sur la menu bar et Settings (bouton delete discret, bouton restore disabled plus lisible, footer plus discret, plan detail sur 2 lignes)
@@ -78,25 +79,21 @@
 - [x] Les textes du tutoriel n'utilisent plus de jargon développeur (MVP, v1, règles MVP)
 
 
-## V2 — Fermeture best effort des URLs et fichiers
+## V2 — Attribution du contenu ouvert
 
 ### À faire
 
-- [ ] Étendre `SessionSnapshot` pour tracer les URLs et fichiers ouverts par la session
-- [ ] Distinguer dans le snapshot ce qui a été ouvert dans une app déjà en cours d'exécution vs une app lancée par Meeting Mode
-- [ ] Réutiliser le scope de quit existant pour fermer les apps lancées par la session qui servent de support à une URL ou un fichier
-- [ ] Ne pas tenter de fermer un onglet précis dans un navigateur déjà ouvert
-- [ ] Ne pas tenter de fermer un document précis dans une app déjà ouverte
-- [ ] Afficher dans le résultat de restore trois états séparés : fermé, resté ouvert, non fermable proprement
-- [ ] Mettre à jour les textes FR + EN pour ne pas promettre de fermeture parfaite
-- [ ] Ajouter des tests unitaires ciblés sur la nouvelle logique de snapshot et de restore
-- [ ] Documenter explicitement la limite produit dans `README.md`, `DECISIONS.md` et `PROJECT_STATUS.md`
+- [ ] Enregistrer au moment de l'ouverture le contexte cible: URL ou fichier, bundle identifier si connu, et état "app lancée par Meeting Mode" si applicable
+- [ ] Utiliser ce contexte pour ne revendiquer une fermeture propre que lorsque le contenu est porté par une app lancée par Meeting Mode
+- [ ] Garder hors scope la fermeture arbitraire d'un document ou d'un onglet dans une app déjà ouverte
+- [ ] Mettre le wording des actions principales sur `Préparer le Mac` et `Rétablir le Mac`
+- [ ] Explorer plus tard l'idée Safari d'une fenêtre dédiée séparée du contexte préexistant, comme piste UX et non comme comportement validé
 
 ### Critère de terminé V2
 
-- [ ] Les URLs et fichiers ouverts pendant la session sont tracés dans le snapshot
-- [ ] Le restore ferme les apps lancées par Meeting Mode quand elles sont le support de ces ouvertures
-- [ ] Le restore n'annonce jamais à tort qu'un onglet ou document précis a été fermé
+- [ ] Le contexte d'ouverture est capturé au moment où Meeting Mode ouvre un élément
+- [ ] Le restore ne revendique une fermeture propre que quand le contenu est porté par une app lancée par Meeting Mode
+- [ ] Le restore ne prétend pas fermer un onglet ou un document isolé dans une app déjà ouverte
 - [ ] Le résultat utilisateur distingue clairement les cas réellement restaurés des limites macOS
 
 ## V3 — Release App Store

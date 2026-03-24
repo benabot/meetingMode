@@ -29,6 +29,7 @@ La suite a été réalisée dans cet ordre :
 - ne pas rouvrir le chantier des fenêtres avancées, Spaces ou plein écran
 - garder des changements petits, testables et réversibles
 - ne pas faire de polish visuel qui cache des états ambigus
+- garder le wording principal sur `Préparer le Mac` et `Rétablir le Mac`
 
 ## Étape 1 — Raccourcis clavier configurables ✓
 
@@ -187,29 +188,27 @@ La suite a été réalisée dans cet ordre :
 - Refactor sandbox
 - Fermeture précise d'onglets ou de documents déjà ouverts dans d'autres apps
 
-## V2 — Fermeture best effort des URLs et fichiers ouverts par la session
+## V2 — Attribution du contenu ouvert
 
 **Recommandation nette**
-- Oui pour une V2, mais avec un cadre strict : fermeture **best effort** des éléments ouverts par Meeting Mode, sans gestion avancée des fenêtres, sans fermeture d'onglets préexistants, sans promesse de rollback parfait.
+- Oui pour une V2, mais elle doit commencer par une attribution plus fiable du contenu ouvert au moment de l'ouverture, avant de promettre quoi que ce soit sur la fermeture.
 
 **Objectif**
-- Étendre le restore pour réduire le bruit laissé par la session
-- Fermer, en best effort, les URLs et fichiers ouverts par Meeting Mode pendant la session
+- Enrichir le tracking d'ouverture avec le contexte d'app cible
+- Utiliser ce contexte pour rendre le restore plus honnête sur les URLs et fichiers
 - Garder un état de session explicite et vérifiable
 
 **Décision produit**
-- Une URL ouverte dans une app **déjà en cours d'exécution** n'est pas considérée comme fermable précisément si cela implique de retrouver puis fermer un onglet précis
-- Un fichier ouvert dans une app **déjà en cours d'exécution** n'est pas considéré comme fermable précisément si cela implique de piloter les documents de l'app
-- En revanche, si Meeting Mode a lancé une app pour porter l'ouverture d'une URL ou d'un fichier, cette app peut entrer dans le scope de fermeture du restore, au même titre qu'une app lancée par la session
-- La doc et l'UI doivent distinguer clairement : `fermé`, `resté ouvert`, `non fermable proprement`
+- Le tracking doit enregistrer au moment de l'ouverture : l'URL ou le fichier, le bundle identifier cible si connu, et si l'app cible a été lancée par Meeting Mode
+- Le restore ne doit revendiquer une fermeture propre que lorsque le contenu est porté par une app lancée par Meeting Mode
+- Une URL ou un fichier ouvert dans une app déjà en cours d'exécution ne doit pas être présenté comme proprement fermable si cela implique de viser un onglet ou un document arbitraire
+- L'idée d'une fenêtre Safari dédiée, séparée du contexte Safari préexistant, reste une exploration UX future et non un comportement validé aujourd'hui
 
 **Approche technique recommandée**
-1. enrichir le snapshot de session pour tracer les ouvertures déclenchées : URL, fichier, app cible résolue si connue
-2. distinguer deux cas :
-   - ouverture portée par une app lancée par la session → éligible à fermeture via le quit déjà existant
-   - ouverture injectée dans une app déjà ouverte → non éligible à fermeture fine en v2
-3. afficher dans le résultat de restore ce qui a réellement été fermé et ce qui reste ouvert par limite macOS
-4. n'introduire AppleScript qu'en nettoyage best effort ciblé pour Safari / Chrome, pas en automation profonde ni en gestion fine de tabs/documents
+1. enregistrer au moment de l'ouverture le contexte cible : URL ou fichier, bundle identifier si connu, et état `app lancée par Meeting Mode` si applicable
+2. utiliser ce contexte pour décider si le restore peut prétendre à une fermeture propre ou seulement à un best effort
+3. garder hors scope la fermeture arbitraire d'un onglet ou d'un document dans une app déjà ouverte
+4. traiter l'idée Safari dédiée comme une piste UX future, pas comme une dépendance de l'implémentation V2
 
 **Fichiers concernés**
 - `MeetingMode/Models/SessionSnapshot.swift`
@@ -228,14 +227,14 @@ La suite a été réalisée dans cet ordre :
 - Aucun ajout de dépendance externe
 
 **Critère de validation**
-- Le snapshot enregistre les URLs et fichiers ouverts par la session courante
-- Le restore ferme bien les apps lancées par Meeting Mode qui servaient à ouvrir ces contenus
-- Le restore ne prétend pas fermer un onglet de navigateur ou un document isolé dans une app déjà ouverte
-- Le résultat de restore distingue les cas confirmés des cas non fermables proprement
-- Aucun glissement vers la gestion avancée des fenêtres, onglets ou Apple Events
+- Le snapshot ou le tracking associé enregistre les URLs et fichiers ouverts par la session courante avec le contexte cible utile
+- Le restore ne revendique une fermeture propre que quand le contenu est porté par une app lancée par Meeting Mode
+- Le restore reste honnête sur les URLs qui peuvent rester ouvertes
+- Le restore reste honnête sur les fichiers locaux qui ne peuvent pas encore être fermés proprement
+- Aucun glissement vers la gestion avancée des fenêtres, onglets ou documents arbitraires
 
 **Hors périmètre explicite**
-- Fermeture fiable d'un onglet ou d'un document précis dans toutes les apps
+- Fermeture fiable d'un onglet ou d'un document précis dans une app déjà ouverte
 - Restore parfait de l'état de navigation ou de documents
 - AppleScript profond, ScriptingBridge, automation inter-apps profonde
 
@@ -307,7 +306,7 @@ La suite a été réalisée dans cet ordre :
 6. ~~Nettoyage des textes du tutoriel (ton utilisateur, pas développeur)~~ ✓
 7. ~~Fiabilisation : persistance snapshot sur crash, correction état overlay au relaunch, multi-screen overlay~~ ✓
 8. Canal direct stable : signature, notarization, packaging DMG
-9. V2 : fermeture best effort des URLs et fichiers ouverts par la session, sans gestion fine des onglets/documents
+9. V2 : attribution du contenu ouvert, puis restore plus honnête sur les URLs et fichiers
 10. V3 : migration sandbox et release App Store
 
 La suite recommandée est donc : **DMG stable d'abord**, **V2 ensuite pour élargir le restore sans magie**, puis **V3 App Store** avec compromis produit explicites.

@@ -39,6 +39,7 @@
 - `Start Session` is only shown when a preset is selectable.
 - `Restore Session` remains visible but disabled while no session is active.
 - Preset editing stays lightweight and is presented from the graphical menu bar flow rather than a separate heavy preferences-style surface.
+- The preferred French-facing labels for the main actions are `Préparer le Mac` and `Rétablir le Mac`.
 
 ### Hotkey Strategy
 
@@ -270,14 +271,14 @@
 
 ## Upcoming product decisions already framed
 
-### V2 — Remaining cleanup limits
+### V2 — Attribution du contenu ouvert
 
-- Decision: Safari and Google Chrome URL cleanup is now best-effort and heuristic, based on recorded snapshot URLs and the browser's current tab URLs.
-- Decision: Meeting Mode does **not** claim it can later close a specific browser tab or a specific document that was opened inside an app already running before the session.
-- Decision: local file cleanup remains skipped in v1 until the snapshot stores stronger attribution than raw paths.
-- Decision: when a URL or file opening caused Meeting Mode to launch an app that was not previously running, that app is part of the existing restore quit scope and can therefore be closed as part of cleanup.
-- Decision: restore UI and docs must report three states clearly: actually closed, intentionally left open, and not closable cleanly under macOS constraints.
-- Rejected for v2: deep browser integration, document scripting, advanced window restoration.
+- Decision: raw `openedURLs` / `openedFiles` strings are not enough for reliable restore attribution by themselves.
+- Decision: when Meeting Mode opens a URL or file, it should also record target app context if known: target bundle identifier and whether the target app was launched by Meeting Mode.
+- Decision: Meeting Mode should only claim a clean close when the content is carried by an app launched by Meeting Mode.
+- Decision: arbitrary document closing in apps already running stays out of scope for the MVP restore contract.
+- Decision: the preferred French labels for the main actions are `Préparer le Mac` and `Rétablir le Mac`.
+- Decision: future UX exploration only: if Safari is already open, a dedicated Safari window could separate Meeting Mode URLs from the user's pre-existing Safari context.
 
 ### V3 — App Store release requires a narrower restore promise
 
