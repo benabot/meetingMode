@@ -25,7 +25,7 @@
 "settings.permissions.accessibility" = "Accessibility";
 "settings.permissions.accessibility.note" = "Not required. The current implementation uses NSRunningApplication for app visibility, which does not need Accessibility access.";
 "settings.permissions.automation" = "Automation";
-"settings.permissions.automation.note" = "Not required. Meeting Mode does not use AppleScript or inter-app automation.";
+"settings.permissions.automation.note" = "Limited AppleScript is used only for best-effort browser tab cleanup during restore.";
 "settings.permissions.screen_recording" = "Screen Recording";
 "settings.permissions.screen_recording.note" = "Not required. Meeting Mode does not capture or record the screen.";
 "settings.help.description" = "Reopen the quick tutorial at any time if you need a short reminder of the main flow and limits.";
@@ -209,5 +209,9 @@
 "session.notice.restore.still_hidden.other" = "%d hidden apps may still be hidden";
 "session.notice.restore.closed.one" = "%d launched app closed";
 "session.notice.restore.closed.other" = "%d launched apps closed";
+"session.notice.restore.url_cleaned.one" = "%d browser URL cleaned up";
+"session.notice.restore.url_cleaned.other" = "%d browser URLs cleaned up";
+"session.notice.restore.file_skipped.one" = "%d opened file skipped";
+"session.notice.restore.file_skipped.other" = "%d opened files skipped";
 "session.notice.restore.still_open.one" = "%d launched app may still be open";
 "session.notice.restore.still_open.other" = "%d launched apps may still be open";

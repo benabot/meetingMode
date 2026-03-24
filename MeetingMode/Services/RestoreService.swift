@@ -5,6 +5,8 @@ struct RestoreExecutionResult {
     var hidOverlay = false
     var closedApplicationsCount = 0
     var stillRunningApplicationsCount = 0
+    var cleanedURLsCount = 0
+    var skippedFilesCount = 0
     var requestedVisibleApplications: [HiddenApplicationSnapshot] = []
 }
 
@@ -39,7 +41,11 @@ final class RestoreService: SessionRestoring {
         result.stillRunningApplicationsCount = applicationRestoreResult.stillRunningApplicationsCount
         logger.notice("Restore launched apps closed=\(result.closedApplicationsCount, privacy: .public) stillRunning=\(result.stillRunningApplicationsCount, privacy: .public)")
 
-        // TODO: v1 does not close files or URLs opened during the session
+        let contentRestoreResult = appLauncherService.closeContent(from: snapshot)
+        result.cleanedURLsCount = contentRestoreResult.cleanedURLsCount
+        result.skippedFilesCount = contentRestoreResult.skippedFilesCount
+        logger.notice("Restore content cleanedURLs=\(result.cleanedURLsCount, privacy: .public) skippedFiles=\(result.skippedFilesCount, privacy: .public)")
+
         result.requestedVisibleApplications = appVisibilityService.beginVisibilityRestore(from: snapshot)
         logger.notice("Restore hidden apps requested=\(result.requestedVisibleApplications.count, privacy: .public)")
         return result

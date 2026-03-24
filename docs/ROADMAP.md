@@ -209,7 +209,7 @@ La suite a été réalisée dans cet ordre :
    - ouverture portée par une app lancée par la session → éligible à fermeture via le quit déjà existant
    - ouverture injectée dans une app déjà ouverte → non éligible à fermeture fine en v2
 3. afficher dans le résultat de restore ce qui a réellement été fermé et ce qui reste ouvert par limite macOS
-4. ne pas introduire AppleScript, automation profonde ou gestion de tabs/documents en v2
+4. n'introduire AppleScript qu'en nettoyage best effort ciblé pour Safari / Chrome, pas en automation profonde ni en gestion fine de tabs/documents
 
 **Fichiers concernés**
 - `MeetingMode/Models/SessionSnapshot.swift`
@@ -235,10 +235,9 @@ La suite a été réalisée dans cet ordre :
 - Aucun glissement vers la gestion avancée des fenêtres, onglets ou Apple Events
 
 **Hors périmètre explicite**
-- Fermeture d'un onglet précis dans Safari, Chrome, Arc, etc.
-- Fermeture d'un document précis dans Preview, Pages, Numbers, etc. si l'app était déjà ouverte
+- Fermeture fiable d'un onglet ou d'un document précis dans toutes les apps
 - Restore parfait de l'état de navigation ou de documents
-- AppleScript, ScriptingBridge, automation inter-apps profonde
+- AppleScript profond, ScriptingBridge, automation inter-apps profonde
 
 ## V3 — Release App Store
 

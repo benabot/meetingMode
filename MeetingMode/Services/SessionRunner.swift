@@ -35,6 +35,8 @@ struct RestoreSessionFeedback: Equatable {
     var stillHiddenApplicationsCount: Int
     var closedApplicationsCount: Int
     var stillRunningApplicationsCount: Int
+    var cleanedURLsCount: Int
+    var skippedFilesCount: Int
     var isVisibilityPending: Bool
 }
 
@@ -494,6 +496,8 @@ final class SessionRunner: ObservableObject {
                 stillHiddenApplicationsCount: stillHiddenApplicationsCount,
                 closedApplicationsCount: restoreResult.closedApplicationsCount,
                 stillRunningApplicationsCount: restoreResult.stillRunningApplicationsCount,
+                cleanedURLsCount: restoreResult.cleanedURLsCount,
+                skippedFilesCount: restoreResult.skippedFilesCount,
                 isVisibilityPending: isVisibilityPending
             )
         )
@@ -634,6 +638,30 @@ final class SessionRunner: ObservableObject {
                     otherKey: "session.notice.restore.closed.other",
                     defaultOne: "%d launched app closed",
                     defaultOther: "%d launched apps closed"
+                )
+            )
+        }
+
+        if feedback.cleanedURLsCount > 0 {
+            restoredItems.append(
+                localizedCount(
+                    feedback.cleanedURLsCount,
+                    oneKey: "session.notice.restore.url_cleaned.one",
+                    otherKey: "session.notice.restore.url_cleaned.other",
+                    defaultOne: "%d browser URL cleaned up",
+                    defaultOther: "%d browser URLs cleaned up"
+                )
+            )
+        }
+
+        if feedback.skippedFilesCount > 0 {
+            restoredItems.append(
+                localizedCount(
+                    feedback.skippedFilesCount,
+                    oneKey: "session.notice.restore.file_skipped.one",
+                    otherKey: "session.notice.restore.file_skipped.other",
+                    defaultOne: "%d opened file skipped",
+                    defaultOther: "%d opened files skipped"
                 )
             )
         }

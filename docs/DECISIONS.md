@@ -205,8 +205,9 @@
 - Apps that were already running before the session are never included in the quit list.
 - A polite quit request is not treated as proof that an app really closed. The UI now distinguishes between a confirmed close and an app that may still be open.
 - The stronger fallback exists only for apps launched by the current session, not for apps that were already open before it.
-- URLs and local files are opened in a simple way, but v1 restore does not attempt to close them.
-- This is not treated as a bug in v1. The planned v2 behavior is limited to best-effort cleanup of session-opened content, without per-tab or per-document control inside already-running apps.
+- Restore makes a best-effort attempt to close session-opened URLs in Safari and Google Chrome when the current tab URL still matches a recorded snapshot URL.
+- Local files remain reported as skipped during restore because the current snapshot model only stores raw paths, which is not reliable enough for per-document cleanup in v1.
+- Firefox is intentionally skipped from URL cleanup because this version only supports the Safari and Chrome AppleScript paths.
 - Restore still remains limited in scope and is not a promise of full system rollback.
 - The post-restore UI keeps the last restore result visible, and while app visibility is still being confirmed it explicitly says `checking hidden apps` rather than presenting a clean success too early.
 - Runtime validation is now split clearly in the docs: app visibility restore is validated on the current machine, while polite quit for document-based apps remains a separate best-effort topic.
@@ -269,13 +270,14 @@
 
 ## Upcoming product decisions already framed
 
-### V2 — Files and URLs should close only in best effort mode
+### V2 — Remaining cleanup limits
 
-- Decision: v2 may extend restore to clean up **session-opened** URLs and files, but only under a narrow and testable contract.
+- Decision: Safari and Google Chrome URL cleanup is now best-effort and heuristic, based on recorded snapshot URLs and the browser's current tab URLs.
 - Decision: Meeting Mode does **not** claim it can later close a specific browser tab or a specific document that was opened inside an app already running before the session.
+- Decision: local file cleanup remains skipped in v1 until the snapshot stores stronger attribution than raw paths.
 - Decision: when a URL or file opening caused Meeting Mode to launch an app that was not previously running, that app is part of the existing restore quit scope and can therefore be closed as part of cleanup.
 - Decision: restore UI and docs must report three states clearly: actually closed, intentionally left open, and not closable cleanly under macOS constraints.
-- Rejected for v2: AppleScript-driven tab closure, document scripting, deep browser integration, advanced window restoration.
+- Rejected for v2: deep browser integration, document scripting, advanced window restoration.
 
 ### V3 — App Store release requires a narrower restore promise
 

@@ -156,6 +156,40 @@ final class SessionRunnerTests: XCTestCase {
         XCTAssertNil(runner.activeSnapshot)
     }
 
+    func test_restoreSuccess_includesContentCleanupCounts() {
+        var launcher = MockAppLauncher()
+        launcher.openItemsResult = LaunchExecutionResult(
+            launchedApplications: ["Calculator"],
+            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+        )
+        var restore = MockRestore()
+        restore.restoreResult = RestoreExecutionResult(
+            cleanedURLsCount: 2,
+            skippedFilesCount: 3
+        )
+        let runner = makeRunner(launcher: launcher, restore: restore)
+        let preset = Preset(
+            name: "Test",
+            appsToLaunch: [
+                PresetApp(
+                    displayName: "Calculator",
+                    bundleIdentifier: "com.apple.calculator",
+                    bundlePath: "/System/Applications/Calculator.app"
+                ),
+            ]
+        )
+
+        runner.start(with: preset)
+        runner.restoreIfPossible()
+
+        guard case let .restored(feedback) = runner.lastActionState else {
+            return XCTFail("Expected restored feedback")
+        }
+
+        XCTAssertEqual(feedback.cleanedURLsCount, 2)
+        XCTAssertEqual(feedback.skippedFilesCount, 3)
+    }
+
     // MARK: - Snapshot persistence
 
     func test_startPersistsSnapshotToDisk() {

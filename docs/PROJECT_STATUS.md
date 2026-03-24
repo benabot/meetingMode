@@ -126,7 +126,7 @@ Date: 2026-03-17
 - Only regular apps outside the preset are candidates for hiding, and only apps that were actually confirmed hidden after the start flow are tracked for restore.
 - The clean screen overlay uses one borderless window per connected screen, each constrained to that screen's visible frame, so the menu bar stays reachable for restore.
 - The overlay now sits below regular app windows on purpose. Preset apps stay accessible because they are not hidden, not because they pierce the overlay through fragile window-level tricks.
-- Restore hides the clean screen, explicitly re-shows only the tracked apps that Meeting Mode itself hid, and attempts a polite quit followed by force quit if needed for apps launched by the session, but it does not attempt to close URLs or files.
+- Restore hides the clean screen, explicitly re-shows only the tracked apps that Meeting Mode itself hid, attempts a polite quit followed by force quit if needed for apps launched by the session, and makes a best-effort Safari / Google Chrome cleanup pass for session URLs while reporting opened files as skipped.
 - While restore visibility is still being confirmed, the popover summary now says `Checking hidden apps` instead of reporting a finished restore too early.
 - The restore path now distinguishes between an app that actually closed and an app that may still be open after the quit request.
 - Visibility restore remains best effort only. Meeting Mode does not attempt advanced window or Space restoration.
@@ -153,15 +153,15 @@ Date: 2026-03-17
 
 ## Next documented milestones
 
-### V2 — Close files and URLs opened by the session
+### V2 — Remaining cleanup limits
 
-- The next functional extension is a **best-effort cleanup** of content opened by Meeting Mode during a session.
+- The next functional extension is still narrow: Safari and Google Chrome URL cleanup is best-effort, while exact document-level file cleanup remains out of scope.
 - Scope is intentionally narrow:
   - if Meeting Mode launched an app in order to open a URL or file, that app can be closed during restore if it belongs to the session-launched scope
-  - if a URL was opened into an already-running browser, v2 does **not** promise closing the exact tab afterward
+  - if a URL was opened into an already-running browser, cleanup stays best effort and may skip the tab when attribution is uncertain
   - if a file was opened inside an already-running document app, v2 does **not** promise closing the exact document afterward
 - The session snapshot already tracks URLs and files opened successfully; v2 extends restore reporting so the app can distinguish what was actually closed from what remains open due to macOS limitations.
-- No advanced window management, tab targeting, AppleScript automation, or broad app-control expansion is planned for this version.
+- No advanced window management, deep browser integration, or broad app-control expansion is planned for this version.
 
 ### V3 — App Store release track
 
@@ -180,7 +180,7 @@ Date: 2026-03-17
 
 ## Still Intentionally Stubbed
 
-- Restore of opened URLs and local files
+- Best-effort URL cleanup and explicit skipped-file reporting
 
 ## Out Of Scope For This Pass
 

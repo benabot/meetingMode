@@ -25,7 +25,7 @@
 "settings.permissions.accessibility" = "Accessibilité";
 "settings.permissions.accessibility.note" = "Non requise. L’implémentation actuelle utilise NSRunningApplication pour la visibilité des apps, ce qui ne nécessite pas l’accès Accessibilité.";
 "settings.permissions.automation" = "Automatisation";
-"settings.permissions.automation.note" = "Non requise. Meeting Mode n’utilise pas AppleScript ni d’automatisation inter-apps.";
+"settings.permissions.automation.note" = "Un AppleScript limité sert uniquement au nettoyage best-effort des onglets de navigateur pendant la restauration.";
 "settings.permissions.screen_recording" = "Enregistrement de l’écran";
 "settings.permissions.screen_recording.note" = "Non requise. Meeting Mode ne capture ni n’enregistre l’écran.";
 "settings.help.description" = "Rouvrez le tutoriel rapide à tout moment si vous avez besoin d’un rappel court du flux principal et des limites.";
@@ -209,5 +209,9 @@
 "session.notice.restore.still_hidden.other" = "%d apps masquées peuvent rester cachées";
 "session.notice.restore.closed.one" = "%d app lancée a été fermée";
 "session.notice.restore.closed.other" = "%d apps lancées ont été fermées";
+"session.notice.restore.url_cleaned.one" = "%d URL de navigateur a été nettoyée";
+"session.notice.restore.url_cleaned.other" = "%d URL de navigateur ont été nettoyées";
+"session.notice.restore.file_skipped.one" = "%d fichier ouvert a été ignoré";
+"session.notice.restore.file_skipped.other" = "%d fichiers ouverts ont été ignorés";
 "session.notice.restore.still_open.one" = "%d app lancée peut encore être ouverte";
 "session.notice.restore.still_open.other" = "%d apps lancées peuvent encore être ouvertes";

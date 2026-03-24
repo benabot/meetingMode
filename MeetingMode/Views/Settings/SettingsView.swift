@@ -101,7 +101,7 @@ struct SettingsView: View {
                             permissionRow(
                                 title: t("settings.permissions.automation", "Automation"),
                                 status: permissionService.automationStatus,
-                                note: t("settings.permissions.automation.note", "Not checked in the current scaffold. This only matters once real app control is added.")
+                                note: t("settings.permissions.automation.note", "Limited AppleScript is used only for best-effort browser tab cleanup during restore.")
                             )
                             permissionRow(
                                 title: t("settings.permissions.screen_recording", "Screen Recording"),
