@@ -4,6 +4,7 @@ import Foundation
 protocol AppLaunching {
     func openItems(for preset: Preset) -> LaunchExecutionResult
     func openContent(for preset: Preset) -> ContentExecutionResult
+    func closeContent(from snapshot: SessionSnapshot) -> ContentRestoreResult
 }
 
 @MainActor

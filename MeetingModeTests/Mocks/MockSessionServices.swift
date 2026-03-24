@@ -6,6 +6,7 @@ import Foundation
 struct MockAppLauncher: AppLaunching {
     var openItemsResult = LaunchExecutionResult()
     var openContentResult = ContentExecutionResult()
+    var closeContentResult = ContentRestoreResult()
 
     func openItems(for preset: Preset) -> LaunchExecutionResult {
         openItemsResult
@@ -13,6 +14,10 @@ struct MockAppLauncher: AppLaunching {
 
     func openContent(for preset: Preset) -> ContentExecutionResult {
         openContentResult
+    }
+
+    func closeContent(from snapshot: SessionSnapshot) -> ContentRestoreResult {
+        closeContentResult
     }
 }
 
