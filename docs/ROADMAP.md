@@ -188,27 +188,18 @@ La suite a été réalisée dans cet ordre :
 - Refactor sandbox
 - Fermeture précise d'onglets ou de documents déjà ouverts dans d'autres apps
 
-## V2 — Attribution du contenu ouvert
+## V2 — Attribution du contenu ouvert ✓
 
-**Recommandation nette**
-- Oui pour une V2, mais elle doit commencer par une attribution plus fiable du contenu ouvert au moment de l'ouverture, avant de promettre quoi que ce soit sur la fermeture.
+**État validé**
+- Le socle V2 est en place: snapshot structuré, attribution cible au moment de l'ouverture, et restore strict pour les apps lancées par Meeting Mode.
+- Le tracking enregistre au moment de l'ouverture l'URL ou le fichier, le bundle identifier cible si connu, et si l'app cible a été lancée par Meeting Mode.
+- Le restore ne revendique une fermeture propre que lorsque le contenu est porté par une app lancée par Meeting Mode.
+- Une URL ou un fichier ouvert dans une app déjà en cours d'exécution ne doit pas être présenté comme proprement fermable si cela implique de viser un onglet ou un document arbitraire.
+- L'idée d'une fenêtre Safari dédiée, séparée du contexte Safari préexistant, reste une exploration UX future et non un comportement validé aujourd'hui.
 
-**Objectif**
-- Enrichir le tracking d'ouverture avec le contexte d'app cible
-- Utiliser ce contexte pour rendre le restore plus honnête sur les URLs et fichiers
-- Garder un état de session explicite et vérifiable
-
-**Décision produit**
-- Le tracking doit enregistrer au moment de l'ouverture : l'URL ou le fichier, le bundle identifier cible si connu, et si l'app cible a été lancée par Meeting Mode
-- Le restore ne doit revendiquer une fermeture propre que lorsque le contenu est porté par une app lancée par Meeting Mode
-- Une URL ou un fichier ouvert dans une app déjà en cours d'exécution ne doit pas être présenté comme proprement fermable si cela implique de viser un onglet ou un document arbitraire
-- L'idée d'une fenêtre Safari dédiée, séparée du contexte Safari préexistant, reste une exploration UX future et non un comportement validé aujourd'hui
-
-**Approche technique recommandée**
-1. enregistrer au moment de l'ouverture le contexte cible : URL ou fichier, bundle identifier si connu, et état `app lancée par Meeting Mode` si applicable
-2. utiliser ce contexte pour décider si le restore peut prétendre à une fermeture propre ou seulement à un best effort
-3. garder hors scope la fermeture arbitraire d'un onglet ou d'un document dans une app déjà ouverte
-4. traiter l'idée Safari dédiée comme une piste UX future, pas comme une dépendance de l'implémentation V2
+**Suite éventuelle**
+- Garder le wording des actions principales sur `Préparer le Mac` et `Rétablir le Mac`.
+- Explorer plus tard l'idée Safari d'une fenêtre dédiée séparée du contexte préexistant, comme piste UX et non comme comportement validé.
 
 **Fichiers concernés**
 - `MeetingMode/Models/SessionSnapshot.swift`

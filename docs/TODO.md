@@ -34,7 +34,7 @@
 ## Plus tard
 
 - [ ] Ajouter un messaging de permissions plus précis si l'automation inter-apps devient réelle
-- [x] Stabiliser le restore cleanup best effort actuel: le restore principal est validé, les URLs peuvent rester ouvertes, et les fichiers restent le principal gap produit
+- [x] Stabiliser le restore cleanup best effort actuel: le restore principal est validé, les URLs ouvertes dans des apps déjà ouvertes peuvent encore rester ouvertes, et la fermeture de documents arbitraires reste hors scope
 - [x] Renforcer la persistance locale : snapshot de session persisté sur disque (active_session.json), rechargement au relaunch après crash, overlayWasShown corrigé au rechargement
 - [x] Ajouter un sélecteur de fichiers local (NSOpenPanel pour apps et fichiers dans l'éditeur de preset, au lieu de saisie manuelle)
 - [x] Faire une passe de polish UI minimale sur la menu bar et Settings (bouton delete discret, bouton restore disabled plus lisible, footer plus discret, plan detail sur 2 lignes)
@@ -83,18 +83,19 @@
 
 ### À faire
 
-- [ ] Enregistrer au moment de l'ouverture le contexte cible: URL ou fichier, bundle identifier si connu, et état "app lancée par Meeting Mode" si applicable
-- [ ] Utiliser ce contexte pour ne revendiquer une fermeture propre que lorsque le contenu est porté par une app lancée par Meeting Mode
-- [ ] Garder hors scope la fermeture arbitraire d'un document ou d'un onglet dans une app déjà ouverte
-- [ ] Mettre le wording des actions principales sur `Préparer le Mac` et `Rétablir le Mac`
+- [x] Enregistrer au moment de l'ouverture le contexte cible: URL ou fichier, bundle identifier si connu, et état "app lancée par Meeting Mode" si applicable
+- [x] Utiliser ce contexte pour ne revendiquer une fermeture propre que lorsque le contenu est porté par une app lancée par Meeting Mode
+- [x] Garder hors scope la fermeture arbitraire d'un document ou d'un onglet dans une app déjà ouverte
+- [x] Les apps lancées indirectement par l'ouverture d'un URL ou d'un fichier peuvent maintenant revenir dans le scope lancé de la session quand leur bundle identifier est connu
+- [ ] Garder le wording des actions principales sur `Préparer le Mac` et `Rétablir le Mac`
 - [ ] Explorer plus tard l'idée Safari d'une fenêtre dédiée séparée du contexte préexistant, comme piste UX et non comme comportement validé
 
 ### Critère de terminé V2
 
-- [ ] Le contexte d'ouverture est capturé au moment où Meeting Mode ouvre un élément
-- [ ] Le restore ne revendique une fermeture propre que quand le contenu est porté par une app lancée par Meeting Mode
-- [ ] Le restore ne prétend pas fermer un onglet ou un document isolé dans une app déjà ouverte
-- [ ] Le résultat utilisateur distingue clairement les cas réellement restaurés des limites macOS
+- [x] Le contexte d'ouverture est capturé au moment où Meeting Mode ouvre un élément
+- [x] Le restore ne revendique une fermeture propre que quand le contenu est porté par une app lancée par Meeting Mode
+- [x] Le restore ne prétend pas fermer un onglet ou un document isolé dans une app déjà ouverte
+- [x] Le résultat utilisateur distingue clairement les cas réellement restaurés des limites macOS
 
 ## V3 — Release App Store
 

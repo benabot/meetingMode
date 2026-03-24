@@ -133,8 +133,8 @@
 
 - `SessionSnapshot` stores only minimal restore-oriented data: preset identity, started time, launched apps, actually hidden apps, tracked URLs, tracked files, and clean screen state.
 - The snapshot is meant to capture only changes triggered by Meeting Mode, not system state outside the app.
-- URLs and local files are recorded in the snapshot only when their opening actually succeeds.
-- The snapshot also keeps the bundle identifiers of apps that were not already running before the session, so restore can ask only those apps to quit.
+- URLs and local files are recorded in the snapshot only when their opening actually succeeds, together with target app attribution when the target bundle identifier can be resolved.
+- The snapshot also keeps the bundle identifiers of apps that were not already running before the session, including apps launched indirectly as a side effect of opening a tracked URL or file, so restore can ask only those apps to quit.
 - The snapshot also keeps only the exact app instances that were actually hidden with success, keyed by process identifier with bundle identifier fallback for older data.
 - The snapshot is not a promise of perfect restore; it is only a best-effort ledger of Meeting Mode actions.
 
@@ -200,14 +200,15 @@
 - Restore targets those hidden apps by exact tracked process first, then falls back to bundle identifier matching only for older snapshots.
 - Restore now sends unhide / activate requests first, then confirms the actual visible state after a short delay, because the runtime visibility change is not reliably observable inside the same synchronous call on this machine.
 - If a tracked app still remains hidden after that delayed confirmation, restore retries through a targeted `openApplication` call on that app bundle only.
-- Restore closes apps launched by the session before re-showing hidden apps, so the launched app does not immediately retake focus after the restore.
+- Restore closes apps launched by the session before re-showing hidden apps, including apps launched indirectly when a tracked URL or file opened them, so the launched app does not immediately retake focus after the restore.
 - Restore does not attempt to reconstruct pre-session window minimization or Space placement. It only tries to make tracked hidden apps visible again.
 - Restore first sends a polite quit to apps launched by Meeting Mode during the session, then falls back to force quit if they remain open.
 - Apps that were already running before the session are never included in the quit list.
 - A polite quit request is not treated as proof that an app really closed. The UI now distinguishes between a confirmed close and an app that may still be open.
 - The stronger fallback exists only for apps launched by the current session, not for apps that were already open before it.
+- The authoritative restore scope still comes from "what Meeting Mode launched" during the session, including indirect launches caused by opening content, and nothing broader.
 - Restore makes a best-effort attempt to close session-opened URLs in Safari and Google Chrome when the current tab URL still matches a recorded snapshot URL.
-- Local files remain reported as skipped during restore because the current snapshot model only stores raw paths, which is not reliable enough for per-document cleanup in v1.
+- Local files are only claimed as cleanly closable when their target app was launched by Meeting Mode during the session; otherwise they remain best-effort and may be reported as skipped.
 - Firefox is intentionally skipped from URL cleanup because this version only supports the Safari and Chrome AppleScript paths.
 - Restore still remains limited in scope and is not a promise of full system rollback.
 - The post-restore UI keeps the last restore result visible, and while app visibility is still being confirmed it explicitly says `checking hidden apps` rather than presenting a clean success too early.

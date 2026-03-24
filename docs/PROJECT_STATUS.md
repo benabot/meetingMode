@@ -36,9 +36,10 @@ Date: 2026-03-17
 - The session UI now exposes explicit `Inactive`, `Active`, and `Restored` states.
 - The active session now creates a minimal snapshot for best-effort restore, including only the exact app instances that were actually hidden by Meeting Mode during the session.
 - Apps, URLs, and local files are now opened with simple `NSWorkspace` calls.
+- Opened URLs and local files now carry target app attribution, and content-opened apps can contribute their bundle identifiers back into the session-launched scope when Meeting Mode actually launched them.
 - A small `AppVisibilityService` now hides regular visible apps that are outside the active preset, excluding Meeting Mode itself.
 - A clean screen overlay is available as an independent visual background complement, covering all connected screens at session start.
-- Restore now hides the clean screen and uses a two-step close path for apps launched by Meeting Mode: polite quit first, force quit fallback if needed.
+- Restore now hides the clean screen and uses a two-step close path for apps launched by Meeting Mode, including apps launched indirectly by opening tracked content: polite quit first, force quit fallback if needed.
 - Restore now re-shows only the apps that Meeting Mode itself actually hid during the current session.
 - The active session snapshot is now persisted to a local JSON file so a crash or force quit does not lose restore capability.
 - On relaunch after a crash, the session resumes as `.active` and `Restore Session` is available.
@@ -64,7 +65,7 @@ Date: 2026-03-17
 - The visibility restore path now targets the exact tracked app instances first, then falls back only when needed for older snapshot data.
 - The visibility restore path now requests `unhide` and window activation first, then confirms actual visibility only after the main run loop has had time to apply those changes.
 - If a tracked app still remains hidden after that deferred confirmation, Meeting Mode now retries through a targeted `openApplication` fallback on that same running app bundle, still without broad restore scope.
-- Restore now closes session-launched apps before attempting to make previously hidden apps visible again, so the session app does not immediately steal focus back.
+- Restore now closes session-launched apps before attempting to make previously hidden apps visible again, including content-opened apps whose bundle identifier was recorded at open time, so the session app does not immediately steal focus back.
 - The restore path still escalates from polite quit to force quit for apps launched by the session, but this remains best effort rather than a guaranteed system rollback.
 - Start and Restore shortcuts now trigger the same session actions as the popover buttons.
 - The visible app UI is now localized across the menu bar popover, preset editor, settings, overlay, and session / restore messaging.
@@ -121,14 +122,15 @@ Date: 2026-03-17
 - The Restore shortcut leaves the app in a safe state when no session is active.
 - The stub session flow goes `inactive -> active -> restored` without getting stuck.
 - A second `start` call does not replace the current session.
-- The snapshot tracks only Meeting Mode changes currently handled by the scaffold: launched apps, exact hidden app instances, opened URLs, opened files, and clean screen state.
+- The snapshot tracks only Meeting Mode changes currently handled by the scaffold: launched apps, exact hidden app instances, opened URLs, opened files, target app attribution for opened content, and clean screen state.
 - Invalid app names, URLs, or file paths do not crash the session flow; they are counted as non-blocking open failures.
 - Only regular apps outside the preset are candidates for hiding, and only apps that were actually confirmed hidden after the start flow are tracked for restore.
 - The clean screen overlay uses one borderless window per connected screen, each constrained to that screen's visible frame, so the menu bar stays reachable for restore.
 - The overlay now sits below regular app windows on purpose. Preset apps stay accessible because they are not hidden, not because they pierce the overlay through fragile window-level tricks.
-- Restore hides the clean screen, explicitly re-shows only the tracked apps that Meeting Mode itself hid, attempts a polite quit followed by force quit if needed for apps launched by the session, and makes a best-effort Safari / Google Chrome cleanup pass for session URLs while reporting opened files as skipped.
+- Restore hides the clean screen, explicitly re-shows only the tracked apps that Meeting Mode itself hid, attempts a polite quit followed by force quit if needed for apps launched by the session, and makes a best-effort Safari / Google Chrome cleanup pass for session URLs. Files opened in apps launched by Meeting Mode can now disappear with the app during restore when the target bundle identifier was attributed at open time.
 - While restore visibility is still being confirmed, the popover summary now says `Checking hidden apps` instead of reporting a finished restore too early.
 - The restore path now distinguishes between an app that actually closed and an app that may still be open after the quit request.
+- A local file opened in an app launched by Meeting Mode now disappears during restore when that app is actually closed.
 - Visibility restore remains best effort only. Meeting Mode does not attempt advanced window or Space restoration.
 - A targeted local Safari / Notes probe now confirms the runtime path used by the app: apps can hide and re-show only after control returns to the main event loop, so visibility confirmation is intentionally deferred.
 - The real menu bar flow has now been revalidated on the machine with `Safari` and `Notes`: they hide during the session and become visible again after `Restore Session`.
@@ -180,7 +182,7 @@ Date: 2026-03-17
 
 ## Still Intentionally Stubbed
 
-- Best-effort URL cleanup and explicit skipped-file reporting
+- Best-effort URL cleanup in already-running browsers; files opened in apps launched by Meeting Mode can now be covered by app quit during restore, while already-running document apps remain best effort and may still be skipped when attribution is not enough to claim clean closure.
 
 ## Out Of Scope For This Pass
 
