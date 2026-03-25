@@ -15,6 +15,7 @@ Date: 2026-03-17
 - Text on the lighter glass surfaces now uses a dark grey / anthracite palette for primary and secondary copy, so sections, plans, settings descriptions, and helper labels stay readable without relying on pale white text.
 - The current target is not App Sandbox-enabled, so local launch and restore behavior can work predictably during MVP development.
 - The current external-test artifact is a plain Release `.app` build, not a DMG workflow; manual testers can launch the app directly from `DerivedData/Build/Products/Release/MeetingMode.app`.
+- A concise external manual testing checklist lives in `docs/EXTERNAL_MANUAL_TEST_CHECKLIST.md` for people validating the current Release `.app` outside Xcode.
 - `Settings...` now opens a dedicated settings window from the menu bar panel.
 - `Settings...` now includes configurable shortcuts for `Start Session` and `Restore Session`.
 - `Settings...` now includes a native `Launch at login` toggle backed by macOS login items.
