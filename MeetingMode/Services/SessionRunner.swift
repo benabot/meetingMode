@@ -78,7 +78,7 @@ final class SessionRunner: ObservableObject {
 
         // After a crash or force quit, the overlay NSWindow is lost.
         // Clear the flag so the snapshot reflects reality and the UI
-        // does not claim the clean screen is still visible.
+        // does not claim the presentation background is still visible.
         if snapshot.overlayWasShown {
             snapshot.overlayWasShown = false
         }
@@ -125,12 +125,12 @@ final class SessionRunner: ObservableObject {
         case .addRunnableActionBeforeStarting:
             return L10n.string(
                 "session.notice.add_runnable_action",
-                defaultValue: "Add an app, link, file, or clean screen before starting"
+                defaultValue: "Add an app, link, file, or presentation background before starting"
             )
         case .nothingOpened:
             return L10n.string(
                 "session.notice.nothing_opened",
-                defaultValue: "Nothing was opened. Check the preset items and clean screen."
+                defaultValue: "Nothing was opened. Check the preset items and presentation background."
             )
         case .noActiveSessionToRestore:
             return L10n.string(
@@ -218,7 +218,9 @@ final class SessionRunner: ObservableObject {
         let launchResult = appLauncherService.openItems(for: preset)
         let visibilityResult = appVisibilityService.hideNonPresetVisibleApps(keepingVisibleFor: preset)
         pendingHiddenApplicationCandidates = visibilityResult.requestedApplications
-        let overlayWasShown = preset.showsOverlay ? overlayService.showOverlay() : false
+        let presentationBackground = preset.presentationBackground
+        let overlayWasRequested = presentationBackground.isEnabled
+        let overlayWasShown = overlayWasRequested ? overlayService.showOverlay(using: presentationBackground) : false
 
         // Open URLs and files after the hide pass so their host apps
         // (browser, Preview, etc.) are not immediately hidden.
@@ -251,7 +253,7 @@ final class SessionRunner: ObservableObject {
             pendingHiddenApplicationCandidates = []
             sessionPhase = .inactive
 
-            if totalFailureCount > 0 || preset.showsOverlay {
+            if totalFailureCount > 0 || overlayWasRequested {
                 lastActionState = .nothingOpened
             } else {
                 lastActionState = .addRunnableActionBeforeStarting
@@ -281,7 +283,7 @@ final class SessionRunner: ObservableObject {
             requestedHiddenApplicationCount: visibilityResult.requestedApplicationCount,
             launchFailureCount: totalFailureCount,
             visibilityFailureCount: visibilityResult.failureCount,
-            overlayWasRequested: preset.showsOverlay,
+            overlayWasRequested: overlayWasRequested,
             overlayWasShown: overlayWasShown,
             isVisibilityPending: !pendingHiddenApplicationCandidates.isEmpty
         )
@@ -290,7 +292,7 @@ final class SessionRunner: ObservableObject {
             requestedHiddenApplications: pendingHiddenApplicationCandidates,
             launchFailureCount: totalFailureCount,
             visibilityFailureCount: visibilityResult.failureCount,
-            overlayWasRequested: preset.showsOverlay,
+            overlayWasRequested: overlayWasRequested,
             overlayWasShown: overlayWasShown
         )
     }
@@ -583,7 +585,7 @@ final class SessionRunner: ObservableObject {
             statusNotes.append(
                 L10n.string(
                     "session.notice.active.clean_screen_unavailable",
-                    defaultValue: "clean screen unavailable"
+                    defaultValue: "presentation background unavailable"
                 )
             )
         }
@@ -598,7 +600,7 @@ final class SessionRunner: ObservableObject {
             restoredItems.append(
                 L10n.string(
                     "session.notice.restore.overlay_hidden",
-                    defaultValue: "clean screen hidden"
+                    defaultValue: "presentation background hidden"
                 )
             )
         }

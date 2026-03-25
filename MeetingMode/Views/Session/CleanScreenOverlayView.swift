@@ -1,24 +1,46 @@
+import AppKit
 import SwiftUI
 
 struct CleanScreenOverlayView: View {
     @ObservedObject var appLanguageService: AppLanguageService
+    let background: PresentationBackground
 
     var body: some View {
-        LinearGradient(
-            colors: [
-                Color.black.opacity(0.99),
-                Color(red: 0.06, green: 0.07, blue: 0.09).opacity(0.985),
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+        Group {
+            switch background.mode {
+            case .none:
+                Color.clear
+            case .solidColor:
+                Color(
+                    red: background.solidColor.red,
+                    green: background.solidColor.green,
+                    blue: background.solidColor.blue
+                )
+                .opacity(background.normalizedOpacity)
+            case .image:
+                if let image = NSImage(contentsOfFile: background.normalizedImagePath) {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Color(
+                        red: background.solidColor.red,
+                        green: background.solidColor.green,
+                        blue: background.solidColor.blue
+                    )
+                    .opacity(background.normalizedOpacity)
+                }
+            }
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
     }
 }
 
 #Preview {
     CleanScreenOverlayView(
-        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "OverlayPreviewLanguage"))
+        appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "OverlayPreviewLanguage")),
+        background: .solidColor()
     )
         .frame(width: 900, height: 540)
 }

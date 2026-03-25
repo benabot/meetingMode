@@ -104,9 +104,7 @@ struct PresetEditorView: View {
 
                                 selectedFilesBlock
 
-                                Toggle(t("preset_editor.toggle.clean_screen", "Show clean screen"), isOn: $draft.showsOverlay)
-                                    .padding(12)
-                                    .meetingModeInsetSurface(tone: .accent)
+                                presentationBackgroundBlock
                             }
                         }
 
@@ -155,7 +153,7 @@ struct PresetEditorView: View {
                     Text(mode.title(using: appLanguageService))
                         .font(.title3.weight(.semibold))
 
-                    Text(t("preset_editor.validation.header", "A preset needs at least one app, link, file, or clean screen to start."))
+                    Text(t("preset_editor.validation.header", "A preset needs at least one app, link, file, or presentation background to start."))
                         .font(.subheadline)
                         .foregroundStyle(MeetingModeTextPalette.secondary)
 
@@ -287,6 +285,104 @@ struct PresetEditorView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private var presentationBackgroundBlock: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            fieldLabel(t("preset_editor.section.presentation_background", "Presentation background"))
+
+            Picker(
+                t("preset_editor.section.presentation_background", "Presentation background"),
+                selection: $draft.presentationBackground.mode
+            ) {
+                Text(t("preset_editor.presentation_background.none", "None"))
+                    .tag(PresentationBackground.Mode.none)
+
+                Text(t("preset_editor.presentation_background.solid", "Solid color"))
+                    .tag(PresentationBackground.Mode.solidColor)
+
+                Text(t("preset_editor.presentation_background.image", "Image"))
+                    .tag(PresentationBackground.Mode.image)
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+
+            switch draft.presentationBackground.mode {
+            case .none:
+                EmptyView()
+
+            case .solidColor:
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        fieldLabel(t("preset_editor.field.presentation_color", "Color"))
+
+                        ColorPicker(
+                            "",
+                            selection: presentationBackgroundColorBinding,
+                            supportsOpacity: false
+                        )
+                        .labelsHidden()
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            fieldLabel(t("preset_editor.field.presentation_opacity", "Opacity"))
+
+                            Spacer()
+
+                            Text(opacityLabel)
+                                .font(.caption)
+                                .foregroundStyle(MeetingModeTextPalette.secondary)
+                        }
+
+                        Slider(value: $draft.presentationBackground.opacity, in: 0.35...1.0, step: 0.01)
+                    }
+                }
+
+            case .image:
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 8) {
+                        Button(
+                            draft.presentationBackground.normalizedImagePath.isEmpty
+                                ? t("preset_editor.presentation_background.choose_image", "Choose Image…")
+                                : t("preset_editor.presentation_background.replace_image", "Replace Image…")
+                        ) {
+                            presentBackgroundImagePicker()
+                        }
+                        .meetingModeActionButton(tone: .accent, role: .secondary, fillsWidth: false, size: .compact)
+
+                        if !draft.presentationBackground.normalizedImagePath.isEmpty {
+                            Button(t("preset_editor.presentation_background.remove_image", "Remove")) {
+                                draft.presentationBackground.mode = .none
+                                draft.presentationBackground.imagePath = ""
+                            }
+                            .meetingModeActionButton(tone: .neutral, role: .secondary, fillsWidth: false, size: .compact)
+                        }
+                    }
+
+                    if !draft.presentationBackground.normalizedImagePath.isEmpty {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(URL(fileURLWithPath: draft.presentationBackground.normalizedImagePath).lastPathComponent)
+                                .font(.subheadline.weight(.medium))
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+
+                            Text(draft.presentationBackground.normalizedImagePath)
+                                .font(.caption.monospaced())
+                                .foregroundStyle(MeetingModeTextPalette.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .meetingModeInsetSurface()
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .meetingModeInsetSurface(tone: .accent)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var footer: some View {
         HStack(alignment: .center) {
             if !draft.canSave {
@@ -385,11 +481,28 @@ struct PresetEditorView: View {
         }
     }
 
+    private func presentBackgroundImagePicker() {
+        let panel = NSOpenPanel()
+        panel.title = t("preset_editor.presentation_background_picker.title", "Choose Image")
+        panel.prompt = t("preset_editor.presentation_background_picker.prompt", "Choose Image")
+        panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+        panel.allowedContentTypes = [.image]
+        panel.allowsMultipleSelection = false
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.resolvesAliases = true
+
+        if panel.runModal() == .OK, let url = panel.url {
+            draft.presentationBackground.imagePath = url.path
+            draft.presentationBackground.mode = .image
+        }
+    }
+
     private var validationMessage: String {
         if draft.trimmedName.isEmpty {
             return t(
                 "preset_editor.validation.missing_name",
-                "Add a preset name, then add at least one app, link, file, or clean screen."
+                "Add a preset name, then add at least one app, link, file, or presentation background."
             )
         }
 
@@ -402,7 +515,7 @@ struct PresetEditorView: View {
 
         return t(
             "preset_editor.validation.missing_action",
-            "Add at least one app, link, file, or enable clean screen."
+            "Add at least one app, link, file, or presentation background."
         )
     }
 
@@ -416,7 +529,7 @@ struct PresetEditorView: View {
 
         return t(
             "preset_editor.validation.footer_action",
-            "Add at least one app, link, file, or enable clean screen."
+            "Add at least one app, link, file, or presentation background."
         )
     }
 
@@ -434,6 +547,38 @@ struct PresetEditorView: View {
 
     private func t(_ key: String, _ defaultValue: String, _ arguments: CVarArg...) -> String {
         appLanguageService.localized(key, defaultValue: defaultValue, arguments: arguments)
+    }
+}
+
+private extension PresetEditorView {
+    var presentationBackgroundColorBinding: Binding<Color> {
+        Binding(
+            get: {
+                Color(
+                    red: draft.presentationBackground.solidColor.red,
+                    green: draft.presentationBackground.solidColor.green,
+                    blue: draft.presentationBackground.solidColor.blue
+                )
+            },
+            set: { newColor in
+                draft.presentationBackground.solidColor = PresentationBackgroundColor(color: newColor)
+            }
+        )
+    }
+
+    var opacityLabel: String {
+        "\(Int((draft.presentationBackground.opacity * 100).rounded()))%"
+    }
+}
+
+private extension PresentationBackgroundColor {
+    init(color: Color) {
+        let nsColor = NSColor(color).usingColorSpace(.sRGB) ?? NSColor(color)
+        self.init(
+            red: Double(nsColor.redComponent),
+            green: Double(nsColor.greenComponent),
+            blue: Double(nsColor.blueComponent)
+        )
     }
 }
 
@@ -475,7 +620,7 @@ private struct PresetEditorDraft {
     var urlsText: String
     var files: [String]
     var checklistText: String
-    var showsOverlay: Bool
+    var presentationBackground: PresentationBackground
 
     init(preset: Preset? = nil) {
         id = preset?.id
@@ -485,7 +630,7 @@ private struct PresetEditorDraft {
         urlsText = preset?.urlsToOpen.joined(separator: "\n") ?? ""
         files = preset?.filesToOpen ?? []
         checklistText = preset?.checklistItems.map(\.title).joined(separator: "\n") ?? ""
-        showsOverlay = preset?.showsOverlay ?? false
+        presentationBackground = preset?.presentationBackground ?? .none
     }
 
     var canSave: Bool {
@@ -496,7 +641,7 @@ private struct PresetEditorDraft {
         !apps.isEmpty
             || !normalizedLines(from: urlsText).isEmpty
             || !files.isEmpty
-            || showsOverlay
+            || presentationBackground.isStartableAction
     }
 
     mutating func addApplications(from urls: [URL]) {
@@ -546,7 +691,7 @@ private struct PresetEditorDraft {
             urlsToOpen: normalizedLines(from: urlsText),
             filesToOpen: files,
             checklistItems: normalizedLines(from: checklistText).map { ChecklistItem(title: $0) },
-            showsOverlay: showsOverlay
+            presentationBackground: presentationBackground
         )
     }
 

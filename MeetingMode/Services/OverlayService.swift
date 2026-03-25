@@ -11,9 +11,19 @@ final class OverlayService: OverlayProviding {
         self.appLanguageService = appLanguageService
     }
 
-    func showOverlay() -> Bool {
+    func showOverlay(using background: PresentationBackground) -> Bool {
+        guard background.isEnabled else {
+            return false
+        }
+
         if isOverlayVisible {
             for window in overlayWindows {
+                window.contentView = NSHostingView(
+                    rootView: CleanScreenOverlayView(
+                        appLanguageService: appLanguageService,
+                        background: background
+                    )
+                )
                 window.orderFrontRegardless()
             }
             return true
@@ -43,13 +53,16 @@ final class OverlayService: OverlayProviding {
             window.hasShadow = false
             window.ignoresMouseEvents = true
             window.hidesOnDeactivate = false
-            // Keep the clean screen as a visual background complement. Session clarity
+            // Keep the presentation background as a visual background complement. Session clarity
             // should come from app visibility, not from per-app window-level exceptions.
             window.level = NSWindow.Level(rawValue: NSWindow.Level.normal.rawValue - 1)
             window.collectionBehavior = [.canJoinAllSpaces]
             window.animationBehavior = .none
             window.contentView = NSHostingView(
-                rootView: CleanScreenOverlayView(appLanguageService: appLanguageService)
+                rootView: CleanScreenOverlayView(
+                    appLanguageService: appLanguageService,
+                    background: background
+                )
             )
 
             window.orderFrontRegardless()

@@ -79,7 +79,7 @@
 "menubar.summary.no_runnable_action" = "Aucune action lançable pour l’instant";
 "menubar.detail.restore_tracks" = "Le restore suit %@";
 "menubar.detail.other_apps_may_hide" = "Les autres apps visibles seront masquées (best effort).";
-"menubar.detail.enable_start" = "Ajoutez une app, un lien, un fichier ou activez le clean screen pour préparer le Mac.";
+"menubar.detail.enable_start" = "Ajoutez une app, un lien, un fichier ou un fond de présentation pour préparer le Mac.";
 "menubar.detail.checklist_with_hide" = "%@ - les autres apps visibles peuvent être masquées en best effort.";
 "menubar.detail.checklist_needs_action" = "%@ - ajoutez au moins une action lançable.";
 "menubar.count.format" = "%d %@";
@@ -101,7 +101,7 @@
 "menubar.count.checklist_item.other" = "éléments de checklist";
 "menubar.count.changed_app.one" = "app modifiée";
 "menubar.count.changed_app.other" = "apps modifiées";
-"menubar.clean_screen_on" = "fond clean screen actif";
+"menubar.clean_screen_on" = "fond de présentation actif";
 
 "preset_editor.mode.create.title" = "Nouveau preset";
 "preset_editor.mode.edit.title" = "Modifier le preset";
@@ -116,15 +116,25 @@
 "preset_editor.field.open_links" = "Ouvrir des liens";
 "preset_editor.field.open_files" = "Ouvrir des fichiers";
 "preset_editor.field.checklist" = "Checklist";
-"preset_editor.toggle.clean_screen" = "Afficher le clean screen";
+"preset_editor.section.presentation_background" = "Fond de présentation";
+"preset_editor.presentation_background.none" = "Aucun";
+"preset_editor.presentation_background.solid" = "Fond uni";
+"preset_editor.presentation_background.image" = "Image";
+"preset_editor.field.presentation_color" = "Couleur";
+"preset_editor.field.presentation_opacity" = "Opacité";
+"preset_editor.presentation_background.choose_image" = "Choisir une image…";
+"preset_editor.presentation_background.replace_image" = "Remplacer…";
+"preset_editor.presentation_background.remove_image" = "Retirer";
+"preset_editor.presentation_background_picker.title" = "Choisir une image";
+"preset_editor.presentation_background_picker.prompt" = "Choisir une image";
 "preset_editor.button.add_app" = "Ajouter une app…";
 "preset_editor.button.cancel" = "Annuler";
-"preset_editor.validation.header" = "Un preset doit contenir au moins une app, un lien, un fichier ou un clean screen pour démarrer.";
-"preset_editor.validation.missing_name" = "Ajoutez un nom de preset, puis au moins une app, un lien, un fichier ou un clean screen.";
+"preset_editor.validation.header" = "Un preset doit contenir au moins une app, un lien, un fichier ou un fond de présentation pour démarrer.";
+"preset_editor.validation.missing_name" = "Ajoutez un nom de preset, puis au moins une app, un lien, un fichier ou un fond de présentation.";
 "preset_editor.validation.startable" = "Ce preset peut être lancé.";
-"preset_editor.validation.missing_action" = "Ajoutez au moins une app, un lien, un fichier ou activez le clean screen.";
+"preset_editor.validation.missing_action" = "Ajoutez au moins une app, un lien, un fichier ou un fond de présentation.";
 "preset_editor.validation.footer_name" = "Entrez un nom de preset pour continuer.";
-"preset_editor.validation.footer_action" = "Ajoutez au moins une app, un lien, un fichier ou activez le clean screen.";
+"preset_editor.validation.footer_action" = "Ajoutez au moins une app, un lien, un fichier ou un fond de présentation.";
 "preset_editor.apps.none" = "Aucune app sélectionnée pour l’instant.";
 "preset_editor.apps.selected_fallback" = "App sélectionnée";
 "preset_editor.placeholder.name" = "Sync client hebdomadaire";
@@ -139,7 +149,7 @@
 "preset_editor.app_picker.title" = "Ajouter des apps";
 "preset_editor.app_picker.prompt" = "Ajouter";
 
-"overlay.title" = "Fond clean screen actif";
+"overlay.title" = "Fond de présentation activé";
 "overlay.detail" = "Utilisez l’icône Meeting Mode dans la barre de menu pour restaurer votre session.";
 
 "tutorial.window.title" = "Tutoriel";
@@ -157,15 +167,15 @@
 "tutorial.page2.body" = "Un preset décrit ce qui doit être prêt avant de commencer à partager.";
 "tutorial.page2.bullet1" = "Des apps à ouvrir.";
 "tutorial.page2.bullet2" = "Des liens et des fichiers locaux à ouvrir.";
-"tutorial.page2.bullet3" = "Des éléments de checklist et un clean screen optionnel.";
+"tutorial.page2.bullet3" = "Des éléments de checklist et un fond de présentation optionnel.";
 "tutorial.page3.title" = "Ce que fait Préparer le Mac";
 "tutorial.page3.body" = "Préparer le Mac applique le preset sélectionné.";
 "tutorial.page3.bullet1" = "Ouvre les apps, liens et fichiers du preset.";
 "tutorial.page3.bullet2" = "Peut masquer les apps visibles hors preset en best effort.";
-"tutorial.page3.bullet3" = "Peut afficher un fond clean screen.";
+"tutorial.page3.bullet3" = "Peut afficher un fond de présentation.";
 "tutorial.page4.title" = "Ce que fait Rétablir le Mac";
 "tutorial.page4.body" = "Rétablir le Mac ne cible que les changements que Meeting Mode a réellement appliqués.";
-"tutorial.page4.bullet1" = "Masque le clean screen.";
+"tutorial.page4.bullet1" = "Masque le fond de présentation.";
 "tutorial.page4.bullet2" = "Tente de réafficher les apps que Meeting Mode a lui-même masquées.";
 "tutorial.page4.bullet3" = "Reste en best effort uniquement.";
 "tutorial.page5.title" = "Bon à savoir";
@@ -185,8 +195,8 @@
 "session.notice.inactive" = "Session inactive";
 "session.notice.select_preset" = "Sélectionnez un preset avant de démarrer";
 "session.notice.restore_before_start" = "Restaurez la session courante avant d’en démarrer une autre";
-"session.notice.add_runnable_action" = "Ajoutez une app, un lien, un fichier ou un clean screen avant de démarrer";
-"session.notice.nothing_opened" = "Rien n’a été ouvert. Vérifiez les éléments du preset et le clean screen.";
+"session.notice.add_runnable_action" = "Ajoutez une app, un lien, un fichier ou un fond de présentation avant de démarrer";
+"session.notice.nothing_opened" = "Rien n’a été ouvert. Vérifiez les éléments du preset et le fond de présentation.";
 "session.notice.no_active_session" = "Aucune session active à restaurer";
 "session.notice.active" = "Session active";
 "session.notice.active.detail_format" = "Session active - %@";
@@ -200,8 +210,8 @@
 "session.notice.active.open_failed" = "%d éléments n’ont pas pu être ouverts";
 "session.notice.active.skipped.one" = "%d app ignorée";
 "session.notice.active.skipped.other" = "%d apps ignorées";
-"session.notice.active.clean_screen_unavailable" = "clean screen indisponible";
-"session.notice.restore.overlay_hidden" = "clean screen masqué";
+"session.notice.active.clean_screen_unavailable" = "fond de présentation indisponible";
+"session.notice.restore.overlay_hidden" = "fond de présentation masqué";
 "session.notice.restore.checking_hidden_apps" = "vérification des apps masquées";
 "session.notice.restore.shown_again.one" = "%d app masquée est redevenue visible";
 "session.notice.restore.shown_again.other" = "%d apps masquées sont redevenues visibles";

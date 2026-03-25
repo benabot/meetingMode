@@ -8,7 +8,7 @@ Le socle MVP courant est considéré comme assez stable pour arrêter les grosse
 - presets locaux
 - start session
 - masquage best effort des apps hors preset
-- clean screen overlay
+- presentation background overlay
 - restore best effort limité au scope réellement modifié
 
 La suite a été réalisée dans cet ordre :
@@ -30,6 +30,7 @@ La suite a été réalisée dans cet ordre :
 - garder des changements petits, testables et réversibles
 - ne pas faire de polish visuel qui cache des états ambigus
 - garder le wording principal sur `Préparer le Mac` et `Rétablir le Mac`
+- garder le fond de présentation local et simple: aucun, fond uni, ou image locale; Photos reste hors scope pour l'instant
 
 ## Étape 1 — Raccourcis clavier configurables ✓
 

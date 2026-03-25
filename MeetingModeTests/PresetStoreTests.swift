@@ -49,6 +49,7 @@ final class PresetStoreTests: XCTestCase {
             store.presets.first?.appsToLaunch.first?.bundleIdentifier,
             "com.apple.calculator"
         )
+        XCTAssertEqual(store.presets.first?.presentationBackground.mode, .solidColor)
         XCTAssertTrue(FileManager.default.fileExists(atPath: storageURL.path))
     }
 

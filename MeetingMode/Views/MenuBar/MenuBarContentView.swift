@@ -403,7 +403,7 @@ struct MenuBarContentView: View {
                 countLabel(snapshot.hiddenApplicationCount, oneKey: "menubar.count.app_hidden.one", otherKey: "menubar.count.app_hidden.other", defaultOne: "app hidden", defaultOther: "apps hidden"),
                 countLabel(snapshot.openedURLs.count, oneKey: "menubar.count.link_opened.one", otherKey: "menubar.count.link_opened.other", defaultOne: "link opened", defaultOther: "links opened"),
                 countLabel(snapshot.openedFiles.count, oneKey: "menubar.count.file_opened.one", otherKey: "menubar.count.file_opened.other", defaultOne: "file opened", defaultOther: "files opened"),
-                snapshot.overlayWasShown ? t("menubar.clean_screen_on", "clean screen background on") : nil,
+                snapshot.overlayWasShown ? t("menubar.clean_screen_on", "presentation background on") : nil,
             ]
 
             return joinedSummary(items) ?? t("menubar.summary.no_tracked_action", "No tracked action")
@@ -435,7 +435,7 @@ struct MenuBarContentView: View {
             countLabel(preset.appsToLaunch.count, oneKey: "menubar.count.app_planned.one", otherKey: "menubar.count.app_planned.other", defaultOne: "app planned", defaultOther: "apps planned"),
             countLabel(preset.urlsToOpen.count, oneKey: "menubar.count.link_planned.one", otherKey: "menubar.count.link_planned.other", defaultOne: "link planned", defaultOther: "links planned"),
             countLabel(preset.filesToOpen.count, oneKey: "menubar.count.file_planned.one", otherKey: "menubar.count.file_planned.other", defaultOne: "file planned", defaultOther: "files planned"),
-            preset.showsOverlay ? t("menubar.clean_screen_on", "clean screen background on") : nil,
+            preset.showsOverlay ? t("menubar.clean_screen_on", "presentation background on") : nil,
         ]
 
         return joinedSummary(items) ?? t("menubar.summary.no_runnable_action", "No runnable action yet")
@@ -492,7 +492,7 @@ struct MenuBarContentView: View {
         if preset.checklistItems.isEmpty {
             return preset.hasStartableActions
                 ? t("menubar.detail.other_apps_may_hide", "Other visible apps may be hidden best effort.")
-                : t("menubar.detail.enable_start", "Add an app, link, file, or clean screen to enable Prepare Mac.")
+                : t("menubar.detail.enable_start", "Add an app, link, file, or presentation background to enable Prepare Mac.")
         }
 
         let checklistLabel = countLabel(

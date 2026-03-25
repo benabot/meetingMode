@@ -21,8 +21,8 @@
 
 ### MVP Sequencing
 
-- The first testable MVP flow includes preset selection, a visible `Start Session`, a simple clean screen, and a simple restore.
-- Clean screen and restore are part of the current MVP execution path, not deferred polish, because the menu bar UI already exposes `Start Session` and `Restore Session`.
+- The first testable MVP flow includes preset selection, a visible `Start Session`, a simple presentation background, and a simple restore.
+- Presentation background and restore are part of the current MVP execution path, not deferred polish, because the menu bar UI already exposes `Start Session` and `Restore Session`.
 - Later work starts only after that flow exists end-to-end: more precise permission messaging, stronger persistence, and UI polish.
 
 ### Menu Bar Behavior
@@ -131,7 +131,7 @@
 
 ### Session Snapshot
 
-- `SessionSnapshot` stores only minimal restore-oriented data: preset identity, started time, launched apps, actually hidden apps, tracked URLs, tracked files, and clean screen state.
+- `SessionSnapshot` stores only minimal restore-oriented data: preset identity, started time, launched apps, actually hidden apps, tracked URLs, tracked files, and presentation background state.
 - The snapshot is meant to capture only changes triggered by Meeting Mode, not system state outside the app.
 - URLs and local files are recorded in the snapshot only when their opening actually succeeds, together with target app attribution when the target bundle identifier can be resolved.
 - The snapshot also keeps the bundle identifiers of apps that were not already running before the session, including apps launched indirectly as a side effect of opening a tracked URL or file, so restore can ask only those apps to quit.
@@ -147,7 +147,7 @@
 - On launch, `loadPersistedSession()` reads the file and restores the session phase to `.active` so the UI shows `Restore Session` as available.
 - If the persisted file is missing or invalid, the app starts in `.inactive` without error.
 - After a crash recovery, `pendingHiddenApplicationCandidates` is empty because the deferred confirmation cannot be replayed. The persisted `hiddenApplications` already reflects whatever was confirmed before the crash.
-- After a crash recovery, the overlay window is lost with the previous process. `loadPersistedSession()` now clears `overlayWasShown` in the reloaded snapshot before storing it, so the UI does not claim the clean screen is still visible and `RestoreService` does not attempt to hide a nonexistent overlay.
+- After a crash recovery, the overlay window is lost with the previous process. `loadPersistedSession()` now clears `overlayWasShown` in the reloaded snapshot before storing it, so the UI does not claim the presentation background is still visible and `RestoreService` does not attempt to hide a nonexistent overlay.
 - This persistence is best effort only and does not change the restore contract.
 
 ### Opening Strategy
@@ -159,7 +159,7 @@
 
 ### Overlay Strategy
 
-- Clean screen uses one borderless `NSWindow` per connected screen, created from `OverlayService`.
+- The presentation background overlay uses one borderless `NSWindow` per connected screen, created from `OverlayService`.
 - Each overlay window is constrained to its screen's `visibleFrame` so the menu bar remains accessible for restore.
 - The overlay covers all screens present at the time `showOverlay()` is called. If a screen is disconnected during the session, macOS closes the associated window automatically. If a screen is connected after start, it is not covered until the next session.
 - No dynamic screen change monitoring is attempted in this pass (`NSApplication.didChangeScreenParametersNotification` is not observed).
@@ -167,9 +167,9 @@
 - The overlay is explicitly shown without activating the menu bar app, so `Start Session` produces a visible effect without intentionally changing the active app.
 - The overlay is independent from any specific app. It is not an exception system where some apps are expected to stay above it through fragile window-level behavior.
 - The visible session behavior should come mainly from app visibility rules: preset apps stay accessible because they are kept visible, and non-preset apps are hidden in best effort.
-- The overlay is intentionally kept below regular app windows so it behaves as a clean visual background, not as a global blocker that needs per-app exceptions.
+- The overlay is intentionally kept below regular app windows so it behaves as a calm visual background, not as a global blocker that needs per-app exceptions.
 - Explicit `NSApplication.activate` calls were removed from the overlay path to avoid unwanted app activation side effects during session start.
-- If the overlay cannot be created, the session still starts and reports `clean screen unavailable` instead of failing hard.
+- If the overlay cannot be created, the session still starts and reports `presentation background unavailable` instead of failing hard.
 
 ### Permissions Messaging
 
@@ -195,7 +195,7 @@
 ### Restore Strategy
 
 - Restore is intentionally narrow and strictly limited to changes Meeting Mode triggered during the current session.
-- Restore hides the clean screen overlay when the session had shown it.
+- Restore hides the presentation background overlay when the session had shown it.
 - Restore re-shows only the apps that Meeting Mode actually hid during the current session.
 - Restore targets those hidden apps by exact tracked process first, then falls back to bundle identifier matching only for older snapshots.
 - Restore now sends unhide / activate requests first, then confirms the actual visible state after a short delay, because the runtime visibility change is not reliably observable inside the same synchronous call on this machine.
@@ -218,12 +218,15 @@
 
 - Preset creation and editing live in a lightweight SwiftUI sheet from the menu bar content.
 - The editor is intentionally split into `Basics`, `What starts`, and `Checklist` so identity, start actions, and preparation steps are not mixed together.
-- The validation rule is surfaced at the top of the sheet: a preset needs at least one app, link, file, or clean screen to be startable.
+- The validation rule is surfaced at the top of the sheet: a preset needs at least one app, link, file, or presentation background to be startable.
 - Apps are no longer entered as free text. The sheet now uses `Add App…` with `NSOpenPanel`, then displays the selected apps as a removable list.
 - Local files are no longer entered as free text. The sheet now uses `Add File…` with `NSOpenPanel` starting from the user's home directory, then displays the selected files as a removable list showing file name and full path.
 - The file picker accepts any file type and allows multiple selection.
 - Editing stays text-based only where it is still the smallest reasonable UI: links and checklist items.
-- A preset must contain at least one startable action to be saved: app, URL, file, or clean screen.
+- A preset must contain at least one startable action to be saved: app, URL, file, or presentation background.
+- The preset editor now exposes one explicit background choice with three mutually exclusive modes: none, solid color, and local image.
+- Photos integration and media-library browsing stay out of scope for now.
+- Solid color background and local image background both count as startable preset actions; `none` does not by itself.
 - Checklist-only presets are deliberately blocked for now because checklist execution is not implemented yet.
 - Saving rewrites the local JSON file atomically, without adding a heavier persistence layer.
 - Preset deletion is intentionally minimal: one confirmation from the popover, then immediate removal with selection fallback.
@@ -232,6 +235,7 @@
 ### Preset Schema
 
 - `Preset` keeps raw `String` arrays for links and local file paths at this stage.
+- `Preset` also stores a structured `PresentationBackground` with three mutually exclusive modes: none, solid color, and local image. Legacy `showsOverlay` data still decodes conservatively.
 - Apps are stored as small references with display name, bundle identifier, and bundle path so launch is more reliable than name-only matching.
 - The schema remains backward-compatible with previously saved presets that stored apps as raw strings.
 - Validation of URLs and local file paths is deferred to the future opening step, not the editor.

@@ -41,7 +41,7 @@ struct TutorialView: View {
                 bulletKeys: [
                     ("tutorial.page2.bullet1", "Apps to open."),
                     ("tutorial.page2.bullet2", "Links and local files to open."),
-                    ("tutorial.page2.bullet3", "Checklist items and an optional clean screen."),
+                    ("tutorial.page2.bullet3", "Checklist items and an optional presentation background."),
                 ]
             ),
             Page(
@@ -54,7 +54,7 @@ struct TutorialView: View {
                 bulletKeys: [
                     ("tutorial.page3.bullet1", "Opens the preset apps, links, and files."),
                     ("tutorial.page3.bullet2", "May hide visible apps outside the preset in best effort."),
-                    ("tutorial.page3.bullet3", "Can show a clean screen background."),
+                    ("tutorial.page3.bullet3", "Can show a presentation background."),
                 ]
             ),
             Page(
@@ -65,7 +65,7 @@ struct TutorialView: View {
                 bodyKey: "tutorial.page4.body",
                 bodyDefault: "Restore Mac only targets the changes that Meeting Mode actually made.",
                 bulletKeys: [
-                    ("tutorial.page4.bullet1", "Hides the clean screen."),
+                    ("tutorial.page4.bullet1", "Hides the presentation background."),
                     ("tutorial.page4.bullet2", "Tries to re-show apps that Meeting Mode itself hid."),
                     ("tutorial.page4.bullet3", "Stays best effort only."),
                 ]

@@ -67,10 +67,16 @@ struct MockAppVisibility: AppVisibilityManaging {
 @MainActor
 struct MockOverlay: OverlayProviding {
     var showOverlayResult = true
+    let capture = MockOverlayCapture()
 
-    func showOverlay() -> Bool {
-        showOverlayResult
+    func showOverlay(using background: PresentationBackground) -> Bool {
+        capture.backgrounds.append(background)
+        return showOverlayResult
     }
+}
+
+final class MockOverlayCapture {
+    var backgrounds: [PresentationBackground] = []
 }
 
 @MainActor

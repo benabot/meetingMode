@@ -165,7 +165,7 @@ final class PresetStore: ObservableObject {
                 urlsToOpen: [],
                 filesToOpen: [],
                 checklistItems: quickTestChecklistItems(),
-                showsOverlay: true
+                presentationBackground: .solidColor()
             ),
         ]
     }
@@ -235,7 +235,7 @@ final class PresetStore: ObservableObject {
     private static func quickTestChecklistItems() -> [ChecklistItem] {
         [
             ChecklistItem(title: "Confirm the menu bar icon turns red"),
-            ChecklistItem(title: "Use Restore Session to hide clean screen and quit Calculator"),
+            ChecklistItem(title: "Use Restore Session to hide the presentation background and quit Calculator"),
         ]
     }
 

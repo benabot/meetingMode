@@ -15,7 +15,8 @@
 
 - [x] Remplacer les presets de démonstration par une source de données locale simple
 - [x] Ajouter une création/édition minimale de preset, sans interface lourde
-- [x] Étendre `Preset` pour couvrir proprement apps, URLs, fichiers locaux, checklist et clean screen
+- [x] Étendre `Preset` pour couvrir proprement apps, URLs, fichiers locaux, checklist et fond de présentation
+- [x] Remplacer le toggle par un fond de présentation explicite (Aucun / Fond uni / Image locale)
 - [x] Simplifier la popover menu bar pour rendre l'état lisible immédiatement
 - [x] Conserver le preset sélectionné après relance
 - [x] Vérifier que create/edit de preset survivent proprement au redémarrage
@@ -28,7 +29,7 @@
 - [x] Garder une seule session active à la fois, de manière explicite dans l'UI et les services
 - [x] Définir un snapshot minimal de session pour préparer un restore best effort
 - [x] Ouvrir apps, URLs et fichiers avec les APIs macOS les plus simples et fiables
-- [x] Ajouter un clean screen overlay simple, sans gestion multi-fenêtre avancée
+- [x] Ajouter un fond de présentation simple, sans gestion multi-fenêtre avancée
 - [x] Ajouter un restore simple qui ne restaure que ce que Meeting Mode a changé
 
 ## Plus tard

@@ -31,7 +31,7 @@ protocol AppVisibilityManaging {
 
 @MainActor
 protocol OverlayProviding {
-    func showOverlay() -> Bool
+    func showOverlay(using background: PresentationBackground) -> Bool
 }
 
 @MainActor

@@ -125,6 +125,31 @@ final class SessionRunnerTests: XCTestCase {
         }
     }
 
+    func test_startPassesPresentationBackgroundToOverlayService() async {
+        await MainActor.run {
+            var overlay = MockOverlay()
+            overlay.showOverlayResult = true
+            let background = PresentationBackground.solidColor(
+                PresentationBackgroundColor(
+                    red: 0.18,
+                    green: 0.22,
+                    blue: 0.28
+                ),
+                opacity: 0.86
+            )
+            let runner = makeRunner(overlay: overlay)
+            let preset = Preset(
+                name: "Demo",
+                presentationBackground: background
+            )
+
+            runner.start(with: preset)
+
+            XCTAssertEqual(overlay.capture.backgrounds, [background])
+            XCTAssertEqual(runner.sessionPhase, .active)
+        }
+    }
+
     func test_startPassesLaunchedAppBundleIdentifiersToContentOpening() async {
         await MainActor.run {
             var launcher = MockAppLauncher()
