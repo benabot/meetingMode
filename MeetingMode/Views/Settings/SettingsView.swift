@@ -101,7 +101,7 @@ struct SettingsView: View {
                             permissionRow(
                                 title: t("settings.permissions.automation", "Automation"),
                                 status: permissionService.automationStatus,
-                                note: t("settings.permissions.automation.note", "Limited AppleScript is used only for best-effort browser tab cleanup during restore.")
+                                note: t("settings.permissions.automation.note", "Limited AppleScript is used only for browser tab cleanup during restore, when possible.")
                             )
                             permissionRow(
                                 title: t("settings.permissions.screen_recording", "Screen Recording"),

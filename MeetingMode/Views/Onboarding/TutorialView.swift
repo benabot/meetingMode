@@ -53,7 +53,7 @@ struct TutorialView: View {
                 bodyDefault: "Prepare Mac applies the selected preset.",
                 bulletKeys: [
                     ("tutorial.page3.bullet1", "Opens the preset apps, links, and files."),
-                    ("tutorial.page3.bullet2", "May hide visible apps outside the preset in best effort."),
+                    ("tutorial.page3.bullet2", "May hide visible apps outside the preset when possible."),
                     ("tutorial.page3.bullet3", "Can show a presentation background."),
                 ]
             ),
@@ -67,7 +67,7 @@ struct TutorialView: View {
                 bulletKeys: [
                     ("tutorial.page4.bullet1", "Hides the presentation background."),
                     ("tutorial.page4.bullet2", "Tries to re-show apps that Meeting Mode itself hid."),
-                    ("tutorial.page4.bullet3", "Stays best effort only."),
+                    ("tutorial.page4.bullet3", "Stays limited to what it changed."),
                 ]
             ),
             Page(
@@ -79,7 +79,7 @@ struct TutorialView: View {
                 bodyDefault: "Meeting Mode stays simple and transparent about what it can do.",
                 bulletKeys: [
                     ("tutorial.page5.bullet1", "Restore does not reposition windows or tabs."),
-                    ("tutorial.page5.bullet2", "App hiding is best effort and depends on macOS."),
+                    ("tutorial.page5.bullet2", "App hiding depends on macOS and happens when possible."),
                     ("tutorial.page5.bullet3", "Some behavior still depends on what macOS allows."),
                 ]
             ),

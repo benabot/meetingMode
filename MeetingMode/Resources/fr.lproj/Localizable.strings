@@ -25,7 +25,7 @@
 "settings.permissions.accessibility" = "Accessibilité";
 "settings.permissions.accessibility.note" = "Non requise. L’implémentation actuelle utilise NSRunningApplication pour la visibilité des apps, ce qui ne nécessite pas l’accès Accessibilité.";
 "settings.permissions.automation" = "Automatisation";
-"settings.permissions.automation.note" = "Un AppleScript limité sert uniquement au nettoyage best-effort des onglets de navigateur pendant la restauration.";
+"settings.permissions.automation.note" = "Un AppleScript limité sert uniquement au nettoyage des onglets de navigateur pendant la restauration, quand c’est possible.";
 "settings.permissions.screen_recording" = "Enregistrement de l’écran";
 "settings.permissions.screen_recording.note" = "Non requise. Meeting Mode ne capture ni n’enregistre l’écran.";
 "settings.help.description" = "Rouvrez le tutoriel rapide à tout moment si vous avez besoin d’un rappel court du flux principal et des limites.";
@@ -73,14 +73,14 @@
 "menubar.status.restored" = "Restaurée";
 "menubar.summary.no_tracked_action" = "Aucune action suivie";
 "menubar.summary.checking_hidden_apps" = "Vérification des apps masquées";
-"menubar.summary.restore_limited" = "Restore terminé en best effort, certaines apps masquées peuvent encore l’être";
-"menubar.summary.restore_finished" = "Restore terminé en best effort";
+"menubar.summary.restore_limited" = "Restauration terminée, certaines apps masquées peuvent encore rester cachées";
+"menubar.summary.restore_finished" = "Restauration terminée, dans la mesure du possible";
 "menubar.summary.create_preset" = "Créez un preset pour préparer votre prochaine session.";
 "menubar.summary.no_runnable_action" = "Aucune action lançable pour l’instant";
 "menubar.detail.restore_tracks" = "Le restore suit %@";
-"menubar.detail.other_apps_may_hide" = "Les autres apps visibles seront masquées (best effort).";
+"menubar.detail.other_apps_may_hide" = "Les autres apps visibles peuvent aussi être masquées, dans la mesure du possible.";
 "menubar.detail.enable_start" = "Ajoutez une app, un lien, un fichier ou un fond de présentation pour préparer le Mac.";
-"menubar.detail.checklist_with_hide" = "%@ - les autres apps visibles peuvent être masquées en best effort.";
+"menubar.detail.checklist_with_hide" = "%@ - les autres apps visibles peuvent aussi être masquées, dans la mesure du possible.";
 "menubar.detail.checklist_needs_action" = "%@ - ajoutez au moins une action lançable.";
 "menubar.count.format" = "%d %@";
 "menubar.count.app_opened.one" = "app ouverte";
@@ -171,17 +171,17 @@
 "tutorial.page3.title" = "Ce que fait Préparer le Mac";
 "tutorial.page3.body" = "Préparer le Mac applique le preset sélectionné.";
 "tutorial.page3.bullet1" = "Ouvre les apps, liens et fichiers du preset.";
-"tutorial.page3.bullet2" = "Peut masquer les apps visibles hors preset en best effort.";
+"tutorial.page3.bullet2" = "Peut masquer les apps visibles hors preset, dans la mesure du possible.";
 "tutorial.page3.bullet3" = "Peut afficher un fond de présentation.";
 "tutorial.page4.title" = "Ce que fait Rétablir le Mac";
 "tutorial.page4.body" = "Rétablir le Mac ne cible que les changements que Meeting Mode a réellement appliqués.";
 "tutorial.page4.bullet1" = "Masque le fond de présentation.";
 "tutorial.page4.bullet2" = "Tente de réafficher les apps que Meeting Mode a lui-même masquées.";
-"tutorial.page4.bullet3" = "Reste en best effort uniquement.";
+"tutorial.page4.bullet3" = "Reste limité à ce qu’il a changé.";
 "tutorial.page5.title" = "Bon à savoir";
 "tutorial.page5.body" = "Meeting Mode reste simple et transparent sur ce qu'il peut faire.";
 "tutorial.page5.bullet1" = "Le restore ne repositionne pas les fenêtres ni les onglets.";
-"tutorial.page5.bullet2" = "Le masquage d'apps reste best effort et dépend de macOS.";
+"tutorial.page5.bullet2" = "Le masquage d'apps dépend de macOS et se fait dans la mesure du possible.";
 "tutorial.page5.bullet3" = "Certains comportements dépendent encore de ce que macOS autorise.";
 
 "session.phase.inactive" = "Inactive";
@@ -190,7 +190,7 @@
 "session.status.inactive.detail" = "Prêt à lancer un preset.";
 "session.status.active.detail_with_preset" = "Une seule session peut être active à la fois. Preset courant : %@. Le restore ne suit que les changements de Meeting Mode.";
 "session.status.active.detail" = "Une seule session peut être active à la fois. Le restore ne suit que les changements de Meeting Mode.";
-"session.status.restored.detail" = "La session précédente a été restaurée en best effort strict. Certaines pages de navigateur ou certains fichiers peuvent rester ouverts par conception.";
+"session.status.restored.detail" = "La session précédente a été restaurée dans la mesure du possible. Certaines pages de navigateur ou certains fichiers peuvent rester ouverts par conception.";
 
 "session.notice.inactive" = "Session inactive";
 "session.notice.select_preset" = "Sélectionnez un preset avant de démarrer";
@@ -225,4 +225,4 @@
 "session.notice.restore.file_skipped.other" = "%d fichiers ouverts laissés ouverts par conception";
 "session.notice.restore.still_open.one" = "%d app lancée peut encore être ouverte";
 "session.notice.restore.still_open.other" = "%d apps lancées peuvent encore être ouvertes";
-"session.notice.restore.best_effort_limit" = "Best effort uniquement. Des pages de navigateur ou des fichiers hors des apps lancées par Meeting Mode peuvent rester ouverts par conception.";
+"session.notice.restore.best_effort_limit" = "Meeting Mode a restauré ce qu’il a pu. Des pages de navigateur ou des fichiers hors des apps lancées par Meeting Mode peuvent rester ouverts par conception.";

@@ -491,7 +491,7 @@ struct MenuBarContentView: View {
 
         if preset.checklistItems.isEmpty {
             return preset.hasStartableActions
-                ? t("menubar.detail.other_apps_may_hide", "Other visible apps may be hidden best effort.")
+                ? t("menubar.detail.other_apps_may_hide", "Other visible apps may also be hidden when possible.")
                 : t("menubar.detail.enable_start", "Add an app, link, file, or presentation background to enable Prepare Mac.")
         }
 
@@ -504,7 +504,7 @@ struct MenuBarContentView: View {
         ) ?? t("menubar.count.format", "%d %@", 0, t("menubar.count.checklist_item.other", "checklist items"))
 
         if preset.hasStartableActions {
-            return t("menubar.detail.checklist_with_hide", "%@ - other visible apps may be hidden best effort.", checklistLabel)
+            return t("menubar.detail.checklist_with_hide", "%@ - other visible apps may also be hidden when possible.", checklistLabel)
         }
 
         return t("menubar.detail.checklist_needs_action", "%@ - add at least one runnable action.", checklistLabel)

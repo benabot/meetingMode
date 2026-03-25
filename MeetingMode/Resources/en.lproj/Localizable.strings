@@ -25,7 +25,7 @@
 "settings.permissions.accessibility" = "Accessibility";
 "settings.permissions.accessibility.note" = "Not required. The current implementation uses NSRunningApplication for app visibility, which does not need Accessibility access.";
 "settings.permissions.automation" = "Automation";
-"settings.permissions.automation.note" = "Limited AppleScript is used only for best-effort browser tab cleanup during restore.";
+"settings.permissions.automation.note" = "Limited AppleScript is used only for browser tab cleanup during restore, when possible.";
 "settings.permissions.screen_recording" = "Screen Recording";
 "settings.permissions.screen_recording.note" = "Not required. Meeting Mode does not capture or record the screen.";
 "settings.help.description" = "Reopen the quick tutorial at any time if you need a short reminder of the main flow and limits.";
@@ -73,14 +73,14 @@
 "menubar.status.restored" = "Restored";
 "menubar.summary.no_tracked_action" = "No tracked action";
 "menubar.summary.checking_hidden_apps" = "Checking hidden apps";
-"menubar.summary.restore_limited" = "Restore finished on a best-effort basis, some hidden apps may still be hidden";
-"menubar.summary.restore_finished" = "Restore finished on a best-effort basis";
+"menubar.summary.restore_limited" = "Restore finished, some hidden apps may still remain hidden";
+"menubar.summary.restore_finished" = "Restore finished as far as possible";
 "menubar.summary.create_preset" = "Create a preset to prepare your next session.";
 "menubar.summary.no_runnable_action" = "No runnable action yet";
 "menubar.detail.restore_tracks" = "Restore tracks %@";
-"menubar.detail.other_apps_may_hide" = "Other visible apps may be hidden (best effort).";
+"menubar.detail.other_apps_may_hide" = "Other visible apps may also be hidden when possible.";
 "menubar.detail.enable_start" = "Add an app, link, file, or presentation background to enable Prepare Mac.";
-"menubar.detail.checklist_with_hide" = "%@ - other visible apps may be hidden best effort.";
+"menubar.detail.checklist_with_hide" = "%@ - other visible apps may also be hidden when possible.";
 "menubar.detail.checklist_needs_action" = "%@ - add at least one runnable action.";
 "menubar.count.format" = "%d %@";
 "menubar.count.app_opened.one" = "app opened";
@@ -171,17 +171,17 @@
 "tutorial.page3.title" = "What Prepare Mac does";
 "tutorial.page3.body" = "Prepare Mac applies the selected preset.";
 "tutorial.page3.bullet1" = "Opens the preset apps, links, and files.";
-"tutorial.page3.bullet2" = "May hide visible apps outside the preset in best effort.";
+"tutorial.page3.bullet2" = "May hide visible apps outside the preset when possible.";
 "tutorial.page3.bullet3" = "Can show a presentation background.";
 "tutorial.page4.title" = "What Restore Mac does";
 "tutorial.page4.body" = "Restore Mac only targets the changes that Meeting Mode actually made.";
 "tutorial.page4.bullet1" = "Hides the presentation background.";
 "tutorial.page4.bullet2" = "Tries to re-show apps that Meeting Mode itself hid.";
-"tutorial.page4.bullet3" = "Stays best effort only.";
+"tutorial.page4.bullet3" = "Stays limited to what it changed.";
 "tutorial.page5.title" = "Good to know";
 "tutorial.page5.body" = "Meeting Mode stays simple and transparent about what it can do.";
 "tutorial.page5.bullet1" = "Restore does not reposition windows or tabs.";
-"tutorial.page5.bullet2" = "App hiding is best effort and depends on macOS.";
+"tutorial.page5.bullet2" = "App hiding depends on macOS and happens when possible.";
 "tutorial.page5.bullet3" = "Some behavior still depends on what macOS allows.";
 
 "session.phase.inactive" = "Inactive";
@@ -190,7 +190,7 @@
 "session.status.inactive.detail" = "Ready to start a preset.";
 "session.status.active.detail_with_preset" = "Only one session can be active at a time. Current preset: %@. Restore only tracks Meeting Mode changes.";
 "session.status.active.detail" = "Only one session can be active at a time. Restore only tracks Meeting Mode changes.";
-"session.status.restored.detail" = "The previous session was restored on a strict best-effort basis. Some browser pages or files may remain open by design.";
+"session.status.restored.detail" = "The previous session was restored as far as possible. Some browser pages or files may remain open by design.";
 
 "session.notice.inactive" = "Session inactive";
 "session.notice.select_preset" = "Select a preset before starting";
@@ -225,4 +225,4 @@
 "session.notice.restore.file_skipped.other" = "%d opened files left open by design";
 "session.notice.restore.still_open.one" = "%d launched app may still be open";
 "session.notice.restore.still_open.other" = "%d launched apps may still be open";
-"session.notice.restore.best_effort_limit" = "Best effort only. Browser pages or files outside Meeting Mode's launched apps may remain open by design.";
+"session.notice.restore.best_effort_limit" = "Meeting Mode restored what it could. Browser pages or files outside Meeting Mode's launched apps may remain open by design.";

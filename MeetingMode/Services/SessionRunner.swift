@@ -708,7 +708,7 @@ final class SessionRunner: ObservableObject {
             restoredItems.append(
                 L10n.string(
                     "session.notice.restore.best_effort_limit",
-                    defaultValue: "Best effort only. Browser pages or files outside Meeting Mode's launched apps may remain open by design."
+                    defaultValue: "Meeting Mode restored what it could. Browser pages or files outside Meeting Mode's launched apps may remain open by design."
                 )
             )
         }
