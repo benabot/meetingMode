@@ -229,6 +229,12 @@ final class SessionRunnerTests: XCTestCase {
 
             XCTAssertEqual(feedback.cleanedURLsCount, 2)
             XCTAssertEqual(feedback.skippedFilesCount, 3)
+            let restoreDetail = (runner.lastActionDetail ?? "").lowercased()
+            XCTAssertTrue(restoreDetail.contains("best effort"), "detail=\(restoreDetail)")
+            XCTAssertTrue(
+                restoreDetail.contains("design") || restoreDetail.contains("conception"),
+                "detail=\(restoreDetail)"
+            )
         }
     }
 

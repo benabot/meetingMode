@@ -654,8 +654,8 @@ final class SessionRunner: ObservableObject {
                     feedback.cleanedURLsCount,
                     oneKey: "session.notice.restore.url_cleaned.one",
                     otherKey: "session.notice.restore.url_cleaned.other",
-                    defaultOne: "%d browser URL cleaned up",
-                    defaultOther: "%d browser URLs cleaned up"
+                    defaultOne: "%d browser URL covered by app closure",
+                    defaultOther: "%d browser URLs covered by app closure"
                 )
             )
         }
@@ -666,8 +666,8 @@ final class SessionRunner: ObservableObject {
                     feedback.skippedFilesCount,
                     oneKey: "session.notice.restore.file_skipped.one",
                     otherKey: "session.notice.restore.file_skipped.other",
-                    defaultOne: "%d opened file skipped",
-                    defaultOther: "%d opened files skipped"
+                    defaultOne: "%d opened file left open by design",
+                    defaultOther: "%d opened files left open by design"
                 )
             )
         }
@@ -680,6 +680,15 @@ final class SessionRunner: ObservableObject {
                     otherKey: "session.notice.restore.still_open.other",
                     defaultOne: "%d launched app may still be open",
                     defaultOther: "%d launched apps may still be open"
+                )
+            )
+        }
+
+        if !feedback.isVisibilityPending && !restoredItems.isEmpty {
+            restoredItems.append(
+                L10n.string(
+                    "session.notice.restore.best_effort_limit",
+                    defaultValue: "Best effort only. Browser pages or files outside Meeting Mode's launched apps may remain open by design."
                 )
             )
         }

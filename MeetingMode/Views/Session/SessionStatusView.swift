@@ -41,7 +41,7 @@ struct SessionStatusView: View {
         case .restored:
             return t(
                 "session.status.restored.detail",
-                "The previous session was restored on a best-effort basis. You can start a new one."
+                "The previous session was restored on a strict best-effort basis. Some browser pages or files may remain open by design."
             )
         }
     }

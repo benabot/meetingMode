@@ -73,8 +73,8 @@
 "menubar.status.restored" = "Restaurée";
 "menubar.summary.no_tracked_action" = "Aucune action suivie";
 "menubar.summary.checking_hidden_apps" = "Vérification des apps masquées";
-"menubar.summary.restore_limited" = "Restore terminé avec limites";
-"menubar.summary.restore_finished" = "Restore best effort terminé";
+"menubar.summary.restore_limited" = "Restore terminé en best effort, certaines apps masquées peuvent encore l’être";
+"menubar.summary.restore_finished" = "Restore terminé en best effort";
 "menubar.summary.create_preset" = "Créez un preset pour préparer votre prochaine session.";
 "menubar.summary.no_runnable_action" = "Aucune action lançable pour l’instant";
 "menubar.detail.restore_tracks" = "Le restore suit %@";
@@ -180,7 +180,7 @@
 "session.status.inactive.detail" = "Prêt à lancer un preset.";
 "session.status.active.detail_with_preset" = "Une seule session peut être active à la fois. Preset courant : %@. Le restore ne suit que les changements de Meeting Mode.";
 "session.status.active.detail" = "Une seule session peut être active à la fois. Le restore ne suit que les changements de Meeting Mode.";
-"session.status.restored.detail" = "La session précédente a été restaurée en best effort. Vous pouvez en lancer une nouvelle.";
+"session.status.restored.detail" = "La session précédente a été restaurée en best effort strict. Certaines pages de navigateur ou certains fichiers peuvent rester ouverts par conception.";
 
 "session.notice.inactive" = "Session inactive";
 "session.notice.select_preset" = "Sélectionnez un preset avant de démarrer";
@@ -209,9 +209,10 @@
 "session.notice.restore.still_hidden.other" = "%d apps masquées peuvent rester cachées";
 "session.notice.restore.closed.one" = "%d app lancée a été fermée";
 "session.notice.restore.closed.other" = "%d apps lancées ont été fermées";
-"session.notice.restore.url_cleaned.one" = "%d URL de navigateur a été nettoyée";
-"session.notice.restore.url_cleaned.other" = "%d URL de navigateur ont été nettoyées";
-"session.notice.restore.file_skipped.one" = "%d fichier ouvert a été ignoré";
-"session.notice.restore.file_skipped.other" = "%d fichiers ouverts ont été ignorés";
+"session.notice.restore.url_cleaned.one" = "%d URL de navigateur couverte par la fermeture de son app";
+"session.notice.restore.url_cleaned.other" = "%d URL de navigateur couvertes par la fermeture de leur app";
+"session.notice.restore.file_skipped.one" = "%d fichier ouvert laissé ouvert par conception";
+"session.notice.restore.file_skipped.other" = "%d fichiers ouverts laissés ouverts par conception";
 "session.notice.restore.still_open.one" = "%d app lancée peut encore être ouverte";
 "session.notice.restore.still_open.other" = "%d apps lancées peuvent encore être ouvertes";
+"session.notice.restore.best_effort_limit" = "Best effort uniquement. Des pages de navigateur ou des fichiers hors des apps lancées par Meeting Mode peuvent rester ouverts par conception.";

@@ -415,10 +415,16 @@ struct MenuBarContentView: View {
             }
 
             if sessionRunner.restoreHasVisibilityLimit {
-                return t("menubar.summary.restore_limited", "Restore finished with limits")
+                return t(
+                    "menubar.summary.restore_limited",
+                    "Restore finished on a best-effort basis, some hidden apps may still be hidden"
+                )
             }
 
-            return t("menubar.summary.restore_finished", "Best effort restore finished")
+            return t(
+                "menubar.summary.restore_finished",
+                "Restore finished on a best-effort basis"
+            )
         }
 
         guard let preset = presetStore.selectedPreset else {
