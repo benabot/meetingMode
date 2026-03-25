@@ -2,7 +2,6 @@ import XCTest
 
 @testable import MeetingMode
 
-@MainActor
 final class SessionRunnerTests: XCTestCase {
     private var tempDirectory: URL!
     private var snapshotStorageURL: URL!
@@ -26,6 +25,7 @@ final class SessionRunnerTests: XCTestCase {
         super.tearDown()
     }
 
+    @MainActor
     private func makeRunner(
         launcher: MockAppLauncher? = nil,
         visibility: MockAppVisibility? = nil,
@@ -43,232 +43,252 @@ final class SessionRunnerTests: XCTestCase {
 
     // MARK: - Start guards
 
-    func test_startWithNilPreset_selectPresetState() {
-        let runner = makeRunner()
+    func test_startWithNilPreset_selectPresetState() async {
+        await MainActor.run {
+            let runner = makeRunner()
 
-        runner.startIfPossible(with: nil)
+            runner.startIfPossible(with: nil)
 
-        XCTAssertEqual(runner.lastActionState, .selectPresetBeforeStarting)
-        XCTAssertEqual(runner.sessionPhase, .inactive)
+            XCTAssertEqual(runner.lastActionState, .selectPresetBeforeStarting)
+            XCTAssertEqual(runner.sessionPhase, .inactive)
+        }
     }
 
-    func test_startWithEmptyPreset_addRunnableActionState() {
-        let runner = makeRunner()
-        let preset = Preset(name: "Empty")
+    func test_startWithEmptyPreset_addRunnableActionState() async {
+        await MainActor.run {
+            let runner = makeRunner()
+            let preset = Preset(name: "Empty")
 
-        runner.start(with: preset)
+            runner.start(with: preset)
 
-        XCTAssertEqual(runner.lastActionState, .addRunnableActionBeforeStarting)
-        XCTAssertEqual(runner.sessionPhase, .inactive)
+            XCTAssertEqual(runner.lastActionState, .addRunnableActionBeforeStarting)
+            XCTAssertEqual(runner.sessionPhase, .inactive)
+        }
     }
 
-    func test_startWhileActive_restoreBeforeStartingState() {
-        var launcher = MockAppLauncher()
-        launcher.openItemsResult = LaunchExecutionResult(
-            launchedApplications: ["Calculator"],
-            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
-        )
-        let runner = makeRunner(launcher: launcher)
-        let preset = Preset(
-            name: "Test",
-            appsToLaunch: [
-                PresetApp(
-                    displayName: "Calculator",
-                    bundleIdentifier: "com.apple.calculator",
-                    bundlePath: "/System/Applications/Calculator.app"
-                ),
-            ]
-        )
+    func test_startWhileActive_restoreBeforeStartingState() async {
+        await MainActor.run {
+            var launcher = MockAppLauncher()
+            launcher.openItemsResult = LaunchExecutionResult(
+                launchedApplications: ["Calculator"],
+                launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+            )
+            let runner = makeRunner(launcher: launcher)
+            let preset = Preset(
+                name: "Test",
+                appsToLaunch: [
+                    PresetApp(
+                        displayName: "Calculator",
+                        bundleIdentifier: "com.apple.calculator",
+                        bundlePath: "/System/Applications/Calculator.app"
+                    ),
+                ]
+            )
 
-        runner.start(with: preset)
-        XCTAssertEqual(runner.sessionPhase, .active)
+            runner.start(with: preset)
+            XCTAssertEqual(runner.sessionPhase, .active)
 
-        runner.start(with: preset)
-        XCTAssertEqual(runner.lastActionState, .restoreBeforeStartingAnother)
+            runner.start(with: preset)
+            XCTAssertEqual(runner.lastActionState, .restoreBeforeStartingAnother)
+        }
     }
 
     // MARK: - Successful start
 
-    func test_startSuccess_activePhaseAndSnapshot() {
-        var launcher = MockAppLauncher()
-        launcher.openItemsResult = LaunchExecutionResult(
-            launchedApplications: ["Calculator"],
-            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
-        )
-        var overlay = MockOverlay()
-        overlay.showOverlayResult = true
-        let runner = makeRunner(launcher: launcher, overlay: overlay)
-        let preset = Preset(
-            name: "Demo",
-            appsToLaunch: [
-                PresetApp(
-                    displayName: "Calculator",
-                    bundleIdentifier: "com.apple.calculator",
-                    bundlePath: "/System/Applications/Calculator.app"
-                ),
-            ],
-            showsOverlay: true
-        )
+    func test_startSuccess_activePhaseAndSnapshot() async {
+        await MainActor.run {
+            var launcher = MockAppLauncher()
+            launcher.openItemsResult = LaunchExecutionResult(
+                launchedApplications: ["Calculator"],
+                launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+            )
+            var overlay = MockOverlay()
+            overlay.showOverlayResult = true
+            let runner = makeRunner(launcher: launcher, overlay: overlay)
+            let preset = Preset(
+                name: "Demo",
+                appsToLaunch: [
+                    PresetApp(
+                        displayName: "Calculator",
+                        bundleIdentifier: "com.apple.calculator",
+                        bundlePath: "/System/Applications/Calculator.app"
+                    ),
+                ],
+                showsOverlay: true
+            )
 
-        runner.start(with: preset)
+            runner.start(with: preset)
 
-        XCTAssertEqual(runner.sessionPhase, .active)
-        XCTAssertNotNil(runner.activeSnapshot)
-        XCTAssertEqual(runner.activeSnapshot?.launchedApplications, ["Calculator"])
+            XCTAssertEqual(runner.sessionPhase, .active)
+            XCTAssertNotNil(runner.activeSnapshot)
+            XCTAssertEqual(runner.activeSnapshot?.launchedApplications, ["Calculator"])
+        }
     }
 
-    func test_startPassesLaunchedAppBundleIdentifiersToContentOpening() {
-        var launcher = MockAppLauncher()
-        launcher.openItemsResult = LaunchExecutionResult(
-            launchedApplications: ["Calculator"],
-            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
-        )
-        let runner = makeRunner(launcher: launcher)
-        let preset = Preset(
-            name: "Demo",
-            appsToLaunch: [
-                PresetApp(
-                    displayName: "Calculator",
-                    bundleIdentifier: "com.apple.calculator",
-                    bundlePath: "/System/Applications/Calculator.app"
-                ),
-            ]
-        )
+    func test_startPassesLaunchedAppBundleIdentifiersToContentOpening() async {
+        await MainActor.run {
+            var launcher = MockAppLauncher()
+            launcher.openItemsResult = LaunchExecutionResult(
+                launchedApplications: ["Calculator"],
+                launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+            )
+            let runner = makeRunner(launcher: launcher)
+            let preset = Preset(
+                name: "Demo",
+                appsToLaunch: [
+                    PresetApp(
+                        displayName: "Calculator",
+                        bundleIdentifier: "com.apple.calculator",
+                        bundlePath: "/System/Applications/Calculator.app"
+                    ),
+                ]
+            )
 
-        runner.start(with: preset)
+            runner.start(with: preset)
 
-        XCTAssertEqual(
-            launcher.openContentLaunchContext.launchedApplicationBundleIdentifiers,
-            [Set(["com.apple.calculator"])]
-        )
+            XCTAssertEqual(
+                launcher.openContentLaunchContext.launchedApplicationBundleIdentifiers,
+                [Set(["com.apple.calculator"])]
+            )
+        }
     }
 
     // MARK: - Restore guards
 
-    func test_restoreWithNoSession_noActiveSessionState() {
-        let runner = makeRunner()
+    func test_restoreWithNoSession_noActiveSessionState() async {
+        await MainActor.run {
+            let runner = makeRunner()
 
-        runner.restoreIfPossible()
+            runner.restoreIfPossible()
 
-        XCTAssertEqual(runner.lastActionState, .noActiveSessionToRestore)
+            XCTAssertEqual(runner.lastActionState, .noActiveSessionToRestore)
+        }
     }
 
     // MARK: - Successful restore
 
-    func test_restoreSuccess_restoredPhaseAndNilSnapshot() {
-        var launcher = MockAppLauncher()
-        launcher.openItemsResult = LaunchExecutionResult(
-            launchedApplications: ["Calculator"],
-            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
-        )
-        let runner = makeRunner(launcher: launcher)
-        let preset = Preset(
-            name: "Test",
-            appsToLaunch: [
-                PresetApp(
-                    displayName: "Calculator",
-                    bundleIdentifier: "com.apple.calculator",
-                    bundlePath: "/System/Applications/Calculator.app"
-                ),
-            ]
-        )
+    func test_restoreSuccess_restoredPhaseAndNilSnapshot() async {
+        await MainActor.run {
+            var launcher = MockAppLauncher()
+            launcher.openItemsResult = LaunchExecutionResult(
+                launchedApplications: ["Calculator"],
+                launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+            )
+            let runner = makeRunner(launcher: launcher)
+            let preset = Preset(
+                name: "Test",
+                appsToLaunch: [
+                    PresetApp(
+                        displayName: "Calculator",
+                        bundleIdentifier: "com.apple.calculator",
+                        bundlePath: "/System/Applications/Calculator.app"
+                    ),
+                ]
+            )
 
-        runner.start(with: preset)
-        XCTAssertEqual(runner.sessionPhase, .active)
+            runner.start(with: preset)
+            XCTAssertEqual(runner.sessionPhase, .active)
 
-        runner.restoreIfPossible()
+            runner.restoreIfPossible()
 
-        XCTAssertEqual(runner.sessionPhase, .restored)
-        XCTAssertNil(runner.activeSnapshot)
+            XCTAssertEqual(runner.sessionPhase, .restored)
+            XCTAssertNil(runner.activeSnapshot)
+        }
     }
 
-    func test_restoreSuccess_includesContentCleanupCounts() {
-        var launcher = MockAppLauncher()
-        launcher.openItemsResult = LaunchExecutionResult(
-            launchedApplications: ["Calculator"],
-            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
-        )
-        var restore = MockRestore()
-        restore.restoreResult = RestoreExecutionResult(
-            cleanedURLsCount: 2,
-            skippedFilesCount: 3
-        )
-        let runner = makeRunner(launcher: launcher, restore: restore)
-        let preset = Preset(
-            name: "Test",
-            appsToLaunch: [
-                PresetApp(
-                    displayName: "Calculator",
-                    bundleIdentifier: "com.apple.calculator",
-                    bundlePath: "/System/Applications/Calculator.app"
-                ),
-            ]
-        )
+    func test_restoreSuccess_includesContentCleanupCounts() async {
+        await MainActor.run {
+            var launcher = MockAppLauncher()
+            launcher.openItemsResult = LaunchExecutionResult(
+                launchedApplications: ["Calculator"],
+                launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+            )
+            var restore = MockRestore()
+            restore.restoreResult = RestoreExecutionResult(
+                cleanedURLsCount: 2,
+                skippedFilesCount: 3
+            )
+            let runner = makeRunner(launcher: launcher, restore: restore)
+            let preset = Preset(
+                name: "Test",
+                appsToLaunch: [
+                    PresetApp(
+                        displayName: "Calculator",
+                        bundleIdentifier: "com.apple.calculator",
+                        bundlePath: "/System/Applications/Calculator.app"
+                    ),
+                ]
+            )
 
-        runner.start(with: preset)
-        runner.restoreIfPossible()
+            runner.start(with: preset)
+            runner.restoreIfPossible()
 
-        guard case let .restored(feedback) = runner.lastActionState else {
-            return XCTFail("Expected restored feedback")
+            guard case let .restored(feedback) = runner.lastActionState else {
+                return XCTFail("Expected restored feedback")
+            }
+
+            XCTAssertEqual(feedback.cleanedURLsCount, 2)
+            XCTAssertEqual(feedback.skippedFilesCount, 3)
         }
-
-        XCTAssertEqual(feedback.cleanedURLsCount, 2)
-        XCTAssertEqual(feedback.skippedFilesCount, 3)
     }
 
     // MARK: - Snapshot persistence
 
-    func test_startPersistsSnapshotToDisk() {
-        var launcher = MockAppLauncher()
-        launcher.openItemsResult = LaunchExecutionResult(
-            launchedApplications: ["Calculator"],
-            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
-        )
-        let runner = makeRunner(launcher: launcher)
-        let preset = Preset(
-            name: "Test",
-            appsToLaunch: [
-                PresetApp(
-                    displayName: "Calculator",
-                    bundleIdentifier: "com.apple.calculator",
-                    bundlePath: "/System/Applications/Calculator.app"
-                ),
-            ]
-        )
+    func test_startPersistsSnapshotToDisk() async {
+        await MainActor.run {
+            var launcher = MockAppLauncher()
+            launcher.openItemsResult = LaunchExecutionResult(
+                launchedApplications: ["Calculator"],
+                launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+            )
+            let runner = makeRunner(launcher: launcher)
+            let preset = Preset(
+                name: "Test",
+                appsToLaunch: [
+                    PresetApp(
+                        displayName: "Calculator",
+                        bundleIdentifier: "com.apple.calculator",
+                        bundlePath: "/System/Applications/Calculator.app"
+                    ),
+                ]
+            )
 
-        runner.start(with: preset)
+            runner.start(with: preset)
 
-        XCTAssertTrue(FileManager.default.fileExists(atPath: snapshotStorageURL.path))
+            XCTAssertTrue(FileManager.default.fileExists(atPath: snapshotStorageURL.path))
+        }
     }
 
-    func test_restoreDeletesPersistedSnapshot() {
-        var launcher = MockAppLauncher()
-        launcher.openItemsResult = LaunchExecutionResult(
-            launchedApplications: ["Calculator"],
-            launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
-        )
-        let runner = makeRunner(launcher: launcher)
-        let preset = Preset(
-            name: "Test",
-            appsToLaunch: [
-                PresetApp(
-                    displayName: "Calculator",
-                    bundleIdentifier: "com.apple.calculator",
-                    bundlePath: "/System/Applications/Calculator.app"
-                ),
-            ]
-        )
+    func test_restoreDeletesPersistedSnapshot() async {
+        await MainActor.run {
+            var launcher = MockAppLauncher()
+            launcher.openItemsResult = LaunchExecutionResult(
+                launchedApplications: ["Calculator"],
+                launchedApplicationBundleIdentifiers: ["com.apple.calculator"]
+            )
+            let runner = makeRunner(launcher: launcher)
+            let preset = Preset(
+                name: "Test",
+                appsToLaunch: [
+                    PresetApp(
+                        displayName: "Calculator",
+                        bundleIdentifier: "com.apple.calculator",
+                        bundlePath: "/System/Applications/Calculator.app"
+                    ),
+                ]
+            )
 
-        runner.start(with: preset)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: snapshotStorageURL.path))
+            runner.start(with: preset)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: snapshotStorageURL.path))
 
-        runner.restoreIfPossible()
-        XCTAssertFalse(FileManager.default.fileExists(atPath: snapshotStorageURL.path))
+            runner.restoreIfPossible()
+            XCTAssertFalse(FileManager.default.fileExists(atPath: snapshotStorageURL.path))
+        }
     }
 
     // MARK: - Load persisted session
 
-    func test_loadPersistedSession_restoresActiveState() throws {
+    func test_loadPersistedSession_restoresActiveState() async throws {
         let snapshot = SessionSnapshot(
             id: UUID(),
             presetID: UUID(),
@@ -286,11 +306,13 @@ final class SessionRunnerTests: XCTestCase {
         let data = try encoder.encode(snapshot)
         try data.write(to: snapshotStorageURL, options: .atomic)
 
-        let runner = makeRunner()
-        runner.loadPersistedSession()
+        await MainActor.run {
+            let runner = makeRunner()
+            runner.loadPersistedSession()
 
-        XCTAssertEqual(runner.sessionPhase, .active)
-        XCTAssertNotNil(runner.activeSnapshot)
-        XCTAssertEqual(runner.activeSnapshot?.presetName, "Persisted")
+            XCTAssertEqual(runner.sessionPhase, .active)
+            XCTAssertNotNil(runner.activeSnapshot)
+            XCTAssertEqual(runner.activeSnapshot?.presetName, "Persisted")
+        }
     }
 }
