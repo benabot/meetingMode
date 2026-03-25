@@ -178,6 +178,36 @@ final class SessionRunnerTests: XCTestCase {
         }
     }
 
+    func test_pendingHideCandidatesAfterContentOpening_keepsUnrelatedVisibleApps() {
+        let finder = HiddenApplicationSnapshot(
+            bundleIdentifier: "com.apple.finder",
+            processIdentifier: 100,
+            localizedName: "Finder"
+        )
+        let safari = HiddenApplicationSnapshot(
+            bundleIdentifier: "com.apple.Safari",
+            processIdentifier: 101,
+            localizedName: "Safari"
+        )
+        let contentResult = ContentExecutionResult(
+            openedURLs: [
+                OpenedURLRecord(
+                    url: "https://example.com",
+                    targetBundleIdentifier: "com.apple.Safari",
+                    targetWasLaunchedByMeetingMode: false
+                )
+            ]
+        )
+
+        let remainingCandidates = SessionRunner.pendingHideCandidatesAfterContentOpening(
+            [finder, safari],
+            contentResult: contentResult,
+            visibleBundleIdentifiers: ["com.apple.finder", "com.apple.Safari"]
+        )
+
+        XCTAssertEqual(remainingCandidates, [finder])
+    }
+
     // MARK: - Restore guards
 
     func test_restoreWithNoSession_noActiveSessionState() async {

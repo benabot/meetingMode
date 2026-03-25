@@ -229,18 +229,20 @@ final class SessionRunner: ObservableObject {
             launchedApplicationBundleIdentifiers: Set(launchResult.launchedApplicationBundleIdentifiers)
         )
 
-        // After opening content, some previously-hidden apps may have become
-        // visible again (e.g. Safari brought back by an URL open). Remove
-        // those from the pending candidates so the deferred confirmation
-        // does not re-hide them.
+        // After opening content, only the content host apps that are now
+        // visible again should be removed from the pending hide candidates.
+        // Unrelated apps such as Finder still need the deferred retry path if
+        // the initial hide() request did not stick immediately.
         let visibleBundleIDs = Set(
             NSWorkspace.shared.runningApplications
                 .filter { !$0.isTerminated && !$0.isHidden }
                 .compactMap(\.bundleIdentifier)
         )
-        pendingHiddenApplicationCandidates = pendingHiddenApplicationCandidates.filter {
-            !visibleBundleIDs.contains($0.bundleIdentifier)
-        }
+        pendingHiddenApplicationCandidates = Self.pendingHideCandidatesAfterContentOpening(
+            pendingHiddenApplicationCandidates,
+            contentResult: contentResult,
+            visibleBundleIdentifiers: visibleBundleIDs
+        )
 
         let totalFailureCount = launchResult.failureCount + contentResult.failureCount
         let appliedActionCount = launchResult.launchedApplications.count
@@ -523,6 +525,22 @@ final class SessionRunner: ObservableObject {
 
                 return left.localizedName < right.localizedName
             }
+    }
+
+    static func pendingHideCandidatesAfterContentOpening(
+        _ requestedHiddenApplications: [HiddenApplicationSnapshot],
+        contentResult: ContentExecutionResult,
+        visibleBundleIdentifiers: Set<String>
+    ) -> [HiddenApplicationSnapshot] {
+        let contentTargetBundleIdentifiers = Set(
+            contentResult.openedURLs.compactMap(\.targetBundleIdentifier)
+                + contentResult.openedFiles.compactMap(\.targetBundleIdentifier)
+        )
+        let reopenedVisibleBundleIdentifiers = contentTargetBundleIdentifiers.intersection(visibleBundleIdentifiers)
+
+        return requestedHiddenApplications.filter {
+            !reopenedVisibleBundleIdentifiers.contains($0.bundleIdentifier)
+        }
     }
 
     private func localizedDetail(for feedback: ActiveSessionFeedback) -> String? {
