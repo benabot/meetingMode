@@ -19,7 +19,6 @@ struct MenuBarContentView: View {
     var body: some View {
         ZStack {
             MeetingModeWindowBackground()
-
             VStack(alignment: .leading, spacing: 11) {
                 header
 

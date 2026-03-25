@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import SwiftUI
 
+@MainActor
 @main
 struct MeetingModeApp: App {
     @NSApplicationDelegateAdaptor(MeetingModeAppDelegate.self) private var appDelegate
@@ -11,6 +12,7 @@ struct MeetingModeApp: App {
     @StateObject private var hotkeyService: HotkeyService
     @StateObject private var permissionService: PermissionService
     @StateObject private var sessionRunner: SessionRunner
+    private let statusBarController: StatusBarController
 
     init() {
         let appLanguageService = AppLanguageService()
@@ -42,7 +44,7 @@ struct MeetingModeApp: App {
         _permissionService = StateObject(wrappedValue: permissionService)
         _sessionRunner = StateObject(wrappedValue: sessionRunner)
 
-        MeetingModeAppDelegate.dependencies = .init(
+        let statusBarController = StatusBarController(
             appLanguageService: appLanguageService,
             presetStore: presetStore,
             launchAtLoginService: launchAtLoginService,
@@ -51,6 +53,8 @@ struct MeetingModeApp: App {
             permissionService: permissionService,
             tutorialService: tutorialService
         )
+        self.statusBarController = statusBarController
+        MeetingModeAppDelegate.sharedStatusBarController = statusBarController
     }
 
     var body: some Scene {
@@ -70,40 +74,12 @@ struct MeetingModeApp: App {
 
 @MainActor
 final class MeetingModeAppDelegate: NSObject, NSApplicationDelegate {
-    struct Dependencies {
-        let appLanguageService: AppLanguageService
-        let presetStore: PresetStore
-        let launchAtLoginService: LaunchAtLoginService
-        let hotkeyService: HotkeyService
-        let sessionRunner: SessionRunner
-        let permissionService: PermissionService
-        let tutorialService: TutorialService
-    }
-
-    static var dependencies: Dependencies?
     static weak var sharedStatusBarController: StatusBarController?
 
-    private var statusBarController: StatusBarController?
-
     func applicationDidFinishLaunching(_ notification: Notification) {
-        guard let dependencies = Self.dependencies else {
-            return
+        DispatchQueue.main.async {
+            Self.sharedStatusBarController?.presentTutorialIfNeededOnLaunch()
         }
-
-        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
-            return
-        }
-
-        statusBarController = StatusBarController(
-            appLanguageService: dependencies.appLanguageService,
-            presetStore: dependencies.presetStore,
-            launchAtLoginService: dependencies.launchAtLoginService,
-            hotkeyService: dependencies.hotkeyService,
-            sessionRunner: dependencies.sessionRunner,
-            permissionService: dependencies.permissionService,
-            tutorialService: dependencies.tutorialService
-        )
-        Self.sharedStatusBarController = statusBarController
     }
 }
 
@@ -152,7 +128,6 @@ final class StatusBarController: NSObject {
         configureHotkeys()
         bindStatusItemAppearance()
         bindLanguageUpdates()
-        presentTutorialIfNeededOnLaunch()
     }
 
     @objc private func togglePopover(_ sender: Any?) {
@@ -234,19 +209,15 @@ final class StatusBarController: NSObject {
             }
     }
 
-    private func presentTutorialIfNeededOnLaunch() {
+    func presentTutorialIfNeededOnLaunch() {
         guard tutorialService.shouldShowOnLaunch else {
             return
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-            guard let self else {
-                return
-            }
-
-            self.showTutorial(openMainInterfaceAfterClose: true)
-            self.tutorialService.markShownOnLaunch()
-        }
+        showTutorial(
+            markShownOnPresentation: true,
+            requiresRegularActivation: true
+        )
     }
 
     private func updateStatusItemAppearance() {
@@ -268,16 +239,36 @@ final class StatusBarController: NSObject {
         settingsWindowController.window?.makeKeyAndOrderFront(nil)
     }
 
-    func showTutorial(openMainInterfaceAfterClose: Bool = false) {
+    func showTutorial(
+        openMainInterfaceAfterClose: Bool = false,
+        markShownOnPresentation: Bool = false,
+        requiresRegularActivation: Bool = false
+    ) {
         if let tutorialWindowController {
-            NSApp.activate(ignoringOtherApps: true)
-            tutorialWindowController.showWindow(nil)
-            tutorialWindowController.window?.makeKeyAndOrderFront(nil)
+            tutorialWindowController.requestLaunchTutorialTrackingIfNeeded(
+                shouldMarkShownOnPresentation: markShownOnPresentation
+            )
+            tutorialWindowController.requestRegularActivationIfNeeded(
+                shouldRestoreAccessoryActivationOnClose: requiresRegularActivation
+            )
+            presentTutorialWindow(
+                tutorialWindowController,
+                requiresRegularActivation: requiresRegularActivation
+            )
             return
         }
 
         let controller = TutorialWindowController(
             appLanguageService: appLanguageService,
+            shouldMarkShownOnPresentation: markShownOnPresentation,
+            restoresAccessoryActivationOnClose: requiresRegularActivation,
+            onFirstPresentation: { [weak self] in
+                guard markShownOnPresentation else {
+                    return
+                }
+
+                self?.tutorialService.markShownOnLaunch()
+            },
             onClose: { [weak self] in
                 self?.tutorialWindowController = nil
                 if openMainInterfaceAfterClose {
@@ -286,13 +277,35 @@ final class StatusBarController: NSObject {
             }
         )
         tutorialWindowController = controller
+        presentTutorialWindow(
+            controller,
+            requiresRegularActivation: requiresRegularActivation
+        )
+    }
+
+    private func presentTutorialWindow(
+        _ controller: TutorialWindowController,
+        requiresRegularActivation: Bool
+    ) {
+        if requiresRegularActivation, NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
+
         NSApp.activate(ignoringOtherApps: true)
         controller.showWindow(nil)
+        controller.window?.orderFrontRegardless()
         controller.window?.makeKeyAndOrderFront(nil)
     }
 
-    private func showMainInterface() {
+    private func showMainInterface(attemptsRemaining: Int = 10) {
         guard let button = statusItem.button else {
+            guard attemptsRemaining > 0 else {
+                return
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.showMainInterface(attemptsRemaining: attemptsRemaining - 1)
+            }
             return
         }
 
@@ -508,14 +521,24 @@ private final class PresetEditorWindowController: NSWindowController, NSWindowDe
 private final class TutorialWindowController: NSWindowController, NSWindowDelegate {
     private let appLanguageService: AppLanguageService
     private let hostingController: NSHostingController<TutorialView>
+    private let onFirstPresentation: (() -> Void)?
     private let onClose: () -> Void
     private var languageCancellable: AnyCancellable?
+    private var hasTrackedFirstPresentation = false
+    private var shouldMarkShownOnPresentation = false
+    private var restoresAccessoryActivationOnClose = false
 
     init(
         appLanguageService: AppLanguageService,
+        shouldMarkShownOnPresentation: Bool = false,
+        restoresAccessoryActivationOnClose: Bool = false,
+        onFirstPresentation: (() -> Void)? = nil,
         onClose: @escaping () -> Void
     ) {
         self.appLanguageService = appLanguageService
+        self.shouldMarkShownOnPresentation = shouldMarkShownOnPresentation
+        self.restoresAccessoryActivationOnClose = restoresAccessoryActivationOnClose
+        self.onFirstPresentation = onFirstPresentation
         self.onClose = onClose
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 520, height: 420),
@@ -559,8 +582,32 @@ private final class TutorialWindowController: NSWindowController, NSWindowDelega
         fatalError("init(coder:) has not been implemented")
     }
 
+    func windowDidBecomeKey(_ notification: Notification) {
+        notifyPresentedIfNeeded()
+    }
+
     func windowWillClose(_ notification: Notification) {
+        if restoresAccessoryActivationOnClose, NSApp.activationPolicy() != .accessory {
+            NSApp.setActivationPolicy(.accessory)
+        }
+
         onClose()
+    }
+
+    func requestLaunchTutorialTrackingIfNeeded(shouldMarkShownOnPresentation: Bool) {
+        guard shouldMarkShownOnPresentation else {
+            return
+        }
+
+        self.shouldMarkShownOnPresentation = true
+    }
+
+    func requestRegularActivationIfNeeded(shouldRestoreAccessoryActivationOnClose: Bool) {
+        guard shouldRestoreAccessoryActivationOnClose else {
+            return
+        }
+
+        restoresAccessoryActivationOnClose = true
     }
 
     private func refreshLocalization() {
@@ -568,5 +615,14 @@ private final class TutorialWindowController: NSWindowController, NSWindowDelega
             "tutorial.window.title",
             defaultValue: "Tutorial"
         )
+    }
+
+    private func notifyPresentedIfNeeded() {
+        guard shouldMarkShownOnPresentation, !hasTrackedFirstPresentation else {
+            return
+        }
+
+        hasTrackedFirstPresentation = true
+        onFirstPresentation?()
     }
 }

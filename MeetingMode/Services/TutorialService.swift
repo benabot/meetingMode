@@ -7,26 +7,58 @@ private func defaultTutorialLaunchVersionIdentifier() -> String {
     return "\(marketingVersion) (\(buildVersion))"
 }
 
+private func defaultTutorialLaunchStateURL() -> URL {
+    let fileManager = FileManager.default
+    let applicationSupportURL = fileManager.urls(
+        for: .applicationSupportDirectory,
+        in: .userDomainMask
+    ).first ?? fileManager.homeDirectoryForCurrentUser
+
+    return applicationSupportURL
+        .appendingPathComponent("MeetingMode", isDirectory: true)
+        .appendingPathComponent("tutorial-launch-version.txt")
+}
+
 @MainActor
 final class TutorialService {
-    private let defaults: UserDefaults?
+    private let storageURL: URL
     private let launchVersionProvider: () -> String
-    private let shownOnLaunchVersionKey = "MeetingMode.tutorial.shownOnLaunchVersion"
 
     init(
-        defaults: UserDefaults? = .standard,
+        storageURL: URL? = nil,
         launchVersionProvider: (() -> String)? = nil
     ) {
-        self.defaults = defaults
+        self.storageURL = storageURL ?? defaultTutorialLaunchStateURL()
         self.launchVersionProvider = launchVersionProvider ?? defaultTutorialLaunchVersionIdentifier
     }
 
     var shouldShowOnLaunch: Bool {
-        defaults?.string(forKey: shownOnLaunchVersionKey) != launchVersionProvider()
+        storedShownOnLaunchVersion() != launchVersionProvider()
     }
 
     func markShownOnLaunch() {
-        defaults?.set(launchVersionProvider(), forKey: shownOnLaunchVersionKey)
+        persistShownOnLaunchVersion(launchVersionProvider())
     }
 
+    private func storedShownOnLaunchVersion() -> String? {
+        guard let storedVersion = try? String(contentsOf: storageURL, encoding: .utf8) else {
+            return nil
+        }
+
+        return storedVersion.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func persistShownOnLaunchVersion(_ version: String) {
+        let directoryURL = storageURL.deletingLastPathComponent()
+
+        do {
+            try FileManager.default.createDirectory(
+                at: directoryURL,
+                withIntermediateDirectories: true
+            )
+            try Data(version.utf8).write(to: storageURL, options: .atomic)
+        } catch {
+            return
+        }
+    }
 }

@@ -3,27 +3,32 @@ import XCTest
 @testable import MeetingMode
 
 final class TutorialServiceTests: XCTestCase {
-    private var defaults: UserDefaults!
-    private var suiteName: String!
+    private var storageURL: URL!
+    private var tempDirectory: URL!
 
     override func setUp() {
         super.setUp()
-        suiteName = "TutorialServiceTests-\(UUID().uuidString)"
-        defaults = UserDefaults(suiteName: suiteName)
+        tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TutorialServiceTests-\(UUID().uuidString)", isDirectory: true)
+        try? FileManager.default.createDirectory(
+            at: tempDirectory,
+            withIntermediateDirectories: true
+        )
+        storageURL = tempDirectory.appendingPathComponent("tutorial-launch-version.txt")
     }
 
     override func tearDown() {
-        if let suiteName {
-            defaults?.removePersistentDomain(forName: suiteName)
+        if let tempDirectory {
+            try? FileManager.default.removeItem(at: tempDirectory)
         }
-        defaults = nil
+        storageURL = nil
         super.tearDown()
     }
 
     func test_shouldShowOnLaunch_whenNoVersionStored() async {
         let shouldShowOnLaunch = await MainActor.run {
             let service = TutorialService(
-                defaults: defaults,
+                storageURL: storageURL,
                 launchVersionProvider: { "0.1.1 (2)" }
             )
 
@@ -36,13 +41,13 @@ final class TutorialServiceTests: XCTestCase {
     func test_markShownOnLaunch_recordsCurrentVersion() async {
         let result = await MainActor.run {
             let service = TutorialService(
-                defaults: defaults,
+                storageURL: storageURL,
                 launchVersionProvider: { "0.1.1 (2)" }
             )
 
             service.markShownOnLaunch()
 
-            let storedVersion = defaults.string(forKey: "MeetingMode.tutorial.shownOnLaunchVersion")
+            let storedVersion = try? String(contentsOf: storageURL, encoding: .utf8)
             return (storedVersion, service.shouldShowOnLaunch)
         }
 
@@ -51,11 +56,11 @@ final class TutorialServiceTests: XCTestCase {
     }
 
     func test_shouldShowOnLaunch_whenStoredVersionDiffers() async {
-        defaults.set("0.1.0 (1)", forKey: "MeetingMode.tutorial.shownOnLaunchVersion")
+        try? Data("0.1.0 (1)".utf8).write(to: storageURL, options: .atomic)
 
         let shouldShowOnLaunch = await MainActor.run {
             let service = TutorialService(
-                defaults: defaults,
+                storageURL: storageURL,
                 launchVersionProvider: { "0.1.1 (2)" }
             )
 
