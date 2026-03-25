@@ -17,6 +17,7 @@
 - [x] Ajouter une création/édition minimale de preset, sans interface lourde
 - [x] Étendre `Preset` pour couvrir proprement apps, URLs, fichiers locaux, checklist et fond de présentation
 - [x] Remplacer le toggle par un fond de présentation explicite (Aucun / Fond uni / Image locale)
+- [x] Produire un build Release local simple à remettre à un testeur externe (`DerivedData/Build/Products/Release/MeetingMode.app`)
 - [x] Simplifier la popover menu bar pour rendre l'état lisible immédiatement
 - [x] Conserver le preset sélectionné après relance
 - [x] Vérifier que create/edit de preset survivent proprement au redémarrage
@@ -41,7 +42,7 @@
 - [x] Faire une passe de polish UI minimale sur la menu bar et Settings (bouton delete discret, bouton restore disabled plus lisible, footer plus discret, plan detail sur 2 lignes)
 - [ ] Étendre la couverture de tests aux services restants (RestoreService, AppVisibilityService, OverlayService) via les protocoles déjà en place
 - [ ] Injecter une Clock testable dans SessionRunner pour couvrir les tâches async différées (scheduleVisibilityConfirmation, scheduleRestoreVisibilityConfirmation)
-- [ ] Préparer la distribution : sandbox (ou justification de l'absence), signature, notarization
+- [ ] Préparer la distribution élargie : sandbox (ou justification de l'absence), signature, notarization, DMG
 - [ ] Distribution App Store : implémenter security-scoped bookmarks (fichiers + apps), migrer `launchApplication` → `openApplication`, retirer `terminate`/`forceTerminate` (voir `docs/SANDBOX_AUDIT.md` — ~10 jours, à faire après la distribution DMG)
 
 ## Risques / points de vigilance
@@ -78,6 +79,7 @@
 - [x] PresetStore est couvert par 8 tests unitaires isolés
 - [x] SessionRunner est couvert par 9 tests unitaires avec mocks
 - [x] Les textes du tutoriel n'utilisent plus de jargon développeur (MVP, v1, règles MVP)
+- [x] Le chemin recommandé pour le test externe manuel est le Release `.app` local, pas un pipeline de packaging complexe
 
 
 ## V2 — Attribution du contenu ouvert

@@ -267,7 +267,7 @@
 
 ### Distribution Strategy
 
-- The distribution channel is direct (DMG), outside the Mac App Store. This is the current priority.
+- For manual external testing, the recommended artifact is a plain Release `.app` build. Broader direct distribution can still use DMG later, but it is not required for the current testable handoff.
 - A full sandbox audit has been produced and documented in `docs/SANDBOX_AUDIT.md` (2026-03-18).
 - App Store is achievable but requires approximately 10 days of refactoring: security-scoped bookmarks for persistent file and app path access, migration from the deprecated `launchApplication(at:...)` to `openApplication(at:configuration:completionHandler:)`, and removal of `terminate()`/`forceTerminate()` which are unconditionally blocked in sandbox.
 - The main App Store product compromise: restore would no longer quit apps launched by the session. The user would have to close them manually.
@@ -297,10 +297,10 @@
 - `ENABLE_APP_SANDBOX = NO` is intentional and documented. It applies to both Debug and Release configurations.
 - `ENABLE_HARDENED_RUNTIME = YES` is required for notarization and is already set in both configurations.
 - `CODE_SIGN_STYLE = Automatic` with `DEVELOPMENT_TEAM = 3Q33594A3N`. Xcode resolves the Developer ID Application certificate automatically at archive time.
-- The release process is documented in `scripts/README-release.md` and automated by `scripts/build-release.sh`.
+- The release-process docs remain available for broader distribution, but the current external-test path is the local Release `.app` artifact.
 - Notarization uses `xcrun notarytool` with an app-specific password. Credentials are never stored in the repository; they are passed as environment variables.
 - The DMG contains the signed app and a symlink to `/Applications` for drag-to-install. No custom DMG window layout at this stage.
-- `MARKETING_VERSION = 0.1.0` reflects a pre-release. The version should be bumped before the first public release.
+- `MARKETING_VERSION = 0.1.0` reflects a pre-release. The current handoff is for manual external testing, not a public release.
 
 ### Deferred Decisions
 

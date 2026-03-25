@@ -31,6 +31,7 @@ La suite a été réalisée dans cet ordre :
 - ne pas faire de polish visuel qui cache des états ambigus
 - garder le wording principal sur `Préparer le Mac` et `Rétablir le Mac`
 - garder le fond de présentation local et simple: aucun, fond uni, ou image locale; Photos reste hors scope pour l'instant
+- pour le test manuel externe, l'artifact de référence est le Release `.app` local; la signature, la notarization et le DMG restent pour plus tard
 
 ## Étape 1 — Raccourcis clavier configurables ✓
 
@@ -162,12 +163,13 @@ La suite a été réalisée dans cet ordre :
 - Surveillance dynamique des changements d'écran pendant la session
 - Restauration de l'overlay après relaunch
 
-## Étape 8 — Canal direct stable (DMG)
+## Étape 8 — Distribution élargie
 
 **Objectif**
-- Finaliser une distribution directe fiable hors App Store
+- Finaliser plus tard une distribution élargie fiable hors App Store
 - Signer et notariser sans rouvrir le périmètre produit
 - Garder le restore actuel explicite : apps lancées par la session seulement, pas de promesse sur URLs et fichiers
+- Le chemin manuel externe court terme reste le Release `.app` local
 
 **Fichiers concernés**
 - `MeetingMode.xcodeproj`
@@ -180,8 +182,8 @@ La suite a été réalisée dans cet ordre :
 - Validation build signée + notarized
 
 **Critère de validation**
-- L'app peut être signée et notarisée sans erreur
-- Le flux MVP complet fonctionne dans la build distribuée
+- L'app peut être signée et notarisée sans erreur quand on active cette voie
+- Le flux MVP complet fonctionne dans la build Release locale
 - Les limites de restore restent documentées honnêtement
 
 **Hors périmètre explicite**
@@ -297,8 +299,8 @@ La suite a été réalisée dans cet ordre :
 5. ~~Testabilité SessionRunner + tests unitaires PresetStore et SessionRunner~~ ✓
 6. ~~Nettoyage des textes du tutoriel (ton utilisateur, pas développeur)~~ ✓
 7. ~~Fiabilisation : persistance snapshot sur crash, correction état overlay au relaunch, multi-screen overlay~~ ✓
-8. Canal direct stable : signature, notarization, packaging DMG
+8. Build Release local stable pour test manuel externe
 9. V2 : attribution du contenu ouvert, puis restore plus honnête sur les URLs et fichiers
 10. V3 : migration sandbox et release App Store
 
-La suite recommandée est donc : **DMG stable d'abord**, **V2 ensuite pour élargir le restore sans magie**, puis **V3 App Store** avec compromis produit explicites.
+La suite recommandée est donc : **Release `.app` local d'abord pour le test manuel externe**, **V2 ensuite pour élargir le restore sans magie**, puis **V3 App Store** avec compromis produit explicites.

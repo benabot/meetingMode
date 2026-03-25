@@ -14,6 +14,7 @@ Date: 2026-03-17
 - Buttons now use a stricter contrast-first hierarchy on top of the glass UI: strong filled primary, solid filled secondary, clear destructive, and visibly inactive disabled states.
 - Text on the lighter glass surfaces now uses a dark grey / anthracite palette for primary and secondary copy, so sections, plans, settings descriptions, and helper labels stay readable without relying on pale white text.
 - The current target is not App Sandbox-enabled, so local launch and restore behavior can work predictably during MVP development.
+- The current external-test artifact is a plain Release `.app` build, not a DMG workflow; manual testers can launch the app directly from `DerivedData/Build/Products/Release/MeetingMode.app`.
 - `Settings...` now opens a dedicated settings window from the menu bar panel.
 - `Settings...` now includes configurable shortcuts for `Start Session` and `Restore Session`.
 - `Settings...` now includes a native `Launch at login` toggle backed by macOS login items.
@@ -80,7 +81,9 @@ Date: 2026-03-17
 ## Visible Behavior Confirmed
 
 - `xcodebuild -scheme MeetingMode -destination 'platform=macOS' build` succeeds.
+- `xcodebuild -scheme MeetingMode -configuration Release -destination 'platform=macOS' build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO` succeeds and produces a testable Release `.app` under `DerivedData/Build/Products/Release/MeetingMode.app`.
 - The app bundle now carries a custom Meeting Mode icon through `AppIcon`, so Finder and normal app launching use app-specific icon metadata.
+- The app bundle now presents itself as `Meeting Mode` to Finder and normal launch surfaces, while the bundle identifier stays `fr.beabot.meetingmode`.
 - Because `MeetingMode` still runs as a background-only menu bar app, that bundle icon is used for Finder and app launch surfaces, but the app is still not meant to stay in the Dock after launch.
 - The app launches without a main window.
 - The menu bar item remains visible at launch.
@@ -152,6 +155,7 @@ Date: 2026-03-17
 
 - Distribution channel: direct DMG, outside the Mac App Store.
 - `ENABLE_HARDENED_RUNTIME = YES` in both Debug and Release.
+- The current external-testing path uses the plain Release `.app`; broader signing / notarization / DMG packaging remains a later distribution step.
 - `ENABLE_APP_SANDBOX = NO` — required for `NSWorkspace` app launch/hide and Carbon hotkeys; incompatible with App Store sandbox rules.
 
 ## Next documented milestones
