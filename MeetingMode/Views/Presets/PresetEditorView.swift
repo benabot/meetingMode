@@ -582,6 +582,7 @@ private extension PresentationBackgroundColor {
     }
 }
 
+#if DEBUG
 #Preview("Create Preset") {
     PresetEditorView(
         appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "PresetEditorPreviewLanguage")),
@@ -611,6 +612,7 @@ private extension PresentationBackgroundColor {
         )
     ) { _ in }
 }
+#endif
 
 private struct PresetEditorDraft {
     var id: UUID?

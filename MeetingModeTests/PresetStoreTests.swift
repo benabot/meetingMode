@@ -37,12 +37,13 @@ final class PresetStoreTests: XCTestCase {
 
     // MARK: - Seed behavior
 
-    func test_missingFile_seedsQuickTest() {
+    func test_missingFile_keepsEmptyStateInRelease() {
         let store = PresetStore(
             storageURL: storageURL,
             selectionDefaults: selectionDefaults
         )
 
+        #if DEBUG
         XCTAssertEqual(store.presets.count, 1)
         XCTAssertEqual(store.presets.first?.name, "Quick Test")
         XCTAssertEqual(
@@ -51,6 +52,10 @@ final class PresetStoreTests: XCTestCase {
         )
         XCTAssertEqual(store.presets.first?.presentationBackground.mode, .solidColor)
         XCTAssertTrue(FileManager.default.fileExists(atPath: storageURL.path))
+        #else
+        XCTAssertEqual(store.presets.count, 0)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: storageURL.path))
+        #endif
     }
 
     // MARK: - Empty array
@@ -156,7 +161,7 @@ final class PresetStoreTests: XCTestCase {
 
     // MARK: - Legacy migration
 
-    func test_legacyTextEdit_migratedToCalculator() throws {
+    func test_legacyTextEditQuickTest_isRemoved() throws {
         let legacyPreset = Preset(
             name: "Quick Test",
             iconSystemName: "bolt.circle.fill",
@@ -165,12 +170,6 @@ final class PresetStoreTests: XCTestCase {
                     displayName: "TextEdit",
                     bundleIdentifier: "com.apple.TextEdit",
                     bundlePath: "/System/Applications/TextEdit.app"
-                ),
-            ],
-            checklistItems: [
-                ChecklistItem(title: "Confirm the menu bar icon turns red"),
-                ChecklistItem(
-                    title: "Use Restore Session to hide clean screen and quit TextEdit"
                 ),
             ],
             showsOverlay: true
@@ -186,15 +185,7 @@ final class PresetStoreTests: XCTestCase {
             selectionDefaults: selectionDefaults
         )
 
-        XCTAssertEqual(store.presets.count, 1)
-        XCTAssertEqual(
-            store.presets.first?.appsToLaunch.first?.bundleIdentifier,
-            "com.apple.calculator"
-        )
-        XCTAssertEqual(
-            store.presets.first?.appsToLaunch.first?.displayName,
-            "Calculator"
-        )
+        XCTAssertEqual(store.presets.count, 0)
     }
 
     // MARK: - hasStartableActions

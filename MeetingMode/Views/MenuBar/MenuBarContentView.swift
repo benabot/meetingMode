@@ -564,6 +564,7 @@ private struct StatusBadge: View {
     }
 }
 
+#if DEBUG
 #Preview("Sample Presets") {
     previewMenuBarContentView()
 }
@@ -571,6 +572,7 @@ private struct StatusBadge: View {
 #Preview("No Presets") {
     previewMenuBarContentView(presets: [])
 }
+#endif
 
 @MainActor
 private func previewMenuBarContentView(presets: [Preset]? = nil) -> some View {

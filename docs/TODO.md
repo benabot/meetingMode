@@ -55,7 +55,7 @@
 - [ ] Ne pas bloquer les flux simples derrière des permissions non encore nécessaires
 - [ ] Ne restaurer que les actions réellement déclenchées par Meeting Mode
 - [ ] Ne pas masquer ou réafficher des apps hors du scope réellement touché par Meeting Mode
-- [ ] Garder le seed `Quick Test` minimal : un seul preset par défaut tant que l'utilisateur n'en crée pas d'autres
+- [x] Garder le chemin de test `Quick Test` hors de la Release externe ; la Release démarre vide quand aucun preset utilisateur n'existe
 - [ ] Garder le périmètre sans cloud, sans IA et sans intégrations profondes
 - [ ] Garder la documentation synchronisée avec l'état réel du code
 

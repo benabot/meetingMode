@@ -26,7 +26,11 @@ final class PresetStore: ObservableObject {
 
         switch loadResult {
         case .missing:
+#if DEBUG
             initialPresets = Self.seedPresets()
+#else
+            initialPresets = []
+#endif
         case .loaded(let loadedPresets):
             initialPresets = loadedPresets
         case .invalid:
@@ -171,29 +175,8 @@ final class PresetStore: ObservableObject {
     }
 
     private static func migratePresetsIfNeeded(_ presets: [Preset]) -> (presets: [Preset], didMigrate: Bool) {
-        var didMigrate = false
-
-        let migratedPresets = presets.map { preset in
-            guard let migratedPreset = migratedQuickTestPresetIfNeeded(preset) else {
-                return preset
-            }
-
-            didMigrate = true
-            return migratedPreset
-        }
-
-        return (migratedPresets, didMigrate)
-    }
-
-    private static func migratedQuickTestPresetIfNeeded(_ preset: Preset) -> Preset? {
-        guard isLegacyQuickTestSeed(preset) else {
-            return nil
-        }
-
-        var migratedPreset = preset
-        migratedPreset.appsToLaunch = [quickTestApplication()]
-        migratedPreset.checklistItems = quickTestChecklistItems()
-        return migratedPreset
+        let filteredPresets = presets.filter { !isLegacyQuickTestSeed($0) }
+        return (filteredPresets, filteredPresets.count != presets.count)
     }
 
     private static func isLegacyQuickTestSeed(_ preset: Preset) -> Bool {
@@ -215,13 +198,7 @@ final class PresetStore: ObservableObject {
             return false
         }
 
-        let checklistTitles = preset.checklistItems.map(\.title)
-        let expectedLegacyChecklist = [
-            "Confirm the menu bar icon turns red",
-            "Use Restore Session to hide clean screen and quit TextEdit",
-        ]
-
-        return checklistTitles.isEmpty || checklistTitles == expectedLegacyChecklist
+        return true
     }
 
     private static func quickTestApplication() -> PresetApp {

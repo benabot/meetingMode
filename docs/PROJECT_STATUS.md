@@ -15,6 +15,7 @@ Date: 2026-03-17
 - Text on the lighter glass surfaces now uses a dark grey / anthracite palette for primary and secondary copy, so sections, plans, settings descriptions, and helper labels stay readable without relying on pale white text.
 - The current target is not App Sandbox-enabled, so local launch and restore behavior can work predictably during MVP development.
 - The current external-test artifact is a plain Release `.app` build, not a DMG workflow; manual testers can launch the app directly from `DerivedData/Build/Products/Release/MeetingMode.app`.
+- The current external Release handoff is version `0.1.1` build `2`.
 - A concise external manual testing checklist lives in `docs/EXTERNAL_MANUAL_TEST_CHECKLIST.md` for people validating the current Release `.app` outside Xcode.
 - `Settings...` now opens a dedicated settings window from the menu bar panel.
 - `Settings...` now includes configurable shortcuts for `Start Session` and `Restore Session`.
@@ -23,8 +24,8 @@ Date: 2026-03-17
 - A lightweight tutorial window now exists for first-run guidance and quick re-entry later from `Settings`.
 - Models and services compile and stay intentionally small.
 - Presets are now loaded from a simple local JSON source under Application Support.
-- The app seeds one local `Quick Test` preset when no preset data exists yet.
-- Multiple presets are supported by the local store and the lightweight editor, but the runtime seed stays intentionally limited to one default preset.
+- The shipped Release build starts empty when no preset data exists yet; the debug build can still seed a local `Quick Test` preset for internal testing.
+- Multiple presets are supported by the local store and the lightweight editor, but the shipped Release path now keeps the empty state honest when no user preset exists.
 - A minimal preset editor is available directly from the menu bar content.
 - The preset editor is now split into `Basics`, `What starts`, and `Checklist` so the intent stays readable.
 - The preset editor now opens in a dedicated fixed-width window instead of a sheet attached to the menu bar popover, so it stays fully visible near the right edge of the screen.
@@ -32,7 +33,7 @@ Date: 2026-03-17
 - Start and Restore shortcuts are now persisted locally and restored on relaunch.
 - Launch at login state is now read from the real macOS login item registration instead of a separate local preference.
 - The chosen app language is now persisted locally and restored on relaunch.
-- Tutorial first-run state is now persisted locally so the tutorial auto-opens only once.
+- Tutorial first-run state is now persisted locally against the current app version/build so the tutorial auto-opens once per release build on first launch.
 - `Preset` now stores apps, URLs, local files, checklist items, and an explicit presentation background config.
 - The preset editor now exposes one explicit presentation background choice with three modes: none, solid color, and local image. Photos integration stays out of scope for now.
 - Selected apps are now stored as app references with bundle identifier and bundle path, with fallback to display name for older data.
@@ -58,9 +59,9 @@ Date: 2026-03-17
 ## MVP Flow Status
 
 - The current MVP test flow is already end-to-end in the menu bar: select preset, start session, see a visible presentation background effect, then restore.
-- `Quick Test` is sufficient to verify the core flow without any manual preset setup.
+- In Debug, `Quick Test` is sufficient to verify the core flow without any manual preset setup; the shipped Release build now starts empty instead.
 - `Start Session` opens `Calculator`, shows the presentation background overlay, and switches the session to `Active`.
-- The current `Quick Test` preset contains only `Calculator` plus a solid presentation background.
+- The current `Quick Test` debug preset contains only `Calculator` plus a solid presentation background.
 - The start flow now also attempts to hide regular visible apps that are outside the active preset, in best effort only.
 - The visible session result is intended to come primarily from app visibility rules. The overlay stays independent and does not use per-app window-level exceptions.
 - `Restore Session` hides the overlay and restores the UI state correctly.
@@ -93,12 +94,12 @@ Date: 2026-03-17
 - The menu bar actions now use full-width primary buttons, so localized labels such as `Démarrer la session` and `Restaurer la session` no longer need to truncate.
 - Secondary actions now keep more visible tint in the menu bar so `Settings`, `New`, `Edit`, `Restore`, and destructive actions remain distinct at a glance.
 - Clicking `Settings...` closes the panel and opens a dedicated settings window.
-- On first launch, the tutorial opens automatically once in a small dedicated window.
+- On first launch of a fresh release build, the tutorial opens automatically once in a small dedicated window.
 - After that first-launch tutorial closes, the main menu bar panel opens automatically so the user lands directly in the primary UI.
 - The menu bar content handles both the seeded preset path and an explicit empty state.
-- Production no longer ships with built-in demo presets, but it seeds one functional local `Quick Test` preset when storage is empty.
-- Legacy local `Quick Test` data that still points to `TextEdit` is migrated automatically to `Calculator` so the seed stays deterministic and avoids document dialogs.
-- Only one preset is seeded by default. Additional presets are created manually from `New Preset`.
+- Production Release no longer ships with built-in demo presets. When storage is missing, it starts empty.
+- Legacy local `Quick Test` seed data is stripped from the loaded preset list so the shipped app does not carry that test preset forward.
+- In Debug, one functional local `Quick Test` preset may still be seeded for internal testing. Additional presets are created manually from `New Preset`.
 - `New Preset` opens a lightweight editor and persists to the local JSON source.
 - `Edit Preset` updates the currently selected preset with the same lightweight editor.
 - `New Preset` and `Edit Preset` now open a fixed-width editor window with vertical scrolling only, so `Open apps`, `Add App…`, and row actions stay inside the visible layout.

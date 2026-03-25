@@ -316,6 +316,7 @@ struct SettingsView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     SettingsView(
         appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "SettingsViewPreviewLanguage")),
@@ -325,3 +326,4 @@ struct SettingsView: View {
         showTutorial: {}
     )
 }
+#endif

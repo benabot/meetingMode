@@ -32,6 +32,8 @@ La suite a été réalisée dans cet ordre :
 - garder le wording principal sur `Préparer le Mac` et `Rétablir le Mac`
 - garder le fond de présentation local et simple: aucun, fond uni, ou image locale; Photos reste hors scope pour l'instant
 - pour le test manuel externe, l'artifact de référence est le Release `.app` local; la signature, la notarization et le DMG restent pour plus tard
+- la Release externe préparée pour le test manuel doit démarrer vide quand aucun preset utilisateur n'existe, et le tutorial doit encore s'ouvrir une fois sur la première ouverture de cette build
+- la Release externe préparée pour le test manuel doit démarrer vide quand aucun preset utilisateur n'existe, et le tutorial doit encore s'ouvrir une fois sur la première ouverture de cette build
 
 ## Étape 1 — Raccourcis clavier configurables ✓
 

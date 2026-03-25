@@ -170,6 +170,7 @@ struct TutorialView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     TutorialView(
         appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "TutorialPreviewLanguage")),
@@ -177,3 +178,4 @@ struct TutorialView: View {
         onDone: {}
     )
 }
+#endif

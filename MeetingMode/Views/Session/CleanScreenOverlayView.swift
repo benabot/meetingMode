@@ -37,6 +37,7 @@ struct CleanScreenOverlayView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     CleanScreenOverlayView(
         appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "OverlayPreviewLanguage")),
@@ -44,3 +45,4 @@ struct CleanScreenOverlayView: View {
     )
         .frame(width: 900, height: 540)
 }
+#endif

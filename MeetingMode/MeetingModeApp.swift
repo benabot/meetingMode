@@ -239,9 +239,13 @@ final class StatusBarController: NSObject {
             return
         }
 
-        tutorialService.markShownOnLaunch()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-            self?.showTutorial(openMainInterfaceAfterClose: true)
+            guard let self else {
+                return
+            }
+
+            self.showTutorial(openMainInterfaceAfterClose: true)
+            self.tutorialService.markShownOnLaunch()
         }
     }
 

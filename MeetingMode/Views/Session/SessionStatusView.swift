@@ -95,6 +95,7 @@ struct SessionStatusView: View {
     }
 }
 
+#if DEBUG
 #Preview("Inactive") {
     SessionStatusView(
         appLanguageService: AppLanguageService(defaults: UserDefaults(suiteName: "SessionStatusPreviewLanguage1")),
@@ -124,3 +125,4 @@ struct SessionStatusView: View {
         .padding()
         .frame(width: 320)
 }
+#endif

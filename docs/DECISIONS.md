@@ -78,8 +78,8 @@
 - The tutorial covers only the core flow and limits: what the app does, what a preset is, what `Start Session` does, what `Restore Session` does, and what to expect.
 - Tutorial text uses plain user-facing language only: no "MVP", "v1", or internal development terminology.
 - The last page is titled "Good to know" instead of "Important limits" to frame expectations positively.
-- The tutorial auto-opens only once on first launch.
-- That first-launch behavior is persisted locally with one simple preference key.
+- The tutorial auto-opens only once per release build on first launch.
+- That first-launch behavior is persisted locally with a version-scoped preference key, so a new release can still show onboarding once without confusing older installs.
 - Reopening the tutorial from `Settings` does not reset the first-launch state.
 - The tutorial lives in its own small window so it stays coherent with the menu bar app and does not overload the popover.
 - Navigation stays explicit and simple: `Next`, `Back`, `Skip`, `Done`.
@@ -182,9 +182,9 @@
 ### Local Data Source
 
 - `PresetStore` now reads presets from a simple local JSON file in Application Support.
-- If local preset storage is missing, the app seeds one functional `Quick Test` preset for end-to-end testing.
-- `Quick Test` now uses `Calculator` instead of `TextEdit` so the default test flow stays visually deterministic and does not open a document chooser.
-- Legacy local `Quick Test` data that still points to `TextEdit` is migrated automatically when it still matches the original seed shape.
+- The shipped Release build starts empty when local preset storage is missing.
+- Debug builds may still seed one functional `Quick Test` preset for internal testing, but the shipped path does not auto-create it.
+- Legacy local `Quick Test` seed data is stripped from the loaded preset list so the shipped app does not carry that test preset forward.
 - If local preset storage exists but cannot be decoded, the app falls back to an empty list rather than silently reseeding.
 - If local preset storage exists and contains `[]`, the app keeps the empty state.
 - The runtime seed remains intentionally minimal: one default preset only, with additional presets created by the user.
